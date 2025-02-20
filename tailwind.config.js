@@ -11,10 +11,19 @@ export default {
       xl: "1536px",
     },
 
+    keyframes: {
+      scroll: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+      }
+    },
+
+    animation: {
+      scroll: 'scroll 20s linear infinite',
+    },
+
     fontFamily: {
-      nunito: ["Nunito Sans"],
-      inter: ["Inter"],
-      hanken: ["Hanken Grotesk"],
+      jost: ["Jost"],
     },
     colors: {
       primary: "#3BFF81",
