@@ -13,7 +13,7 @@ export const ProtectRoutes = () => {
 
 
     const location = useLocation();
-    const isAuthed = isObjectEmpty((Cookies.get("userObj")))
+    const isAuthed = isObjectEmpty((Cookies.get("userProps")))
     return !isAuthed ? (
       <DashboardLayout> 
         <Outlet />
@@ -25,7 +25,7 @@ export const ProtectRoutes = () => {
 
   export const AuthProtectRoutes = () => {
     const location = useLocation();
-    const isAuthed =  isObjectEmpty((Cookies.get("userObj")))
+    const isAuthed =  isObjectEmpty((Cookies.get("userProps")))
     return isAuthed ? (
       <AuthPageLayout>
         <Outlet />

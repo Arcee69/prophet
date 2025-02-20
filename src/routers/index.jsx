@@ -4,8 +4,11 @@ import { Route, Routes } from "react-router-dom";
 import { AuthProtectRoutes, ProtectRoutes } from './ProtectRoute';
 import Home from '../pages/Home';
 import HomePageLayout from '../layouts/HomePageLayout';
-
-
+import Login from '../pages/Auth/Login';
+import ForgotPassword from '../pages/Auth/ForgotPassword';
+import VerifyOtp from '../pages/Auth/VerifyOtp';
+import ResetPassword from '../pages/Auth/ResetPassword';
+import Register from '../pages/Auth/Register';
 
 export default function Routers() {
 
@@ -17,11 +20,15 @@ export default function Routers() {
           <Route path="/" element={<Home />} />
         </Route>
 
-        {/* <Route element={<AuthProtectRoutes />}>
-     
+        <Route element={<AuthProtectRoutes />}>
+          <Route path='/login' element={<Login />} />
+          <Route path='/forgot-password' element={<ForgotPassword />} />
+          <Route path='/verify-otp' element={<VerifyOtp />} />
+          <Route path='/reset-password' element={<ResetPassword />} />
+          <Route path='/register' element={<Register />} />
         </Route>
         
-        <Route element={<ProtectRoutes />}>
+         {/* <Route element={<ProtectRoutes />}>
 
         </Route> */}
 
