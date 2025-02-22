@@ -34,6 +34,8 @@ const Login = () => {
             console.log(values);
             setLoading(false);
           }, 1000);
+          navigate("/dashboard");
+          window.scrollTo(0, 0)
         }}
       >
         {({ handleSubmit, handleChange, values, errors, touched }) => (

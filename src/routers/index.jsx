@@ -9,6 +9,9 @@ import ForgotPassword from '../pages/Auth/ForgotPassword';
 import VerifyOtp from '../pages/Auth/VerifyOtp';
 import ResetPassword from '../pages/Auth/ResetPassword';
 import Register from '../pages/Auth/Register';
+import Dashboard from '../pages/Dashboard';
+import DashboardLayout from '../layouts/DashboardLayout';
+import AuthPageLayout from '../layouts/AuthPageLayout';
 
 export default function Routers() {
 
@@ -20,7 +23,7 @@ export default function Routers() {
           <Route path="/" element={<Home />} />
         </Route>
 
-        <Route element={<AuthProtectRoutes />}>
+        <Route element={<AuthPageLayout />}>
           <Route path='/login' element={<Login />} />
           <Route path='/forgot-password' element={<ForgotPassword />} />
           <Route path='/verify-otp' element={<VerifyOtp />} />
@@ -28,9 +31,9 @@ export default function Routers() {
           <Route path='/register' element={<Register />} />
         </Route>
         
-         {/* <Route element={<ProtectRoutes />}>
-
-        </Route> */}
+         <Route element={<DashboardLayout />}>
+            <Route path='/dashboard' element={<Dashboard />} />
+        </Route>
 
     
 

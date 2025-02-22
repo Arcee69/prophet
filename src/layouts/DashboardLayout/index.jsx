@@ -14,7 +14,7 @@ const DashboardLayout = () => {
   const path = location.pathname
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen  overflow-hidden">
       {/* Sidebar */}
       
       <div className={`fixed top-0 left-0 h-full bg-[#fff] z-50 transition-transform duration-300 ${
@@ -31,7 +31,7 @@ const DashboardLayout = () => {
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 mt-[72px] overflow-y-auto p-6">
+        <div className="flex-1 mt-[72px] bg-[#fcfcfc] overflow-y-auto p-6">
           <Outlet />
         </div>
       </div>
