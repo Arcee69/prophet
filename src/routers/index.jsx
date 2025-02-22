@@ -12,6 +12,7 @@ import Register from '../pages/Auth/Register';
 import Dashboard from '../pages/Dashboard';
 import DashboardLayout from '../layouts/DashboardLayout';
 import AuthPageLayout from '../layouts/AuthPageLayout';
+import Ara from '../pages/Ara';
 
 export default function Routers() {
 
@@ -33,6 +34,7 @@ export default function Routers() {
         
          <Route element={<DashboardLayout />}>
             <Route path='/dashboard' element={<Dashboard />} />
+            <Route path='/ara' element={<Ara />} />
         </Route>
 
     

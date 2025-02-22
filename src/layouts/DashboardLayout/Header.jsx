@@ -1,10 +1,14 @@
 import React, { useState } from 'react'
+
 import Note from "../../assets/svg/note.svg"
 import Bell from "../../assets/svg/bell.svg"
+
 import { IoSearch } from 'react-icons/io5'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { GiHamburgerMenu } from 'react-icons/gi';
-import { TbReportAnalytics } from 'react-icons/tb'
+import { FiUser } from 'react-icons/fi'
+import { LuBell } from 'react-icons/lu'
+
 
 const Header = ({ toggleSidebar }) => {
     const [search, setSearch] = useState("")
@@ -12,8 +16,6 @@ const Header = ({ toggleSidebar }) => {
     const navigate = useNavigate()
 
     const location = useLocation()
-
-    const type = localStorage.getItem("type")
 
   return (
     <div className='py-[18px] px-[28px] h-[72px]'>
@@ -37,14 +39,6 @@ const Header = ({ toggleSidebar }) => {
             </div>
 
             {
-                location.pathname === "/report" ? 
-                <div className='w-full flex justify-end items-center'>
-                    <div className='bg-[#1EC677] rounded-xl w-[119px] h-[45px] flex items-center justify-center gap-2'>
-                        <TbReportAnalytics className='text-[#fff] w-4 h-4' />
-                        <p className='text-[#fff] font-euclid text-xs font-semibold'>Export Report</p>
-                    </div>
-                </div>
-                :
                 <div className='flex items-center gap-6'>
                     <div className='flex items-center gap-3'>
                         <div className='w-[254px] lg:flex items-center invisible hidden bg-[#0000000D] rounded-lg h-[36px] '>
@@ -59,9 +53,9 @@ const Header = ({ toggleSidebar }) => {
                                 onChange={(e) => setSearch(e.target.value)}
                             />
                         </div>
-                        <img src={Bell} alt='Bell' className='w-5 h-5' />
+                        <LuBell className='w-5 h-5 text-[#9CA3AF]' />
+                        <FiUser className='w-5 h-5 text-[#9CA3AF]' />
                     </div>
-                
                 </div>
             }
 

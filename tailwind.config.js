@@ -24,6 +24,7 @@ export default {
 
     fontFamily: {
       jost: ["Jost"],
+      lato: ["Lato"],
     },
     colors: {
       primary: "#3BFF81",
