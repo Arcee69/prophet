@@ -1,50 +1,8 @@
-// import React from 'react'
-// import Vapi from '@vapi-ai/web';
-
-// const Ara = () => {
-//     const [callStatus, setCallStatus] = useState('inactive')
-//     const [voxData, setVoxData] = useState([]);
-//     const [loading, setLoading] = useState(false)
-  
-      
-//     const vapi = new Vapi(`${import.meta.env.VITE_APP_PUB_KEY}`); // Public_key
-  
-//     const start = async () => {
-//       setCallStatus("loading");
-//       setLoading(true);
-//       const response = await vapi.start(`${import.meta.env.VITE_APP_ASST_ID}`); // Assitant_id
-//       setLoading(false);
-//       setVoxData(response)
-//       console.log(response.status, "brymo")
-//       return response
-//     };
-  
-//     const stop = () => {
-//       console.log("stop")
-//       setCallStatus("loading");
-//       vapi.stop();
-//     };
-  
-//     useEffect(() => {
-//       vapi.on("call-start", () => setCallStatus("active"));
-//       vapi.on("call-end", () => setCallStatus('inactive'));
-      
-//       return () => vapi.removeAllListeners();
-//     }, [])
-
-//   return (
-//     <div className='w-full'>
-
-//     </div>
-//   )
-// }
-
-// export default Ara
-
 import React, { useState, useEffect } from 'react';
 import Vapi from '@vapi-ai/web';
 
 import Microphone from "../../assets/png/microphone.png"
+import InactiveMic from "../../assets/png/inactive_mic.png"
 import Voice from "../../assets/png/voice_ai.png"
 
 const Ara = () => {
@@ -52,22 +10,22 @@ const Ara = () => {
   const [voxData, setVoxData] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const vapi = new Vapi("1ca3f817-12e2-42a0-b8ab-f5a76e226baa"); // Public key
+  const vapi = new Vapi("f3cfd9f4-c893-43f1-b47f-6b1b2c3b1669"); // Public key
 
   const start = async () => {
     setCallStatus('loading');
     setLoading(true);
     try {
-        const response = await vapi.start('e9501112-b0c1-44ad-9849-b075edca90d0'); // Assistant ID
+        const response = await vapi.start('bccab05a-74e0-45dd-aee6-954071a77fa7'); // Assistant ID
         setVoxData(response);
         console.log(response.status, 'brymo');
         return response;
 
     } catch (err) {
         console.log(err, "err")
+        setCallStatus('inactive')
     } finally {
         setLoading(false);
-        setCallStatus('loading');
     }
   };
 
@@ -76,6 +34,9 @@ const Ara = () => {
     setCallStatus('loading');
     vapi.stop();
   };
+
+  console.log(callStatus, "callStatus")
+  console.log(voxData, "voxData")
 
   useEffect(() => {
     vapi.on('call-start', () => setCallStatus('active'));
@@ -138,7 +99,7 @@ const Ara = () => {
 
       {/* Status Text */}
       <div className='flex flex-col gap-3'>
-        <img src={Voice} alt='Voice' className='w-[150px] h-[150px]' />
+        <img src={Voice} alt='Voice' className='w-[150px] h-[150px] animate-pulse' />
         <div className="mb-4">
             <p
             className={`text-base font-semibold text-center font-lato ${
