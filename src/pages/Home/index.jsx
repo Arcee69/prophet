@@ -1,4 +1,6 @@
 import React from 'react'
+import { IoIosArrowForward } from 'react-icons/io';
+import { useNavigate } from 'react-router-dom';
 
 import People from "../../assets/png/people.png";
 import BrainBg from "../../assets/png/brain_bg.png";
@@ -24,9 +26,12 @@ import Woman from "../../assets/png/woman.png";
 import Shield from "../../assets/svg/shield.svg";
 import Target from "../../assets/svg/target.svg";
 import Arrow from "../../assets/svg/arrow_down.svg";
-import { IoIosArrowForward } from 'react-icons/io';
+
 
 const Home = () => {
+
+    const navigate = useNavigate()
+
   return (
     <div className='w-full mt-[140px]'>
 
@@ -44,7 +49,7 @@ const Home = () => {
                     and predictive insights across TV, radio, print, and online.
                 </p>
             </div>
-            <button className='w-[210px] bg-[#202633] h-[50px] rounded-[8px] py-2 flex items-center justify-center'>
+            <button onClick={() => navigate("/register")} className='w-[210px] bg-[#202633] h-[50px] rounded-[8px] py-2 flex items-center justify-center'>
                 <p className='font-jost font-bold text-base text-[#fff]'>Get started for free</p>
             </button>
         </section>

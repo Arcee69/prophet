@@ -74,7 +74,7 @@ const Ara = () => {
                 display: 'inline-block'
             }}
         >
-            Hi there, Shola
+            Hello, I am Ara
         </h1>
 
       {/* Gradient Subheading */}
@@ -87,14 +87,14 @@ const Ara = () => {
                 display: 'inline-block'
             }}
             >
-                What would you like to do
+              Your dedicated voice assistant
             </span>
         </h2>
 
       {/* Subtext */}
       <p className="text-center text-[#758299] font-lato mb-8 max-w-xl px-4">
-        Get real-time insights, sentiment analysis, and media monitoring
-        with our AI-powered PR assistant
+        I'm here to help with your customer support inquires and provide data-driven
+        insights on media and PR trends. How can i assist you today?
       </p>
 
       {/* Status Text */}
@@ -120,9 +120,10 @@ const Ara = () => {
         `}
         style={{ backgroundImage: `url(${Microphone})` }}
       />
+      <p className='text-[#4B5563] text-center font-lato text-base font-semibold'>Tap to Speak</p>
 
       {/* Footer Disclaimer */}
-      <p className="text-xs text-[#4B5563] font-lato font-semibold mt-8">
+      <p className="text-[10px] text-[#4B5563] font-lato font-semibold mt-8">
         AI can make mistakes. Please double-check responses.
       </p>
     </div>

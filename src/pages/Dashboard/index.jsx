@@ -4,6 +4,7 @@ import { LuArchive, LuCalendarDays, LuShare2 } from 'react-icons/lu'
 import { GoTag } from 'react-icons/go'
 import { FiCheckCircle } from 'react-icons/fi'
 import { IoDocumentTextOutline } from 'react-icons/io5'
+import { useNavigate } from 'react-router-dom'
 
 //Svgs
 import ArrowUp from "../../assets/svg/arrow_up.svg"
@@ -26,9 +27,12 @@ import GlobeSmall from "../../assets/png/globe_small.png"
 import Girl from "../../assets/png/girl.png"
 
 
+
 const Dashboard = () => {
   const [selectedYear, setSelectedYear] = useState("Last 30 days")
   const [selectedTime, setSelectedTime] = useState("This Week")
+
+  const navigate = useNavigate()
 
   // Line Chart Data
   const [lineChartData] = useState({
@@ -122,7 +126,7 @@ const Dashboard = () => {
 
       {/* Top Four Colored Boxes */}
       <div className='flex items-center gap-4'>
-        <div className='bg-[#FB6B63] rounded-[18px] w-3/12 h-[220px] p-3 overflow-hidden relative'>
+        <div className='bg-[#FB6B63] rounded-[18px] w-3/12 h-[220px] p-3 overflow-hidden cursor-pointer relative' onClick={() => navigate("/ara")}>
           <img src={Line} alt='Line' className='absolute w-[155px] h-[255px] -top-16 -left-1' />
           <div className='absolute bottom-2 right-2 gap-[3px] flex flex-col'>
             <img src={Voice} alt='Voice' className='w-[84px] h-[84px]' />
@@ -132,7 +136,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className='bg-[#34B6FE] rounded-[18px] w-3/12 h-[220px] p-3 overflow-hidden relative'>
+        <div className='bg-[#34B6FE] rounded-[18px] w-3/12 h-[220px] p-3 overflow-hidden cursor-pointer relative'  onClick={() => navigate("#")}>
           <img src={GlobeBig} alt='GlobeBig' className='absolute w-[155px] h-[155px] -top-14 -left-3' />
           <div className='absolute bottom-2 right-2 gap-[3px] flex flex-col items-end'>
             <img src={GlobeSmall} alt='GlobeSmall' className='w-[84px] h-[84px]' />
@@ -142,7 +146,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className='bg-[#EA8B29] rounded-[18px] w-3/12 h-[220px] p-3 overflow-hidden relative'>
+        <div className='bg-[#EA8B29] rounded-[18px] w-3/12 h-[220px] p-3 overflow-hidden cursor-pointer relative' onClick={() => navigate("#")}>
           <img src={AnalysisBig} alt='AnalysisBig' className='absolute w-[155px] h-[155px] -top-14 -left-3' />
           <div className='absolute bottom-2 right-2 gap-[3px] flex flex-col items-end'>
             <img src={AnalysisSmall} alt='AnalysisSmall' className='w-[84px] h-[84px]' />
@@ -152,7 +156,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className='bg-[#5BDC93] rounded-[18px] w-3/12 h-[220px] p-3 overflow-hidden relative'>
+        <div className='bg-[#5BDC93] rounded-[18px] w-3/12 h-[220px] p-3 overflow-hidden cursor-pointer relative' onClick={() => navigate("#")}>
           <img src={ReportBig} alt='ReportBig' className='absolute w-[155px] h-[155px] -top-14 -left-3' />
           <div className='absolute bottom-2 right-2 gap-[3px] flex flex-col items-end'>
             <img src={ReportSmall} alt='ReportSmall' className='w-[84px] h-[84px]' />

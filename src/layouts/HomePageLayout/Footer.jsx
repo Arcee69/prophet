@@ -1,6 +1,6 @@
 import React from 'react'
 
-import LogoBig from '../../assets/png/logo_big.png'
+import LogoBig from '../../assets/svg/logo_big.svg'
 
 import { BsTwitterX } from 'react-icons/bs'
 import { HiOutlinePhone } from 'react-icons/hi'

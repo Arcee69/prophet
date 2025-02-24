@@ -22,7 +22,7 @@ const Login = () => {
 
   return (
     <div className="flex flex-col items-center gap-6">
-      <img src={LogoBlack} alt="Logo" className="w-32" />
+      <img src={LogoBlack} alt="Logo" className="w-32 cursor-pointer" onClick={() => navigate("/")}/>
       <p className="text-[30px] font-jost font-semibold">Hi, Welcome! 👋</p>
 
       <Formik

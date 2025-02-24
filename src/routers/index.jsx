@@ -13,6 +13,7 @@ import Dashboard from '../pages/Dashboard';
 import DashboardLayout from '../layouts/DashboardLayout';
 import AuthPageLayout from '../layouts/AuthPageLayout';
 import Ara from '../pages/Ara';
+import Sentiment from '../pages/Sentiment';
 
 export default function Routers() {
 
@@ -35,6 +36,7 @@ export default function Routers() {
          <Route element={<DashboardLayout />}>
             <Route path='/dashboard' element={<Dashboard />} />
             <Route path='/ara' element={<Ara />} />
+            <Route path="/sentiment-analysis" element={<Sentiment />} />
         </Route>
 
     

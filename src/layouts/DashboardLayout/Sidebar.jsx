@@ -101,13 +101,13 @@ const Sidebar = ({ closeSidebar }) => {
                     <p className={`${location.pathname === "/help" ? "text-[#fff]" : ""} font-inter text-[#E4E7EC] group-hover:text-[#fff] font-medium text-sm`}>Help Center</p>
                 </div>
 
-                <div 
+                {/* <div 
                     className={`${location.pathname === "/refer"  ? "bg-[#F48A1F]" : ""} flex items-center gap-3 group hover:bg-[#F48A1F] p-2  cursor-pointer rounded-lg h-auto`} 
                     onClick={() => {navigate("/refer"); closeSidebar()}}
                 >
                     <img src={Gift} className={`${location.pathname === "/refer" ? "text-[#fff]" : ""} w-4 h-4 text-[#E4E7EC] group-hover:text-[#fff]`} />
                     <p className={`${location.pathname === "/refer" ? "text-[#fff]" : ""} font-inter text-[#E4E7EC] group-hover:text-[#fff] font-medium text-sm`}>Refer family and friends</p>
-                </div>
+                </div> */}
 
                 <div className='flex items-center gap-2 cursor-pointer' onClick={handleLogout}>
                     <img src={Jane} alt='Profile' className='w-[40px] h-[40px] rounded-full' />
