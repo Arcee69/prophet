@@ -202,6 +202,9 @@ const Home = () => {
                 </div>
 
             </div>
+            <button onClick={() => window.open("https://calendly.com/craprophet/30min", "_blank")} className='w-[210px] bg-[#F48A1F] h-[50px] rounded-[8px] py-2 flex items-center justify-center'>
+                <p className='font-jost font-bold text-base text-[#fff]'>Request Demo</p>
+            </button>
         </section>
 
         <section className='bg-[#F1F1F1] px-[118px] py-[64px] flex flex-col items-center gap-[64px]'>
@@ -259,11 +262,11 @@ const Home = () => {
                 </div>
                 <div className='bg-[#D46E08] w-[403px] h-[204px] flex flex-col items-center gap-4 rounded-[8px] p-[32px]'>
                     <p className='font-jost text-[#FFFFFF] text-[20px] font-semibold leading-7'>Pro</p>
-                    <p className='text-[#F3E8FF] font-jost whitespace-nowrap text-base leading-6'>Schedule a 1:1 walkthrough with our team</p>
+                    <p className='text-[#F3E8FF] font-jost whitespace-nowrap text-base leading-6'>Choose a plan tailored to your needs</p>
                     <button
                         className='w-full bg-[#FFFFFF] h-[48px] rounded-[6px] p-2'
                     >
-                        <p className='font-jost text-[#1F2733] text-base leading-6'>Request Demo</p>
+                        <p className='font-jost text-[#1F2733] text-base leading-6'>View Plans</p>
                     </button>
                 </div>
                 <div className='bg-[#F9FAFB] w-[384px] h-[204px] flex flex-col items-center gap-4 rounded-[8px] p-[32px]'>
