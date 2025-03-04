@@ -5,6 +5,9 @@ import { CgSpinner } from 'react-icons/cg';
 import { useNavigate } from 'react-router-dom';
 import LogoBlack from '../../assets/svg/logo_black.svg';
 import PasswordField from '../../components/InputFields/PasswordField';
+import { api } from '../../services/api';
+import { appUrls } from '../../services/urls';
+import { toast } from 'react-toastify';
 
 const Register = () => {
   const [loading, setLoading] = useState(false);
@@ -16,7 +19,43 @@ const Register = () => {
     job: Yup.string().required('Job Title is required'),
     phone: Yup.number().required('Phone Number is required'),
     password: Yup.string().min(8, 'Must be 8 characters').required('Password is required'),
+    confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password"), null], "Passwords must match")
+    .required("Confirm Password is required"),
   });
+
+  const submitForm = async (values, action) => {
+    setLoading(true);
+    const data = {
+      "name": values?.fullName,
+      "email": values?.email,
+      "phone": `+234${values?.phone}`,
+      "job": values?.job,
+      "password": values?.password,
+      "password_confirmation": values?.confirmPassword
+    }
+    try {
+      const res = await api.post(appUrls?.REGISTER_URL, data)
+      console.log(res, "appo")
+      toast(`${res?.data?.message}`, {
+        position: "top-right",
+        autoClose: 5000,
+        closeOnClick: true,
+      })  
+      navigate("/verify-otp")
+      localStorage.setItem("register", "register")
+      localStorage.setItem("email", values?.email)
+    } catch (err) {
+      console.log(err, "eyes")
+      toast(`${err?.data?.message}`, {
+        position: "top-right",
+        autoClose: 5000,
+        closeOnClick: true,
+      })  
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="flex items-center justify-center ">
@@ -33,12 +72,8 @@ const Register = () => {
         <Formik
           initialValues={{ fullName: '', email: '', job: '', phone: '', password: '' }}
           validationSchema={formValidationSchema}
-          onSubmit={(values) => {
-            setLoading(true);
-            setTimeout(() => {
-              console.log(values);
-              setLoading(false);
-            }, 1000);
+          onSubmit={(values, action) => {
+            submitForm(values, action)
           }}
         >
           {({ handleSubmit, handleChange, values, errors, touched }) => (
@@ -86,6 +121,18 @@ const Register = () => {
                 {errors.password && touched.password && (
                   <div className="text-red-500 text-xs">{errors.password}</div>
                 )}
+              </div>
+
+              <div className="flex flex-col">
+                  <label className="text-sm font-jost font-medium">Confirm Password</label>
+                  <PasswordField
+                      name="confirmPassword"
+                      value={values.confirmPassword}
+                      placeholder="must be 8 characters"
+                      className="border w-full h-[48px] rounded-lg outline-none text-gray-700"
+                      onChange={handleChange}
+                  />
+                  {errors.confirmPassword && touched.confirmPassword && <div className="text-RED-_100 text-xs">{errors.confirmPassword}</div>}
               </div>
 
               {/* Job Function Dropdown */}

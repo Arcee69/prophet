@@ -25,6 +25,7 @@ import AnalysisSmall from "../../assets/png/analysis_small.png"
 import ReportSmall from "../../assets/png/report_small.png"
 import GlobeSmall from "../../assets/png/globe_small.png"
 import Girl from "../../assets/png/girl.png"
+import { useSelector } from 'react-redux'
 
 
 
@@ -33,6 +34,9 @@ const Dashboard = () => {
   const [selectedTime, setSelectedTime] = useState("This Week")
 
   const navigate = useNavigate()
+
+  const { user } = useSelector(state => state.userLogin)
+
 
   // Line Chart Data
   const [lineChartData] = useState({
@@ -121,7 +125,7 @@ const Dashboard = () => {
 
       {/* Greeting */}
       <p className='font-jost font-semibold text-[18px] leading-[28px] text-[#6B7280]'>
-        Hi Shola,
+        Hi {`${user?.data?.name}`},
       </p>
 
       {/* Top Four Colored Boxes */}

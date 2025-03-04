@@ -8,6 +8,9 @@ import { useNavigate } from 'react-router-dom';
 import PasswordField from '../../components/InputFields/PasswordField';
 
 import LogoBlack from '../../assets/svg/logo_black.svg';
+import { api } from '../../services/api';
+import { appUrls } from '../../services/urls';
+import { toast } from 'react-toastify';
 
 
 const ResetPassword = () => {
@@ -21,6 +24,37 @@ const ResetPassword = () => {
     .oneOf([Yup.ref("password"), null], "Passwords must match")
     .required("Confirm Password is required"),
   });
+
+  const userId = localStorage.getItem("userId")
+
+  const submitForm = async (values, action) => {
+      setLoading(true);
+      const data = {
+        "user_id": userId,
+        "password": values?.password,
+        "password_confirmation": values?.confirmPassword
+      }
+      try {
+        const res = await api.post(appUrls?.RESETPASSWORD_URL, data)
+        console.log(res, "appo")
+        toast(`${res?.data?.message}`, {
+          position: "top-right",
+          autoClose: 5000,
+          closeOnClick: true,
+        })  
+        localStorage.removeItem("userId")
+        navigate("/login")
+      } catch (err) {
+        console.log(err, "eyes")
+        toast(`${err?.data?.message}`, {
+          position: "top-right",
+          autoClose: 5000,
+          closeOnClick: true,
+        })  
+      } finally {
+        setLoading(false)
+      }
+    }
 
   return (
     <div className="flex flex-col items-center gap-6">
@@ -36,12 +70,8 @@ const ResetPassword = () => {
             initialValues={{ password: '', confirmPassword: '' }}
             validationSchema={formValidationSchema}
             onSubmit={(values) => {
-                setLoading(true);
-                setTimeout(() => {
-                    console.log(values);
-                    setLoading(false);
-                }, 1000);
-                navigate("/login");
+                submitForm(values);
+              
             }}
         >
             {({ handleSubmit, handleChange, values, errors, touched }) => (

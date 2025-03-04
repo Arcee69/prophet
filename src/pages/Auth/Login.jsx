@@ -9,16 +9,38 @@ import { useNavigate } from 'react-router-dom';
 import LogoBlack from '../../assets/svg/logo_black.svg';
 
 import PasswordField from '../../components/InputFields/PasswordField';
+import { useDispatch } from 'react-redux';
+import { loginUser } from '../../features/auth/loginSlice';
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch()
 
   const formValidationSchema = Yup.object().shape({
     email: Yup.string().email().required('Email is required'),
     password: Yup.string().required('Password is required'),
   });
+
+  const submitForm = (values) => {
+    setLoading(true);
+    const data = {
+        email: values?.email,
+        password: values?.password,
+    };
+
+    dispatch(loginUser(data))
+        .then((res) => {
+            console.log(res, "best");
+            if (res?.type === "user/loginUser/fulfilled") {
+                setLoading(false);
+                navigate("/dashboard");
+            } else {
+                setLoading(false);
+            }
+        });
+};
 
   return (
     <div className="flex flex-col items-center gap-6">
@@ -29,13 +51,7 @@ const Login = () => {
         initialValues={{ email: '', password: '', check: false }}
         validationSchema={formValidationSchema}
         onSubmit={(values) => {
-          setLoading(true);
-          setTimeout(() => {
-            console.log(values);
-            setLoading(false);
-          }, 1000);
-          navigate("/dashboard");
-          window.scrollTo(0, 0)
+          submitForm(values)
         }}
       >
         {({ handleSubmit, handleChange, values, errors, touched }) => (

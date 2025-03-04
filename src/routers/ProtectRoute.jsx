@@ -10,8 +10,6 @@ import AuthPageLayout from '../layouts/AuthPageLayout';
 
 export const ProtectRoutes = () => {
 
-
-
     const location = useLocation();
     const isAuthed = isObjectEmpty((Cookies.get("userProps")))
     return !isAuthed ? (

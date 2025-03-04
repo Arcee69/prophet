@@ -6,6 +6,9 @@ import { CgSpinner } from 'react-icons/cg';
 import { useNavigate } from 'react-router-dom';
 
 import LogoBlack from '../../assets/svg/logo_black.svg';
+import { api } from '../../services/api';
+import { appUrls } from '../../services/urls';
+import { toast } from 'react-toastify';
 
 
 const VerifyOtp = () => {
@@ -16,6 +19,80 @@ const VerifyOtp = () => {
   const formValidationSchema = Yup.object().shape({
     otp: Yup.string().required('Otp is required'),
   });
+
+  const reg = localStorage.getItem("register")
+  const email = localStorage.getItem("email")
+
+  const submitForm = async (values, action) => {
+    setLoading(true)
+  
+    try {  
+        if (reg) {
+            const data = {
+                "verification_code": values?.otp
+            }
+            const res  = await api.post(appUrls?.VERIFY_USER_OTP_URL, data)
+            console.log(res, "mix")
+            toast(`${res?.data?.message}`, {
+                position: "top-right",
+                autoClose: 5000,
+                closeOnClick: true,
+            })
+            navigate("/login")
+            localStorage.removeItem("register")
+            localStorage.removeItem("email")
+        } else {
+            const data = {
+                "otp": values?.otp
+            }
+            const res  = await api.post(appUrls?.VERIFY_RESET_OTP_URL, data)
+            console.log(res, "mix")
+            localStorage.setItem("userId", res?.data?.data?.user_id)
+            toast(`${res?.data?.message}`, {
+                position: "top-right",
+                autoClose: 5000,
+                closeOnClick: true,
+            })
+            navigate("/reset-password");
+            localStorage.removeItem("email")
+        }
+    } catch (err) {
+        console.log(err, "err")
+        toast(`${err?.data?.message}`, {
+            position: "top-right",
+            autoClose: 5000,
+            closeOnClick: true,
+        })  
+    } finally {
+        setLoading(false)
+    }
+  }
+
+  const resendCode = async () => {
+    const data = {
+        "email": email
+    }
+    try {
+        const res  = await api.post(appUrls?.RESEND_OTP_URL, data)
+        console.log(res, "mix")
+        toast(`${res?.data?.message}`, {
+            position: "top-right",
+            autoClose: 5000,
+            closeOnClick: true,
+        })  
+    } catch (err) {
+        console.log(err, "err")
+        toast(`${err?.data?.message}`, {
+            position: "top-right",
+            autoClose: 5000,
+            closeOnClick: true,
+        })  
+    } finally {
+        setLoading(false)
+    }
+
+
+  }
 
   return (
     <div className="flex flex-col items-center gap-6">
@@ -30,13 +107,8 @@ const VerifyOtp = () => {
         <Formik
             initialValues={{ otp: '' }}
             validationSchema={formValidationSchema}
-            onSubmit={(values) => {
-                setLoading(true);
-                setTimeout(() => {
-                    console.log(values);
-                    setLoading(false);
-                }, 1000);
-                navigate("/reset-password");
+            onSubmit={(values, action) => {
+                submitForm(values, action)
             }}
         >
             {({ handleSubmit, handleChange, values, errors, touched }) => (
@@ -65,7 +137,7 @@ const VerifyOtp = () => {
                 </button>
 
                 <p className='text-[#000000] font-jost text-base text-center'>
-                    Did not receive your email? <span className='text-[#C89657] font-bold cursor-pointer' onClick={() => {navigate("/login"); window.scrollTo(0, 0)}}>Resend Verification Email</span>
+                    Did not receive your email? <span className='text-[#C89657] font-bold cursor-pointer' onClick={() => resendCode()}>Resend Verification Email</span>
                 </p>
             </Form>
             )}

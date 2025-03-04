@@ -13,6 +13,7 @@ import Voice from "../../assets/svg/voice_ai.svg"
 import LogoWhite from "../../assets/svg/logo_white.svg"
 
 import Jane from "../../assets/png/jane.png"
+import { logout } from '../../features/auth/loginSlice'
 
 // import { logout } from '../../features/auth/loginSlice'
 
@@ -28,7 +29,9 @@ const Sidebar = ({ closeSidebar }) => {
 
     const handleLogout = () => {
         // dispatch(logout());
-        Cookies.remove("userObj");
+        Cookies.remove("userProps");
+        Cookies.remove("token");
+        logout()
         navigate("/"); 
     };
 

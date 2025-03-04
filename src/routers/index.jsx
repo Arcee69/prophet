@@ -25,7 +25,7 @@ export default function Routers() {
           <Route path="/" element={<Home />} />
         </Route>
 
-        <Route element={<AuthPageLayout />}>
+        <Route element={<AuthProtectRoutes />}>
           <Route path='/login' element={<Login />} />
           <Route path='/forgot-password' element={<ForgotPassword />} />
           <Route path='/verify-otp' element={<VerifyOtp />} />
@@ -33,7 +33,7 @@ export default function Routers() {
           <Route path='/register' element={<Register />} />
         </Route>
         
-         <Route element={<DashboardLayout />}>
+         <Route element={<ProtectRoutes />}>
             <Route path='/dashboard' element={<Dashboard />} />
             <Route path='/ara' element={<Ara />} />
             <Route path="/sentiment-analysis" element={<Sentiment />} />
