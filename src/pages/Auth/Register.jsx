@@ -70,7 +70,7 @@ const Register = () => {
 
         {/* Formik Form */}
         <Formik
-          initialValues={{ fullName: '', email: '', job: '', phone: '', password: '' }}
+          initialValues={{ fullName: '', email: '', job: '', phone: '', password: '', confirmPassword: '' }}
           validationSchema={formValidationSchema}
           onSubmit={(values, action) => {
             submitForm(values, action)
