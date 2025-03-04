@@ -14,6 +14,7 @@ import LogoWhite from "../../assets/svg/logo_white.svg"
 
 import Jane from "../../assets/png/jane.png"
 import { logout } from '../../features/auth/loginSlice'
+import { useDispatch } from 'react-redux'
 
 // import { logout } from '../../features/auth/loginSlice'
 
@@ -21,17 +22,13 @@ const Sidebar = ({ closeSidebar }) => {
 
   const location = useLocation()
   const navigate = useNavigate()
-//   const dispatch = useDispatch();
-
-//   const { user } = useSelector((state) => state.userLogin)
-
+  const dispatch = useDispatch();
 
 
     const handleLogout = () => {
-        // dispatch(logout());
+        dispatch(logout());
         Cookies.remove("userProps");
         Cookies.remove("token");
-        logout()
         navigate("/"); 
     };
 
