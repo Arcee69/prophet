@@ -140,12 +140,12 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className='bg-[#34B6FE] rounded-[18px] w-3/12 h-[220px] p-3 overflow-hidden cursor-pointer relative'  onClick={() => navigate("#")}>
+        <div className='bg-[#34B6FE] rounded-[18px] w-3/12 h-[220px] p-3 overflow-hidden cursor-pointer relative'  onClick={() => navigate("/brand-monitoring")}>
           <img src={GlobeBig} alt='GlobeBig' className='absolute w-[155px] h-[155px] -top-14 -left-3' />
           <div className='absolute bottom-2 right-2 gap-[3px] flex flex-col items-end'>
             <img src={GlobeSmall} alt='GlobeSmall' className='w-[84px] h-[84px]' />
             <p className='font-jost font-medium text-base leading-[23px] text-white'>
-              Multi-Channel Monitoring
+              Brand Monitoring
             </p>
           </div>
         </div>
