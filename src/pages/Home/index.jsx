@@ -44,7 +44,7 @@ const Home = () => {
                 <p className='text-center font-medium font-jost uppercase text-[54px] leading-[76px] text-[#000000]'>
                     Turn Brand Intelligence Into Business Impact
                 </p>
-                <p className='font-jost text-[#000000] font-bold text-[22px] leading-[29px] text-center'>
+                <p className='font-jost text-[#000000] text-[22px] leading-[29px] text-center'>
                     AI-powered real-time media monitoring, sentiment analysis, 
                     and predictive insights across TV, radio, print, and online.
                 </p>

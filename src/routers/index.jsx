@@ -14,6 +14,8 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import AuthPageLayout from '../layouts/AuthPageLayout';
 import Ara from '../pages/Ara';
 import Sentiment from '../pages/Sentiment';
+import Brandwatch from '../pages/Brandwatch';
+import Reports from '../pages/Reports';
 
 export default function Routers() {
 
@@ -37,6 +39,8 @@ export default function Routers() {
             <Route path='/dashboard' element={<Dashboard />} />
             <Route path='/ara' element={<Ara />} />
             <Route path="/sentiment-analysis" element={<Sentiment />} />
+            <Route path="/brandwatch" element={<Brandwatch/>} />
+            <Route path="/reports" element={<Reports />} />
         </Route>
 
     
