@@ -15,6 +15,7 @@ import LogoWhite from "../../assets/svg/logo_white.svg"
 import Jane from "../../assets/png/jane.png"
 import { logout } from '../../features/auth/loginSlice'
 import { useDispatch, useSelector } from 'react-redux'
+import { FaRegCircleUser } from 'react-icons/fa6'
 
 // import { logout } from '../../features/auth/loginSlice'
 
@@ -113,9 +114,10 @@ const Sidebar = ({ closeSidebar }) => {
                 </div> */}
 
                 <div className='flex items-center gap-2 cursor-pointer' onClick={handleLogout}>
-                    <img src={Jane} alt='Profile' className='w-[40px] h-[40px] rounded-full' />
+                    <FaRegCircleUser className="w-8 h-8 text-[#fff]"/>
+                    {/* <img src={Jane} alt='Profile' className='w-[40px] h-[40px] rounded-full' /> */}
                     <div className='flex flex-col gap-1'>
-                        <p className='font-inter text-[#FFF] text-sm font-medium'>{`${user?.data?.email}`}</p>
+                        <p className='font-inter text-[#FFF] text-sm font-medium'>{`${user?.data?.name}`}</p>
                     </div>
                 </div>
 
