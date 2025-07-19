@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { use } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { PiUsersThree } from 'react-icons/pi'
 import Cookies from 'js-cookie'
@@ -14,7 +14,7 @@ import LogoWhite from "../../assets/svg/logo_white.svg"
 
 import Jane from "../../assets/png/jane.png"
 import { logout } from '../../features/auth/loginSlice'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 // import { logout } from '../../features/auth/loginSlice'
 
@@ -23,6 +23,9 @@ const Sidebar = ({ closeSidebar }) => {
   const location = useLocation()
   const navigate = useNavigate()
   const dispatch = useDispatch();
+
+  const { user } = useSelector((state) => state.userLogin);
+  console.log(user, "user in sidebar")
 
 
     const handleLogout = () => {
@@ -112,7 +115,7 @@ const Sidebar = ({ closeSidebar }) => {
                 <div className='flex items-center gap-2 cursor-pointer' onClick={handleLogout}>
                     <img src={Jane} alt='Profile' className='w-[40px] h-[40px] rounded-full' />
                     <div className='flex flex-col gap-1'>
-                        <p className='font-inter text-[#FFF] text-sm font-medium'>{`Oma@rayna.ui`}</p>
+                        <p className='font-inter text-[#FFF] text-sm font-medium'>{`${user?.data?.email}`}</p>
                     </div>
                 </div>
 

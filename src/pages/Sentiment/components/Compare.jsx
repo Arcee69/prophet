@@ -27,7 +27,7 @@ import Normal from "../../../assets/svg/normal.svg"
 
 const Compare = ({ search }) => {
     const [activeTab, setActiveTab] = useState(1)
-    const [selectedBrand, setSelectedBrand] = useState("")
+    const [compareBrand, setCompareBrand] = useState("")
     const [selectedTime, setSelectedTime] = useState("This Week")
     const [dateChange, setDateChange] = useState(1)
     const [startDate, setStartDate] = useState(new Date());
@@ -123,7 +123,7 @@ const Compare = ({ search }) => {
   return (
     <div className='w-full flex flex-col gap-[32px]'>
         <div className='bg-[#fff] h-[88px] rounded-[8px] flex justify-between p-[25px]'>
-            <p className='font-jost font-semibold text-[#1F2937] leading-[32px] text-[24px]'>{search} : {selectedBrand || null}</p>
+            <p className='font-jost font-semibold text-[#1F2937] leading-[32px] text-[24px]'>{search} : {compareBrand || null}</p>
             <div className='flex items-center'>
                 <div className='flex items-center gap-1 w-[101px] h-[40px]'>
                     <AiOutlineDownload className='w-5 h-5 text-[#374151]'/>
@@ -145,16 +145,17 @@ const Compare = ({ search }) => {
                 <p className='text-[18px] font-lato text-[#263238]'>{search}</p>
                 <CiMenuKebab className='text-[#98A2B3] w-5 h-5' />
             </div>
-            <select
-                value={selectedBrand}
-                onChange={(e) => setSelectedBrand(e.target.value)}
-                className='bg-[#fff] w-6/12 rounded-[8px] py-[14px] px-[17px] text-[18px] font-lato text-[#F48A1F] flex items-center outline-none'
+            <div
+                className='bg-[#fff] w-6/12 rounded-[8px] py-[14px] px-[17px] flex items-center'
             >
-                <option value="">Compare with another Search</option>
-                {brands.map(brand => (
-                    <option key={brand} value={brand}>{brand}</option>
-                ))}
-            </select>
+                <input
+                    type='text'
+                    placeholder='Compare with another brand'
+                    className='w-full  outline-none font-lato text-[#F48A1F] text-[18px]'
+                    value={compareBrand}
+                    onChange={(e) => setCompareBrand(e.target.value)}
+                />
+            </div>
         </div>
 
         <div className='bg-[#fff] rounded-[8px] flex flex-col p-6 gap-2 w-full'>
