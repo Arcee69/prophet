@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { AiOutlineDownload } from 'react-icons/ai'
 import { FaLaugh, FaLongArrowAltUp } from 'react-icons/fa'
 import { IoIosArrowDown } from 'react-icons/io'
@@ -11,6 +11,8 @@ import { GoTag } from 'react-icons/go'
 import { FiCheckCircle } from 'react-icons/fi'
 import { IoDocumentTextOutline } from 'react-icons/io5'
 import { FiBarChart2 } from 'react-icons/fi'
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 //Svgs
 import Facebook from "../../assets/svg/facebook.svg"
@@ -36,6 +38,51 @@ const Reports = () => {
   const handleGenerateReport = () => {
     setReport(prev => !prev)
   }
+
+  const reportRef = useRef(null);
+
+  // const handleDownloadPDF = async () => {
+  //   const input = reportRef.current;
+  //   const canvas = await html2canvas(input, { scale: 2 });
+  //   const imgData = canvas.toDataURL('image/png');
+
+  //   const pdf = new jsPDF('p', 'mm', 'a4');
+  //   const pdfWidth = pdf.internal.pageSize.getWidth();
+  //   const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+  //   pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+  //   pdf.save('report.pdf');
+  // };
+
+  const handleDownloadPDF = async () => {
+    const input = reportRef.current;
+
+    const canvas = await html2canvas(input, { scale: 2, useCORS: true });
+    const imgData = canvas.toDataURL('image/png');
+
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const pageWidth = pdf.internal.pageSize.getWidth();
+
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    // First page
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save('report.pdf');
+  };
 
   
   // Line Chart Data
@@ -277,7 +324,7 @@ const Reports = () => {
       </div>
 
       {report && (
-        <div className='border border-[#E0E0E0] rounded-xl  w-full p-5 flex flex-col gap-5'>
+        <div className='border border-[#E0E0E0] rounded-xl  w-full p-5 flex flex-col gap-5' ref={reportRef}>
 
           <div className='flex items-center justify-between'>
             <div className='flex gap-2 flex-col '>
@@ -287,7 +334,7 @@ const Reports = () => {
             <button
               type='button'
               className='w-[157px] h-[40px] bg-[#111827] rounded-[8px] p-2 flex items-center gap-2 justify-center'
-              onClick={() => { }}
+              onClick={handleDownloadPDF}
             >
               <AiOutlineDownload className='w-5 h-5 text-white' />
               <p className='font-jost text-white text-base font-medium'>Export Report</p>
