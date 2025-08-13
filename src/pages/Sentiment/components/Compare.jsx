@@ -49,11 +49,11 @@ const Compare = ({ search }) => {
       const [lineChartData] = useState({
         series: [
           {
-            name: 'Positive',
+            name: 'Samsung',
             data: [10, 20, 15, 25, 20, 30]
           },
           {
-            name: 'Negative',
+            name: 'Apple',
             data: [5, 10, 8, 12, 10, 15]
           },
         ],
@@ -73,9 +73,9 @@ const Compare = ({ search }) => {
             position: 'top',
           },
           xaxis: {
-            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',]
           },
-          colors: ['#1E5631', '#FF4E4C'],
+          colors: ['#BDDAFF', '#F2E5FF' ],
         }
       })
     
@@ -83,11 +83,11 @@ const Compare = ({ search }) => {
       const [barChartData] = useState({
         series: [
           {
-            name: 'Positive',
+            name: 'Samsung',
             data: [40, 30, 25, 15,]
           },
           {
-            name: 'Negative',
+            name: 'Apple',
             data: [15, 20, 10, 5]
           },
         
@@ -96,7 +96,7 @@ const Compare = ({ search }) => {
           chart: {
             type: 'bar',
             height: 350,
-            stacked: true,
+            stacked: false,
             toolbar: { show: false },
           },
           plotOptions: {
@@ -116,7 +116,7 @@ const Compare = ({ search }) => {
           xaxis: {
             categories: ['Social Media', 'News', 'Blogs', 'Radio' ],
           },
-          colors: ['#1E5631', '#FF4E4C'],
+          colors: ['#BDDAFF', '#F2E5FF' ],
         }
       })
 
@@ -300,47 +300,47 @@ const Compare = ({ search }) => {
        
 
         {/* Charts Row */}
-            <div className='flex gap-4'>
-            {/* Sentiment Analysis Overview (Line Chart) */}
-            <div className='bg-white rounded-[18px] w-1/2 p-4 shadow-sm'>
-                <div className='flex justify-between items-start'>
-                    <p className='font-jost font-medium text-[20px] mb-4 text-[#4B5563]'>
-                        Results Over Time
-                    </p>
-                    <select
-                        value={selectedTime}
-                        onChange={(e) => setSelectedTime(e.target.value)}
-                        className='font-jost text-[#252F3D]  text-xs cursor-pointer bg-transparent border-none outline-none'
-                    >
-                        {["This Week", "This Month"].map(year => (
-                            <option key={year} value={year}>{year}</option>
-                        ))}
-                    </select>
-                </div>
-                <Chart
-                options={lineChartData.options}
-                series={lineChartData.series}
-                type='line'
-                height={300}
-                />
-            </div>
-    
-            {/* Channel Sentiment Distribution (Bar Chart) */}
-            <div className='bg-white rounded-[18px] w-1/2 p-4 shadow-sm'>
-                <div className='flex items-start justify-between'>
-                <p className='font-jost font-medium text-[20px] mb-4 text-[#4B5563]'>
-                    Channel Sentiment Distribution
-                </p>
-                <p className='text-[#6B7280] font-jost text-sm'>Total Mentions: 6,200</p>
-                </div>
-                <Chart
-                options={barChartData.options}
-                series={barChartData.series}
-                type='bar'
-                height={300}
-                />
-            </div>
-            </div>
+          <div className='flex gap-4'>
+              {/* Sentiment Analysis Overview (Line Chart) */}
+              <div className='bg-white rounded-[18px] w-1/2 p-4 shadow-sm'>
+                  <div className='flex justify-between items-start'>
+                      <p className='font-jost font-medium text-[20px] mb-4 text-[#4B5563]'>
+                          Results Over Time
+                      </p>
+                      <select
+                          value={selectedTime}
+                          onChange={(e) => setSelectedTime(e.target.value)}
+                          className='font-jost text-[#252F3D]  text-xs cursor-pointer bg-transparent border-none outline-none'
+                      >
+                          {["This Week", "This Month"].map(year => (
+                              <option key={year} value={year}>{year}</option>
+                          ))}
+                      </select>
+                  </div>
+                  <Chart
+                      options={lineChartData.options}
+                      series={lineChartData.series}
+                      type='line'
+                      height={300}
+                  />
+              </div>
+
+              {/* Channel Sentiment Distribution (Bar Chart) */}
+              <div className='bg-white rounded-[18px] w-1/2 p-4 shadow-sm'>
+                  <div className='flex items-start justify-between'>
+                      <p className='font-jost font-medium text-[20px] mb-4 text-[#4B5563]'>
+                          Channel Sentiment Distribution
+                      </p>
+                      <p className='text-[#6B7280] font-jost text-sm'>Total Mentions: 6,200</p>
+                  </div>
+                  <Chart
+                      options={barChartData.options}
+                      series={barChartData.series}
+                      type='bar'
+                      height={300}
+                  />
+              </div>
+          </div>
     
         {/* Top Mentions */}
             <div className='flex flex-col gap-[11px] '>

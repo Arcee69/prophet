@@ -98,11 +98,11 @@ const Sidebar = ({ closeSidebar }) => {
                 </div>
 
                 <div 
-                    className={`${location.pathname === "/help"  ? "bg-[#F48A1F]" : ""} flex items-center gap-3 group hover:bg-[#F48A1F] p-2  cursor-pointer rounded-lg h-auto`} 
-                    onClick={() => {navigate("/help"); closeSidebar()}}
+                    className={`${location.pathname === "/contact"  ? "bg-[#F48A1F]" : ""} flex items-center gap-3 group hover:bg-[#F48A1F] p-2  cursor-pointer rounded-lg h-auto`} 
+                    onClick={() => {navigate("/contact"); closeSidebar()}}
                 >
-                    <img src={Headset} className={`${location.pathname === "/help" ? "text-[#fff]" : ""} w-4 h-4 text-[#E4E7EC] group-hover:text-[#fff]`} />
-                    <p className={`${location.pathname === "/help" ? "text-[#fff]" : ""} font-inter text-[#E4E7EC] group-hover:text-[#fff] font-medium text-sm`}>Help Center</p>
+                    <img src={Headset} className={`${location.pathname === "/contact" ? "text-[#fff]" : ""} w-4 h-4 text-[#E4E7EC] group-hover:text-[#fff]`} />
+                    <p className={`${location.pathname === "/contact" ? "text-[#fff]" : ""} font-inter text-[#E4E7EC] group-hover:text-[#fff] font-medium text-sm`}>Contact</p>
                 </div>
 
                 {/* <div 

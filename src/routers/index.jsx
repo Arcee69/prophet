@@ -17,7 +17,8 @@ import Sentiment from '../pages/Sentiment';
 import Brandwatch from '../pages/Brandwatch';
 import Reports from '../pages/Reports';
 import Settings from '../pages/Settings';
-import Help from '../pages/Help';
+import Contact from '../pages/Contact';
+
 
 export default function Routers() {
 
@@ -44,7 +45,7 @@ export default function Routers() {
             <Route path="/brandwatch" element={<Brandwatch/>} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/help" element={<Help />} />
+            <Route path="/contact" element={<Contact />} />
         </Route>
 
     
