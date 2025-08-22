@@ -122,12 +122,20 @@ const Brandwatch = () => {
                     />
                 </div>
             </div>
-            <button
-                className='flex items-center px-4 py-2 rounded-lg bg-[#111827] w-[138px] justify-center gap-2'
-            >
-                <p className='font-jost font-medium text-base text-[#fff] whitespace-nowrap leading-[145%]'>Export Data</p>
-                <MdOutlineFileDownload className='text-[#fff] w-5 h-5' />
-            </button>
+            <div className='flex items-center gap-4'>
+                <button
+                    className='flex items-center px-4 py-2 rounded-lg bg-[#F48A1F] w-[200px] justify-center gap-2'
+                >
+                    <p className='font-jost font-medium text-base text-[#fff] whitespace-nowrap leading-[145%]'>Request Brand Addition</p>
+                    <MdOutlineFileDownload className='text-[#fff] w-5 h-5' />
+                </button>
+                <button
+                    className='flex items-center px-4 py-2 rounded-lg bg-[#111827] w-[138px] justify-center gap-2'
+                >
+                    <p className='font-jost font-medium text-base text-[#fff] whitespace-nowrap leading-[145%]'>Export Data</p>
+                    <MdOutlineFileDownload className='text-[#fff] w-5 h-5' />
+                </button>
+            </div>
         </div>
 
         {/* Search */}
@@ -137,7 +145,7 @@ const Brandwatch = () => {
                     type="text"
                     onChange={(e) => setSearch(e.target.value)}
                     value={search}
-                    placeholder="Search brands, keywords, or hashtags"
+                    placeholder="Search brands"
                     className="w-full bg-[#fcfcfc] pl-[38px] outline-none font-jost"
                 />
             </div>
