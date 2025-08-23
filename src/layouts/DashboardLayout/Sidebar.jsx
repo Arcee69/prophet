@@ -1,4 +1,4 @@
-import React, { use } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { PiUsersThree } from 'react-icons/pi'
 import Cookies from 'js-cookie'
@@ -20,6 +20,9 @@ import { FaRegCircleUser } from 'react-icons/fa6'
 // import { logout } from '../../features/auth/loginSlice'
 
 const Sidebar = ({ closeSidebar }) => {
+    const [showLogout, setShowLogout] = useState(false)
+    const logoutRef = useRef(null)
+
 
   const location = useLocation()
   const navigate = useNavigate()
@@ -27,6 +30,25 @@ const Sidebar = ({ closeSidebar }) => {
 
   const { user } = useSelector((state) => state.userLogin);
   console.log(user, "user in sidebar")
+
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (logoutRef.current && !logoutRef.current.contains(event.target)) {
+                setShowLogout(false);
+            }
+        };
+
+        if (showLogout) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showLogout]);
 
 
     const handleLogout = () => {
@@ -113,12 +135,16 @@ const Sidebar = ({ closeSidebar }) => {
                     <p className={`${location.pathname === "/refer" ? "text-[#fff]" : ""} font-inter text-[#E4E7EC] group-hover:text-[#fff] font-medium text-sm`}>Refer family and friends</p>
                 </div> */}
 
-                <div className='flex items-center gap-2 cursor-pointer' onClick={handleLogout}>
+                <div ref={logoutRef} className='relative flex items-center gap-2 cursor-pointer' onClick={() => setShowLogout(!showLogout)}>
                     <FaRegCircleUser className="w-8 h-8 text-[#fff]"/>
-                    {/* <img src={Jane} alt='Profile' className='w-[40px] h-[40px] rounded-full' /> */}
                     <div className='flex flex-col gap-1'>
                         <p className='font-inter text-[#FFF] text-sm font-medium'>{`${user?.data?.name}`}</p>
                     </div>
+                    {showLogout && (
+                        <div className='absolute w-[100px] bottom-full right-0 mt-2 bg-white border border-gray-200 flex justify-center rounded shadow-lg p-2 z-10'>
+                            <button onClick={handleLogout} type='button' className='text-RED-_100 cursor-pointer hover:text-RED-_100'>Logout</button>
+                        </div>
+                    )}
                 </div>
 
             </div>

@@ -78,7 +78,7 @@ const Ara = () => {
         </h1>
 
       {/* Gradient Subheading */}
-        <h2 className="text-[48px] font-semibold font-jost leading-[46px] mb-6">
+        <h2 className="text-[48px] font-semibold font-jost leading-[58px] mb-6">
             <span style={{ 
                 backgroundImage: 'linear-gradient(90deg, #EC6124, #FBBC05, #8E0615)',
                 WebkitBackgroundClip: 'text',
@@ -87,14 +87,13 @@ const Ara = () => {
                 display: 'inline-block'
             }}
             >
-              Your dedicated voice assistant
+              Africa’s first intelligent insight robot
             </span>
         </h2>
 
       {/* Subtext */}
       <p className="text-center text-[#758299] font-lato mb-8 max-w-xl px-4">
-        I'm here to help with your customer support inquires and provide data-driven
-        insights on media and PR trends. How can i assist you today?
+        Powered by Prophet, I turn culture, data, and foresight into clarity for brands, governments, and people. Ask me anything, I don’t just answer, I reveal.
       </p>
 
       {/* Status Text */}
