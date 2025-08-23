@@ -12,6 +12,8 @@ import {
 } from 'recharts';
 
 import Bubble from '../../assets/svg/bubble.svg'
+import ModalPop from '../../components/modalPop';
+import AddBrandRequest from './components/AddBrandRequest';
 
 
 const Brandwatch = () => {
@@ -19,6 +21,7 @@ const Brandwatch = () => {
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
     const [search, setSearch] = useState("");
+    const [openAddBrandRequestModal, setOpenAddBrandRequestModal] = useState(false)
 
     const handleDateChange = (value) => {
         setDateChange(value)
@@ -125,6 +128,7 @@ const Brandwatch = () => {
             <div className='flex items-center gap-4'>
                 <button
                     className='flex items-center px-4 py-2 rounded-lg bg-[#F48A1F] w-[200px] justify-center gap-2'
+                    onClick={() => setOpenAddBrandRequestModal(true)}
                 >
                     <p className='font-jost font-medium text-base text-[#fff] whitespace-nowrap leading-[145%]'>Request Brand Addition</p>
                     <MdOutlineFileDownload className='text-[#fff] w-5 h-5' />
@@ -314,6 +318,10 @@ const Brandwatch = () => {
                 }
             </div>
         </div>
+
+        <ModalPop isOpen={openAddBrandRequestModal}>
+            <AddBrandRequest handleClose={() => setOpenAddBrandRequestModal(false)} />
+        </ModalPop>
     </div>
   )
 }
