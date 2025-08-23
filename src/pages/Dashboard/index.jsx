@@ -447,7 +447,10 @@ const Dashboard = () => {
           <p className='text-[#6B7280] font-jost text-center text-sm mt-1'>
             Upgrade to Pro to track more brands and <br/> competitors
           </p>
-          <button className='mt-4 bg-[#F97316] font-jost text-white py-2 px-4 rounded-lg font-medium text-base flex items-center gap-1'>
+          <button 
+            onClick={() => {navigate("/brandwatch"), window.scrollTo(0, 0)}}
+            className='mt-4 bg-[#F97316] font-jost text-white py-2 px-4 rounded-lg font-medium text-base flex items-center gap-1'
+          >
             Add Brand <AiOutlinePlus />
           </button>
         </div>

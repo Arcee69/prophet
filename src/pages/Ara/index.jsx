@@ -67,7 +67,7 @@ const Ara = () => {
         <h1 
             className="text-[48px] font-semibold font-jost leading-[46px]"
             style={{ 
-                backgroundImage: 'linear-gradient(90deg, #7E24EC, #7405FB, #43068E)', //'linear-gradient(90deg, #EC6124, #FBBC05, #8E0615)'
+                backgroundImage: 'linear-gradient(90deg, #EC6124, #FBBC05, #8E0615)',
                 WebkitBackgroundClip: 'text',
                 backgroundClip: 'text',
                 color: 'transparent',
@@ -80,7 +80,7 @@ const Ara = () => {
       {/* Gradient Subheading */}
         <h2 className="text-[48px] font-semibold font-jost leading-[58px] mb-6">
             <span style={{ 
-                backgroundImage: 'linear-gradient(90deg, #7E24EC, #7405FB, #43068E)',
+                backgroundImage: 'linear-gradient(90deg, #EC6124, #FBBC05, #8E0615)',   //'linear-gradient(90deg, #7E24EC, #7405FB, #43068E)',
                 WebkitBackgroundClip: 'text',
                 backgroundClip: 'text',
                 color: 'transparent',
