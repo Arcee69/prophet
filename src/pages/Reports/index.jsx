@@ -227,11 +227,11 @@ const Reports = () => {
           <div className='flex items-center gap-4 w-full'>
             <div className='flex flex-col gap-2 w-6/12'>
               <p className='font-jost font-medium text-sm leading-[150%] text-[#374151]'>Date Range</p>
-              <div className='flex items-center w-full rounded-[10px] border border-[#D1D5DB] p-3'>
+              <div className='flex items-center w-full bg-transparent  rounded-[10px] border border-[#D1D5DB] p-3'>
                 <select
                   name='date'
                   value={dateRange}
-                  className='appearance-none w-full outline-none font-jost text-base text-[#111827]'
+                  className='appearance-none w-full bg-transparent outline-none font-jost text-base text-[#111827]'
                   onChange={(e) => setDateRange(e.target.value)}
                 >
                   <option value="Last 7 Days">Last 7 Days</option>
@@ -245,11 +245,11 @@ const Reports = () => {
             </div>
             <div className='flex flex-col gap-2 w-6/12'>
               <p className='font-jost font-medium text-sm leading-[150%] text-[#374151]'>Brands</p>
-              <div className='flex items-center w-full rounded-[10px] border border-[#D1D5DB] p-3'>
+              <div className='flex items-center w-full bg-transparent rounded-[10px] border border-[#D1D5DB] p-3'>
                 <select
                   name='brands'
                   value={brands}
-                  className='appearance-none w-full outline-none font-jost text-base text-[#111827]'
+                  className='appearance-none w-full outline-none bg-transparent font-jost text-base text-[#111827]'
                   onChange={(e) => setBrands(e.target.value)}
                 >
                   <option value="Cadbury:Dangote">Cadbury:Dangote</option>
@@ -263,11 +263,11 @@ const Reports = () => {
           <div className='flex items-center gap-4 w-full'>
             <div className='flex flex-col gap-2 w-3/12'>
               <p className='font-jost font-medium text-sm leading-[150%] text-[#374151]'>Sentiment</p>
-              <div className='flex items-center w-full rounded-[10px] border border-[#D1D5DB] p-3'>
+              <div className='flex items-center w-full bg-transparent rounded-[10px] border border-[#D1D5DB] p-3'>
                 <select
                   name='sentiment'
                   value={sentiment}
-                  className='appearance-none w-full outline-none font-jost text-base text-[#111827]'
+                  className='appearance-none w-full outline-none bg-transparent font-jost text-base text-[#111827]'
                   onChange={(e) => setSentiment(e.target.value)}
                 >
                   <option value="All Sentiment">All Sentiments</option>
@@ -277,11 +277,11 @@ const Reports = () => {
             </div>
             <div className='flex flex-col gap-2 w-3/12'>
               <p className='font-jost font-medium text-sm leading-[150%] text-[#374151]'>Source</p>
-              <div className='flex items-center w-full rounded-[10px] border border-[#D1D5DB] p-3'>
+              <div className='flex items-center w-full rounded-[10px] bg-transparent border border-[#D1D5DB] p-3'>
                 <select
                   name='source'
                   value={source}
-                  className='appearance-none w-full outline-none font-jost text-base text-[#111827]'
+                  className='appearance-none w-full outline-none bg-transparent font-jost text-base text-[#111827]'
                   onChange={(e) => setSource(e.target.value)}
                 >
                   <option value="All sources">All sources</option>
@@ -291,11 +291,11 @@ const Reports = () => {
             </div>
             <div className='flex flex-col gap-2 w-3/12'>
               <p className='font-jost font-medium text-sm leading-[150%] text-[#374151]'>Region</p>
-              <div className='flex items-center w-full rounded-[10px] border border-[#D1D5DB] p-3'>
+              <div className='flex items-center w-full rounded-[10px] bg-transparent border border-[#D1D5DB] p-3'>
                 <select
                   name='regions'
                   value={regions}
-                  className='appearance-none w-full outline-none font-jost text-base text-[#111827]'
+                  className='appearance-none w-full outline-none font-jost bg-transparent text-base text-[#111827]'
                   onChange={(e) => setRegions(e.target.value)}
                 >
                   <option value="All Regions">All Regions</option>
@@ -305,11 +305,11 @@ const Reports = () => {
             </div>
             <div className='flex flex-col gap-2 w-3/12'>
               <p className='font-jost font-medium text-sm leading-[150%] text-[#374151]'>Alert Type</p>
-              <div className='flex items-center w-full rounded-[10px] border border-[#D1D5DB] p-3'>
+              <div className='flex items-center w-full rounded-[10px] bg-[#fcfcfc] border border-[#D1D5DB] p-3'>
                 <select
                   name='alertType'
                   value={alertType}
-                  className='appearance-none w-full outline-none font-jost text-base text-[#111827]'
+                  className='appearance-none w-full outline-none bg-[#fcfcfc] font-jost text-base text-[#111827]'
                   onChange={(e) => setAlertType(e.target.value)}
                 >
                   <option value="All types">All types</option>
