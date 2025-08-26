@@ -108,7 +108,7 @@ const Blogs = () => {
                 <div className='mt-[64px] flex items-center justify-between'>
                     <div className='flex flex-col gap-10'>
                         <div className='flex flex-col gap-6'>
-                            <p className='font-jost text-[#101828] font-semibold'>No long-term contracts.No catches.</p>
+                              <p className='font-jost text-[#101828] text-[48px] leading-[60px] font-semibold'>No long-term contracts. <br /> No catches.</p>
                             <p className='text-GREY-_500 font-jost text-[20px] leading-[30px]'>Join over 4,000+ companies already growing with Prophet.</p>
                         </div>
                         <div className='flex gap-3 items-center'>

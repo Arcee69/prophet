@@ -20,6 +20,7 @@ import Settings from '../pages/Settings';
 import Contact from '../pages/Contact';
 import Pricing from '../pages/Pricing';
 import Blogs from '../pages/Blogs';
+import About from '../pages/About';
 
 
 export default function Routers() {
@@ -32,6 +33,7 @@ export default function Routers() {
           <Route path="/" element={<Home />} />
           <Route path='/pricing' element={<Pricing />} />
           <Route path='/blogs' element={<Blogs />} />
+          <Route path='/about' element={<About />} />
         </Route>
 
         <Route element={<AuthProtectRoutes />}>
