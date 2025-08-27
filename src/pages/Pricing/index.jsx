@@ -56,30 +56,30 @@ const Pricing = () => {
                 <p className='text-ORANGE-_100 font-jost text-base leading-6 font-semibold'>Pricing</p>
                 <p className='mt-3 text-GREY-_900 font-jost leading-[60px] text-[48px] tracking-[-2%] font-semibold'> Simple, transparent pricing</p>
                 <p className='mt-6 text-GREY-_500 text-[20px] leading-[30px] font-jost'>Ara by Prophet offers flexible pricing models to fit your needs.</p>
-                <div className='mt-10 rounded-[8px] w-[794px] flex gap-2 p-[6px] bg-GREY-_300'>
+                <div className='mt-10 rounded-[8px] w-[444px] flex gap-2 p-[6px] bg-GREY-_300'>
                     <div onClick={() => handleTabChange("monthly")} className={`${activeTab === "monthly" ? "bg-white" : ""} py-2.5 px-[14px] cursor-pointer rounded flex items-center justify-center`}>
                         <p className={`${activeTab === "monthly" ? "text-GREY-_700" : "text-GREY-_500"} font-jost text-base leading-6`}>Monthly billing</p>
                     </div>
                     <div onClick={() => handleTabChange("annual")} className={`${activeTab === "annual" ? "bg-white" : ""} py-2.5 px-[14px] cursor-pointer flex rounded items-center justify-center`}>
                         <p className={`${activeTab === "annual" ? "text-GREY-_700" : "text-GREY-_500"} font-jost text-base leading-6`}>Annual billing</p>
                     </div>
-                    <div className={`${activeTab === "oneTime" ? "bg-white" : ""} py-2.5 px-[14px] cursor-pointer flex rounded items-center justify-center`}>
-                        <p className={`${activeTab === "oneTime" ? "text-GREY-_700" : "text-GREY-_500"} font-jost text-base leading-6`}>One Demand Report</p>
+                    <div onClick={() => handleTabChange("oneTime")} className={`${activeTab === "oneTime" ? "bg-white" : ""} py-2.5 px-[14px] cursor-pointer flex rounded items-center justify-center`}>
+                        <p className={`${activeTab === "oneTime" ? "text-GREY-_700" : "text-GREY-_500"} font-jost text-base leading-6`}>One time Services</p>
                     </div>
-                    <div className={`${activeTab === "enterprise" ? "bg-white" : ""} py-2.5 px-[14px] cursor-pointer flex rounded items-center justify-center`}>
+                    {/* <div className={`${activeTab === "enterprise" ? "bg-white" : ""} py-2.5 px-[14px] cursor-pointer flex rounded items-center justify-center`}>
                         <p className={`${activeTab === "enterprise" ? "text-GREY-_700" : "text-GREY-_500"} font-jost text-base leading-6`}>Enterprise Solutions</p>
                     </div>
                     <div className={`${activeTab === "onSite" ? "bg-white" : ""} py-2.5 px-[14px] cursor-pointer flex rounded items-center justify-center`}>
                         <p className={`${activeTab === "onSite" ? "text-GREY-_700" : "text-GREY-_500"} font-jost text-base leading-6`}>On Site Engagement</p>
-                    </div>
+                    </div> */}
                 </div>
             </div>
             <div className='bg-white px-20'>
                 {activeTab === "monthly" && <Monthly />}
                 {activeTab === "annual" && <Annual />}
                 {activeTab === "oneTime" && <OneTime />}
-                {activeTab === "enterprise" && <Enterprise />}
-                {activeTab === "onSite" && <Onsite />}
+                {/* {activeTab === "enterprise" && <Enterprise />}
+                {activeTab === "onSite" && <Onsite />} */}
             </div>
 
             <div className='flex flex-col items-center justify-center mt-[48px] gap-16'>
