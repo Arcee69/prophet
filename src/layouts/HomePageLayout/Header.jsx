@@ -13,7 +13,7 @@ const Header = () => {
             <img src={Logo} alt='Logo' className='w-[114px] h-[67px]' />
             <div className='flex items-center gap-6'>
                 <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => navigate("/about")}>About</p>
-                <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => navigate("")}>Our Suite</p>
+                <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => navigate("/our-suite")}>Our Suite</p>
                 <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => navigate("")}>Use Cases</p>
                 <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => navigate("/pricing")}>Pricing</p>
                 <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => navigate("/blogs")}>Blog</p>

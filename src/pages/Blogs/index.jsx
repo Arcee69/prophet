@@ -32,7 +32,7 @@ const Blogs = () => {
         <div className='flex flex-col h-[340px] pt-[150px] bg-[#F2F2F2] gap-6 items-center'>
             <div className='flex flex-col items-center gap-3'>
                 <p className='text-[#E57E46] font-jost text-base font-semibold leading-6'>Resources</p>
-                <p className='text-GREY-_900 text-[48px] leading-[60px]'>Insights into the Future</p>
+                <p className='text-GREY-_900 text-[48px] font-semibold leading-[60px]'>Insights into the Future</p>
             </div>
             <p className='text-[#667085] font-jost text-[18px] leading-[28px]'>The latest industry news, interviews, technologies, and resources.</p>
         </div>
