@@ -9,13 +9,14 @@ const Header = () => {
 
   return (
     <div className='fixed z-50 w-full top-0 py-[20.5px] bg-[#F1F1F1]'>
-        <div className='w-[754px] h-[67px] flex items-center gap-[40px] mx-auto'>
+        <div className='w-[854px] h-[67px] flex items-center gap-[40px] mx-auto'>
             <img src={Logo} alt='Logo' className='w-[114px] h-[67px]' />
             <div className='flex items-center gap-6'>
                 <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => navigate("/about")}>About</p>
                 <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => navigate("")}>Our Suite</p>
                 <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => navigate("")}>Use Cases</p>
                 <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => navigate("/pricing")}>Pricing</p>
+                <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => navigate("/blogs")}>Blog</p>
                 <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => navigate("")}>Contact</p>
             </div>
             <div className='flex items-center gap-4'>

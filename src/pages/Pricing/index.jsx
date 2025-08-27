@@ -6,6 +6,9 @@ import AvatarGroup from '../../assets/png/avatar_group.png'
 import Monthly from './components/Monthly'
 import Annual from './components/Annual'
 import OneTime from './components/OneTime'
+import Onsite from './components/Onsite'
+import Enterprise from './components/Enterprise'
+import { useNavigate } from 'react-router-dom'
 
 const Pricing = () => {
     const [activeTab, setActiveTab] = useState("monthly")
@@ -44,22 +47,30 @@ const Pricing = () => {
         setOpenFaqSix(prev => !prev)
     }
 
+    const navigate = useNavigate()
+
   return (
     <div className='w-full pt-[150px] bg-white'>
         <div className='flex flex-col gap-[48px]'>
             <div className='flex justify-center flex-col items-center'>
                 <p className='text-ORANGE-_100 font-jost text-base leading-6 font-semibold'>Pricing</p>
                 <p className='mt-3 text-GREY-_900 font-jost leading-[60px] text-[48px] tracking-[-2%] font-semibold'> Simple, transparent pricing</p>
-                <p className='mt-6 text-GREY-_500 text-[20px] leading-[30px] font-jost'>We believe Untitled should be accessible to all companies, no matter the size.</p>
-                <div className='mt-10 rounded-[8px] w-[444px] flex gap-2 p-[6px] bg-GREY-_300'>
+                <p className='mt-6 text-GREY-_500 text-[20px] leading-[30px] font-jost'>Ara by Prophet offers flexible pricing models to fit your needs.</p>
+                <div className='mt-10 rounded-[8px] w-[794px] flex gap-2 p-[6px] bg-GREY-_300'>
                     <div onClick={() => handleTabChange("monthly")} className={`${activeTab === "monthly" ? "bg-white" : ""} py-2.5 px-[14px] cursor-pointer rounded flex items-center justify-center`}>
                         <p className={`${activeTab === "monthly" ? "text-GREY-_700" : "text-GREY-_500"} font-jost text-base leading-6`}>Monthly billing</p>
                     </div>
-                    <div className={`${activeTab === "annual" ? "bg-white" : ""} py-2.5 px-[14px] cursor-pointer flex rounded items-center justify-center`}>
+                    <div onClick={() => handleTabChange("annual")} className={`${activeTab === "annual" ? "bg-white" : ""} py-2.5 px-[14px] cursor-pointer flex rounded items-center justify-center`}>
                         <p className={`${activeTab === "annual" ? "text-GREY-_700" : "text-GREY-_500"} font-jost text-base leading-6`}>Annual billing</p>
                     </div>
                     <div className={`${activeTab === "oneTime" ? "bg-white" : ""} py-2.5 px-[14px] cursor-pointer flex rounded items-center justify-center`}>
-                        <p className={`${activeTab === "oneTime" ? "text-GREY-_700" : "text-GREY-_500"} font-jost text-base leading-6`}>One Time Service</p>
+                        <p className={`${activeTab === "oneTime" ? "text-GREY-_700" : "text-GREY-_500"} font-jost text-base leading-6`}>One Demand Report</p>
+                    </div>
+                    <div className={`${activeTab === "enterprise" ? "bg-white" : ""} py-2.5 px-[14px] cursor-pointer flex rounded items-center justify-center`}>
+                        <p className={`${activeTab === "enterprise" ? "text-GREY-_700" : "text-GREY-_500"} font-jost text-base leading-6`}>Enterprise Solutions</p>
+                    </div>
+                    <div className={`${activeTab === "onSite" ? "bg-white" : ""} py-2.5 px-[14px] cursor-pointer flex rounded items-center justify-center`}>
+                        <p className={`${activeTab === "onSite" ? "text-GREY-_700" : "text-GREY-_500"} font-jost text-base leading-6`}>On Site Engagement</p>
                     </div>
                 </div>
             </div>
@@ -67,6 +78,8 @@ const Pricing = () => {
                 {activeTab === "monthly" && <Monthly />}
                 {activeTab === "annual" && <Annual />}
                 {activeTab === "oneTime" && <OneTime />}
+                {activeTab === "enterprise" && <Enterprise />}
+                {activeTab === "onSite" && <Onsite />}
             </div>
 
             <div className='flex flex-col items-center justify-center mt-[48px] gap-16'>
@@ -176,10 +189,10 @@ const Pricing = () => {
                         <p className='text-GREY-_500 text-[20px] font-jost leading-[30px]'>Join over 4,000+ companies already growing with Prophet.</p>
                     </div>
                     <div className='flex gap-3 items-center'>
-                        <button className='bg-[#F2F2F2] w-[127px] rounded-lg flex items-center py-3 px-5'>
+                        <button onClick={() => navigate("/about")} className='bg-[#F2F2F2] w-[127px] rounded-lg flex items-center py-3 px-5'>
                             <p className='font-jost font-medium text-base leading-6 text-GREY-_700'>Learn more</p>
                         </button>
-                        <button className='bg-[#111827] w-[128px] rounded-lg flex items-center py-3 px-5'>
+                        <button onClick={() => navigate("/login")} className='bg-[#111827] w-[128px] rounded-lg flex items-center py-3 px-5'>
                             <p className='font-jost font-medium text-base leading-6 text-[#F2F2F2]'>Get started</p>
                         </button>
                     </div>

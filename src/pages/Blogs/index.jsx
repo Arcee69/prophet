@@ -7,11 +7,14 @@ import Content from "../../assets/png/content.png"
 
 import { MdArrowOutward } from 'react-icons/md'
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa6'
+import { useNavigate } from 'react-router-dom'
 
 const Blogs = () => {
     const [search, setSearch] = useState("")
     const [statusFilter, setStatusFilter] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
+
+    const navigate = useNavigate()
 
 
     const blogPost = [
@@ -112,10 +115,10 @@ const Blogs = () => {
                             <p className='text-GREY-_500 font-jost text-[20px] leading-[30px]'>Join over 4,000+ companies already growing with Prophet.</p>
                         </div>
                         <div className='flex gap-3 items-center'>
-                            <button className='bg-[#F2F2F2] w-[127px] rounded-lg flex items-center py-3 px-5'>
+                            <button onClick={() => navigate("/about")} className='bg-[#F2F2F2] w-[127px] rounded-lg flex items-center py-3 px-5'>
                                 <p className='font-jost font-medium text-base leading-6 text-GREY-_700'>Learn more</p>
                             </button>
-                            <button className='bg-[#111827] w-[128px] rounded-lg flex items-center py-3 px-5'>
+                            <button onClick={() => navigate("/login")} className='bg-[#111827] w-[128px] rounded-lg flex items-center py-3 px-5'>
                                 <p className='font-jost font-medium text-base leading-6 text-[#F2F2F2]'>Get started</p>
                             </button>
                         </div>
@@ -130,10 +133,10 @@ const Blogs = () => {
                         <p className='text-GREY-_500 text-[20px] font-jost leading-[30px]'>Join over 4,000+ companies already growing with Prophet.</p>
                     </div>
                     <div className='flex gap-3 items-center'>
-                        <button className='bg-[#F2F2F2] w-[127px] rounded-lg flex items-center py-3 px-5'>
+                        <button onClick={() => navigate("/about")} className='bg-[#F2F2F2] w-[127px] rounded-lg flex items-center py-3 px-5'>
                             <p className='font-jost font-medium text-base leading-6 text-GREY-_700'>Learn more</p>
                         </button>
-                        <button className='bg-[#111827] w-[128px] rounded-lg flex items-center py-3 px-5'>
+                        <button onClick={() => navigate("/login")} className='bg-[#111827] w-[128px] rounded-lg flex items-center py-3 px-5'>
                             <p className='font-jost font-medium text-base leading-6 text-[#F2F2F2]'>Get started</p>
                         </button>
                     </div>

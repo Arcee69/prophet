@@ -1,4 +1,5 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import Dash from "../../assets/png/dash.png"
 import Robot from "../../assets/png/robot.png"
@@ -6,6 +7,9 @@ import Trend from "../../assets/png/trends_chart.png"
 import Content from "../../assets/png/content.png"
 
 const About = () => {
+
+    const navigate = useNavigate()
+    
   return (
     <div className='w-full bg-white'>
         <div className='px-[80px] flex items-start justify-between pb-[96px] pt-[250px]'>
@@ -70,10 +74,10 @@ const About = () => {
                     <p className='text-GREY-_500 font-jost text-[20px] leading-[30px]'>Join over 4,000+ companies already growing with Prophet.</p>
                 </div>
                 <div className='flex gap-3 items-center'>
-                    <button className='bg-[#F2F2F2] w-[127px] rounded-lg flex items-center py-3 px-5'>
+                    <button onClick={() => navigate("/about")} className='bg-[#F2F2F2] w-[127px] rounded-lg flex items-center py-3 px-5'>
                         <p className='font-jost font-medium text-base leading-6 text-GREY-_700'>Learn more</p>
                     </button>
-                    <button className='bg-[#111827] w-[128px] rounded-lg flex items-center py-3 px-5'>
+                    <button onClick={() => navigate("/login")}  className='bg-[#111827] w-[128px] rounded-lg flex items-center py-3 px-5'>
                         <p className='font-jost font-medium text-base leading-6 text-[#F2F2F2]'>Get started</p>
                     </button>
                 </div>
@@ -88,10 +92,10 @@ const About = () => {
                     <p className='text-GREY-_500 text-[20px] font-jost leading-[30px]'>Join over 4,000+ companies already growing with Prophet.</p>
                 </div>
                 <div className='flex gap-3 items-center'>
-                    <button className='bg-[#F2F2F2] w-[127px] rounded-lg flex items-center py-3 px-5'>
+                    <button onClick={() => navigate("/about")} className='bg-[#F2F2F2] w-[127px] rounded-lg flex items-center py-3 px-5'>
                         <p className='font-jost font-medium text-base leading-6 text-GREY-_700'>Learn more</p>
                     </button>
-                    <button className='bg-[#111827] w-[128px] rounded-lg flex items-center py-3 px-5'>
+                    <button onClick={() => navigate("/login")} className='bg-[#111827] w-[128px] rounded-lg flex items-center py-3 px-5'>
                         <p className='font-jost font-medium text-base leading-6 text-[#F2F2F2]'>Get started</p>
                     </button>
                 </div>
