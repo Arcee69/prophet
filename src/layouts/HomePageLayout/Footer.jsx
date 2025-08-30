@@ -8,8 +8,11 @@ import { MdMailOutline } from 'react-icons/md'
 import { SiInstagram } from 'react-icons/si'
 import { SlSocialLinkedin } from 'react-icons/sl'
 import { TbBrandFacebook } from 'react-icons/tb'
+import { useNavigate } from 'react-router-dom'
 
 const Footer = () => {
+
+    const navigate = useNavigate()
   return (
     <div className='bg-[#111827] px-[116px] py-[64px] flex flex-col'>
         <div className='flex flex-col gap-[48px]'>
@@ -29,13 +32,13 @@ const Footer = () => {
                 <div className='flex flex-col gap-4 w-[268px] h-[164px]'>
                     <p className='text-[#fff] font-bold font-jost text-[20px] leading-7'>Products</p>
                     <p className='font-jost text-[#9CA3AF] text-base leading-6'>Features</p>
-                    <p className='font-jost text-[#9CA3AF] text-base leading-6'>Use Cases</p>
-                    <p className='font-jost text-[#9CA3AF] text-base leading-6'>Pricing</p>
+                    <p className='font-jost text-[#9CA3AF] text-base leading-6 cursor-pointer' onClick={() => {navigate("/use-cases"), window.scrollTo(0, 0)}}>Use Cases</p>
+                    <p className='font-jost text-[#9CA3AF] text-base leading-6 cursor-pointer' onClick={() => {navigate("/pricing"), window.scrollTo(0, 0)}}>Pricing</p>
                     <p className='font-jost text-[#9CA3AF] text-base leading-6'>API</p>
                 </div>
                 <div className='flex flex-col gap-4 w-[268px] h-[164px]'>
                     <p className='text-[#fff] font-bold font-jost text-[20px] leading-7'>Resources</p>
-                    <p className='font-jost text-[#9CA3AF] text-base leading-6'>Blog</p>
+                    <p className='font-jost text-[#9CA3AF] text-base leading-6 cursor-pointer' onClick={() => {navigate("/blogs"), window.scrollTo(0, 0)}}>Blog</p>
                     <p className='font-jost text-[#9CA3AF] text-base leading-6'>Knowledge Base</p>
                     <p className='font-jost text-[#9CA3AF] text-base leading-6'>Tutorials</p>
                     <p className='font-jost text-[#9CA3AF] text-base leading-6'>Support</p>

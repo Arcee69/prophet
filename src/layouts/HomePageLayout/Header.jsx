@@ -12,12 +12,12 @@ const Header = () => {
         <div className='w-[854px] h-[67px] flex items-center gap-[40px] mx-auto'>
             <img src={Logo} alt='Logo' className='w-[114px] h-[67px]' />
             <div className='flex items-center gap-6'>
-                <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => navigate("/about")}>About</p>
-                <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => navigate("/our-suite")}>Our Suite</p>
-                <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => navigate("")}>Use Cases</p>
-                <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => navigate("/pricing")}>Pricing</p>
-                <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => navigate("/blogs")}>Blog</p>
-                <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => navigate("")}>Contact</p>
+                <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => {navigate("/about"), window.scrollTo(0, 0)}}>About</p>
+                <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => {navigate("/our-suite"), window.scrollTo(0, 0)}}>Our Suite</p>
+                <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => {navigate("/use-cases"), window.scrollTo(0, 0)}}>Use Cases</p>
+                <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => {navigate("/pricing"), window.scrollTo(0, 0)}}>Pricing</p>
+                <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => {navigate("/blogs"), window.scrollTo(0, 0)}}>Blog</p>
+                <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => {navigate("/contact"), window.scrollTo(0, 0)}}>Contact</p>
             </div>
             <div className='flex items-center gap-4'>
                 <button onClick={() => {navigate("/register"), window.scrollTo(0, 0)}} className='w-[99px] rounded-[8px] h-[45px] flex items-center bg-[#202633] p-2 justify-center'>
