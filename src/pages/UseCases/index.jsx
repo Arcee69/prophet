@@ -132,7 +132,7 @@ const UseCases = () => {
             <div className='bg-[#1D2939] h-[207px] mt-[226px] relative'>
                 <div className='bg-GREY-_50 rounded-[16px] p-16 flex justify-between w-10/12 mx-auto absolute bottom-28 right-0 left-0'>
                     <div className='flex flex-col items-start gap-4'>
-                        <p className='text-GREY-_900 font-jost font-semibold text-[30px] leading-[38px]'>Start your 30-day free trial</p>
+                        <p className='text-GREY-_900 font-jost font-semibold text-[30px] leading-[38px]'>Start your 14-day free trial</p>
                         <p className='text-GREY-_500 text-[20px] font-jost leading-[30px]'>Join over 4,000+ companies already growing with Prophet.</p>
                     </div>
                     <div className='flex gap-3 items-center'>

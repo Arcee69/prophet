@@ -181,6 +181,10 @@ const Register = () => {
                 {loading ? <CgSpinner className="animate-spin text-lg" /> : 'Sign Up'}
               </button>
 
+              <p className='font-jost text-center'>
+                Have an account? <span className='hover:underline cursor-pointer font-medium text-[#1F2733]' onClick={() => {navigate("/login"), window.scrollTo(0, 0)}}>Log In</span>
+              </p>
+
               {/* Terms and Conditions */}
               <p className="text-center text-xs text-gray-500 mt-2">
                 By creating an account or signing up you agree to our{' '}

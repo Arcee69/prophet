@@ -133,34 +133,34 @@ const Home = () => {
                 <div className='flex flex-col items-start py-[15px] gap-[19px] w-3/12 border-dashed border border-x-0 border-b-0 border-[#2026332B]'>
                     <p className='text-base text-[#1F2733] font-medium font-jost leading-[23px]'>Sentiment Analysis</p>
                     <img src={BlackBrain} alt='BlackBrain' className='' />
-                    <p className='font-jost text-base font-[300] text-[#1F2733]'>
+                    {/* <p className='font-jost text-base font-[300] text-[#1F2733]'>
                         <span className='font-medium'>Sentiment Analysis:</span> AI-powered real-time media monitoring, sentiment analysis, 
                         and predictive insights across TV, radio, print, and online.
-                    </p>
+                    </p> */}
                 </div>
                 <div className='flex flex-col items-start py-[15px] gap-[19px] w-3/12 border-dashed border border-x-0 border-b-0 border-[#2026332B]'>
                     <p className='text-base text-[#1F2733] font-medium font-jost leading-[23px]'>AI Multi Channel Monitoring</p>
                     <img src={World} alt='World' className='' />
-                    <p className='font-jost text-base font-[300] text-[#1F2733]'>
+                    {/* <p className='font-jost text-base font-[300] text-[#1F2733]'>
                         <span className='font-medium'>Sentiment Analysis:</span> AI-powered real-time media monitoring, sentiment analysis, 
                         and predictive insights across TV, radio, print, and online.
-                    </p>
+                    </p> */}
                 </div>
                 <div className='flex flex-col items-start py-[15px] gap-[19px] w-3/12 border-dashed border border-x-0 border-b-0 border-[#2026332B]'>
                     <p className='text-base text-[#1F2733] font-medium font-jost leading-[23px]'>Predictive Alerts</p>
                     <img src={Bell} alt='Bell' className='' />
-                    <p className='font-jost text-base font-[300] text-[#1F2733]'>
+                    {/* <p className='font-jost text-base font-[300] text-[#1F2733]'>
                         <span className='font-medium'>Sentiment Analysis:</span> AI-powered real-time media monitoring, sentiment analysis, 
                         and predictive insights across TV, radio, print, and online.
-                    </p>
+                    </p> */}
                 </div>
                 <div className='flex flex-col items-start py-[15px] gap-[19px] w-3/12 border-dashed border border-x-0 border-b-0 border-[#2026332B]'>
-                    <p className='text-base text-[#1F2733] font-medium font-jost leading-[23px]'>Sentiment Analysis</p>
+                    <p className='text-base text-[#1F2733] font-medium font-jost leading-[23px]'>On Demand Report</p>
                     <img src={Analysis} alt='Analysis' className='' />
-                    <p className='font-jost text-base font-[300] text-[#1F2733]'>
+                    {/* <p className='font-jost text-base font-[300] text-[#1F2733]'>
                         <span className='font-medium'>Sentiment Analysis:</span> AI-powered real-time media monitoring, sentiment analysis, 
                         and predictive insights across TV, radio, print, and online.
-                    </p>
+                    </p> */}
                 </div>
             </div>
         </section>
@@ -256,6 +256,7 @@ const Home = () => {
                     <p className='text-[#4B5563] font-jost text-base leading-6'>14-day trial, no credit card required</p>
                     <button
                         className='w-full bg-[#1F2733] h-[48px] rounded-[6px] p-2'
+                        onClick={() => {navigate("/login"), window.scrollTo(0, 0)}}
                     >
                         <p className='font-jost text-[#FFFFFF] text-base leading-6'>Start Free Trial</p>
                     </button>
@@ -265,6 +266,7 @@ const Home = () => {
                     <p className='text-[#F3E8FF] font-jost whitespace-nowrap text-base leading-6'>Choose a plan tailored to your needs</p>
                     <button
                         className='w-full bg-[#FFFFFF] h-[48px] rounded-[6px] p-2'
+                        onClick={() => {navigate("/pricing"), window.scrollTo(0, 0)}}
                     >
                         <p className='font-jost text-[#1F2733] text-base leading-6'>View Plans</p>
                     </button>
@@ -274,6 +276,7 @@ const Home = () => {
                     <p className='text-[#4B5563] font-jost text-base leading-6'>Custom solutions for large teams</p>
                     <button
                         className='w-full bg-[#1F2733] h-[48px] rounded-[6px] p-2'
+                        onClick={() => {navigate("/contact"), window.scrollTo(0, 0)}}
                     >
                         <p className='font-jost text-[#FFFFFF] text-base leading-6'>Contact Sales</p>
                     </button>

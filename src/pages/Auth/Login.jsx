@@ -104,23 +104,27 @@ const Login = () => {
             >
               {loading ? <CgSpinner className="animate-spin text-lg" /> : 'Log In'}
             </button>
+            
+            <p className='my-3 font-jost text-center'>
+              Don't have account? <span className='hover:underline cursor-pointer font-medium text-[#1F2733]' onClick={() => {navigate("/register"), window.scrollTo(0, 0)}}>Sign Up</span>
+            </p>
 
             {/* Divider */}
-            <div className="flex items-center gap-2 my-3">
+            {/* <div className="flex items-center gap-2 my-3">
               <div className="h-px flex-1 bg-gray-300"></div>
               <p className="text-sm text-gray-500">or</p>
               <div className="h-px flex-1 bg-gray-300"></div>
-            </div>
+            </div> */}
 
             {/* Social Login Buttons */}
-            <button className="border w-full py-3 flex items-center justify-center gap-3 rounded-lg">
+            {/* <button className="border w-full py-3 flex items-center justify-center gap-3 rounded-lg">
               <FcGoogle className="text-lg" />
               Sign in with Google
             </button>
             <button className="border w-full py-3 flex items-center justify-center gap-3 rounded-lg">
               <FaLinkedin className="text-blue-600 text-lg" />
               Sign in with LinkedIn
-            </button>
+            </button> */}
           </Form>
         )}
       </Formik>

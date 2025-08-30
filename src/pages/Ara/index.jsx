@@ -10,7 +10,7 @@ const Ara = () => {
   const [voxData, setVoxData] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const vapi = new Vapi("f3cfd9f4-c893-43f1-b47f-6b1b2c3b1669"); // Public key
+  const vapi = new Vapi("sJ5RXcAyHcika5AVbh2j"); // Public key f3cfd9f4-c893-43f1-b47f-6b1b2c3b1669
 
   const start = async () => {
     setCallStatus('loading');
