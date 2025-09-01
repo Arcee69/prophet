@@ -22,6 +22,7 @@ const Brandwatch = () => {
     const [endDate, setEndDate] = useState(new Date());
     const [search, setSearch] = useState("");
     const [openAddBrandRequestModal, setOpenAddBrandRequestModal] = useState(false)
+    const [addBrand, setAddBrand] = useState(false)
 
     const handleDateChange = (value) => {
         setDateChange(value)
@@ -69,6 +70,13 @@ const Brandwatch = () => {
         { name: 'Instagram', samsung: 600, apple: 750 },
         { name: 'News Sites', samsung: 400, apple: 500 },
     ];
+
+    const handleAddBrand = () => {
+        setAddBrand(prev => !prev)
+        if(!addBrand) {
+            setSearch('')
+        }
+    }
 
 
 
@@ -153,7 +161,7 @@ const Brandwatch = () => {
                     className="w-full bg-[#fcfcfc] pl-[38px] outline-none font-jost"
                 />
             </div>
-            <button className='bg-[#F48A1F] w-2/12 text-white px-4 rounded-[10px] py-[12.5px] flex items-center justify-center gap-2'>
+            <button onClick={handleAddBrand} className='bg-[#F48A1F] w-2/12 text-white px-4 rounded-[10px] py-[12.5px] flex items-center justify-center gap-2'>
                 <FaPlus className='text-white w-5 h-5' />
                 <p className='font-jost text-[#F8FAFC] whitespace-nowrap text-sm leading-[20px]'>Add Brand to Monitor</p>
             </button>
@@ -165,7 +173,7 @@ const Brandwatch = () => {
                 <p className='font-jost text-[#6B7280] font-semibold text-lg'>Tracked Brands</p>
             </div>
             {
-                !search ?
+                !addBrand ?
                 <div className='flex items-center justify-center w-[384px] mx-auto'>
                     <div className='flex flex-col items-center gap-4'>
                         <div className='bg-[#FFF7EF] rounded-full h-[72px] w-[72px] flex items-center justify-center p-4'>
@@ -283,7 +291,7 @@ const Brandwatch = () => {
 
                 }
             </div>
-            <div className={`${!search ? "gap-[68px]" : "gap-[18px]"} h-[362px] w-6/12 flex flex-col px-[25px]  py-[28px] shadow bg-white border-[1px] border-white rounded-xl`}>
+            <div className={`${!addBrand ? "gap-[68px]" : "gap-[18px]"} h-[362px] w-6/12 flex flex-col px-[25px]  py-[28px] shadow bg-white border-[1px] border-white rounded-xl`}>
                 <div className='flex items-center gap-2'>
                     <FiBarChart2 className='w-5 h-5 text-[#F48A1F]' />
                     <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Channel Performance</p>
