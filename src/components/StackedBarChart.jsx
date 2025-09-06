@@ -18,12 +18,12 @@ const StackedBarChart = ({ title, series, colors, labels, max }) => {
         categories: labels,
         max: max, // Dynamic max based on data
         labels: {
-          formatter: (val) => (val >= 1000 ? val / 1000 + "k" : val),
+          formatter: (val) => (val >= 1000 ? val / 1000  : val),
         },
       },
       dataLabels: {
         enabled: true,
-        formatter: (val) => `${val}k`, // Format for percentage
+        formatter: (val) => `${val}`, // Format for percentage
         style: {
           colors: ["#000"],
           fontSize: "12px",

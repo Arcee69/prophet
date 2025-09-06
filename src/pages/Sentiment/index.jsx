@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { IoMdSearch } from 'react-icons/io'
-import { IoList } from 'react-icons/io5'
 import Compare from './components/Compare'
 
 const Sentiment = () => {
@@ -10,7 +9,6 @@ const Sentiment = () => {
     const handleSearch = (value) => {
         if (value.trim()) { 
             setSearchList(prev => [...prev, value]) // Proper state update
-            // setSearch("") // Clear input after search
         }
     }
 
@@ -20,7 +18,7 @@ const Sentiment = () => {
     <>
         {
             searchList.length > 0 ? 
-            <Compare search={search}/>
+            <Compare search={search} setSearchList={setSearchList} />
             :
             <div className='w-full flex items-start flex-col px-[35px] pt-[35px] gap-8'>
                 <div className='w-[991px]  bg-[#FFFFFF] h-[64px] shadow flex  py-[18px] px-[13px] items-center justify-between rounded-[16px]'>
@@ -42,10 +40,10 @@ const Sentiment = () => {
                         <p className='font-lato text-[18px] text-[#FFFFFF]'>Search</p>
                     </button>
                 </div>
-                <div className='flex items-center gap-1 rounded-[5px] bg-[#F48A1F24] w-[146px] h-[35px] p-2'>
+                {/* <div className='flex items-center gap-1 rounded-[5px] bg-[#F48A1F24] w-[146px] h-[35px] p-2'>
                     <IoList className='w-5 h-5 text-[#111827]' />
                     <p className='font-lato text-[15px] text-[#111827]'>Saved searches</p>
-                </div>
+                </div> */}
             </div>
         }
     </>

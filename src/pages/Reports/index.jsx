@@ -243,6 +243,69 @@ const Reports = () => {
                 <IoIosArrowDown className='w-5 h-5 text-[#4B5563]' />
               </div>
             </div>
+               <div className='flex flex-col gap-2 w-3/12'>
+              <p className='font-jost font-medium text-sm leading-[150%] text-[#374151]'>Region</p>
+              <div className='flex items-center w-full rounded-[10px] bg-transparent border border-[#D1D5DB] p-3'>
+                <select
+                  name='regions'
+                  value={regions}
+                  className='appearance-none w-full outline-none font-jost bg-transparent text-base text-[#111827]'
+                  onChange={(e) => setRegions(e.target.value)}
+                >
+                  <option value="All Regions">All Regions</option>
+                </select>
+                <IoIosArrowDown className='w-5 h-5 text-[#4B5563]' />
+              </div>
+            </div>
+            <div className='flex flex-col gap-2 w-3/12'>
+              <p className='font-jost font-medium text-sm leading-[150%] text-[#374151]'>Report Type</p>
+              <div className='flex items-center w-full rounded-[10px] bg-[#fcfcfc] border border-[#D1D5DB] p-3'>
+                <select
+                  name='alertType'
+                  value={alertType}
+                  className='appearance-none w-full outline-none bg-[#fcfcfc] font-jost text-base text-[#111827]'
+                  onChange={(e) => setAlertType(e.target.value)}
+                >
+                  <option value="">Select Report</option>
+                  <option value="Industry Report">Industry Report</option>
+                  <option value="Cultural Audit">Cultural Audit</option>
+                  <option value="Political Pulse Reports">Political Pulse Reports</option>
+                  <option value="Crisis Playbooks">Crisis Playbooks</option>
+                </select>
+                <IoIosArrowDown className='w-5 h-5 text-[#4B5563]' />
+              </div>
+            </div>
+          </div>
+
+          <div className='flex items-center gap-4 w-full'>
+            {/* <div className='flex flex-col gap-2 w-3/12'>
+              <p className='font-jost font-medium text-sm leading-[150%] text-[#374151]'>Sentiment</p>
+              <div className='flex items-center w-full bg-transparent rounded-[10px] border border-[#D1D5DB] p-3'>
+                <select
+                  name='sentiment'
+                  value={sentiment}
+                  className='appearance-none w-full outline-none bg-transparent font-jost text-base text-[#111827]'
+                  onChange={(e) => setSentiment(e.target.value)}
+                >
+                  <option value="All Sentiment">All Sentiments</option>
+                </select>
+                <IoIosArrowDown className='w-5 h-5 text-[#4B5563]' />
+              </div>
+            </div> */}
+            {/* <div className='flex flex-col gap-2 w-3/12'>
+              <p className='font-jost font-medium text-sm leading-[150%] text-[#374151]'>Source</p>
+              <div className='flex items-center w-full rounded-[10px] bg-transparent border border-[#D1D5DB] p-3'>
+                <select
+                  name='source'
+                  value={source}
+                  className='appearance-none w-full outline-none bg-transparent font-jost text-base text-[#111827]'
+                  onChange={(e) => setSource(e.target.value)}
+                >
+                  <option value="All sources">All sources</option>
+                </select>
+                <IoIosArrowDown className='w-5 h-5 text-[#4B5563]' />
+              </div>
+            </div> */}
             <div className='flex flex-col gap-2 w-6/12'>
               <p className='font-jost font-medium text-sm leading-[150%] text-[#374151]'>Brands</p>
               <div className='flex items-center w-full bg-transparent rounded-[10px] border border-[#D1D5DB] p-3'>
@@ -258,65 +321,7 @@ const Reports = () => {
                 <IoIosArrowDown className='w-5 h-5 text-[#4B5563]' />
               </div>
             </div>
-          </div>
-
-          <div className='flex items-center gap-4 w-full'>
-            <div className='flex flex-col gap-2 w-3/12'>
-              <p className='font-jost font-medium text-sm leading-[150%] text-[#374151]'>Sentiment</p>
-              <div className='flex items-center w-full bg-transparent rounded-[10px] border border-[#D1D5DB] p-3'>
-                <select
-                  name='sentiment'
-                  value={sentiment}
-                  className='appearance-none w-full outline-none bg-transparent font-jost text-base text-[#111827]'
-                  onChange={(e) => setSentiment(e.target.value)}
-                >
-                  <option value="All Sentiment">All Sentiments</option>
-                </select>
-                <IoIosArrowDown className='w-5 h-5 text-[#4B5563]' />
-              </div>
-            </div>
-            <div className='flex flex-col gap-2 w-3/12'>
-              <p className='font-jost font-medium text-sm leading-[150%] text-[#374151]'>Source</p>
-              <div className='flex items-center w-full rounded-[10px] bg-transparent border border-[#D1D5DB] p-3'>
-                <select
-                  name='source'
-                  value={source}
-                  className='appearance-none w-full outline-none bg-transparent font-jost text-base text-[#111827]'
-                  onChange={(e) => setSource(e.target.value)}
-                >
-                  <option value="All sources">All sources</option>
-                </select>
-                <IoIosArrowDown className='w-5 h-5 text-[#4B5563]' />
-              </div>
-            </div>
-            <div className='flex flex-col gap-2 w-3/12'>
-              <p className='font-jost font-medium text-sm leading-[150%] text-[#374151]'>Region</p>
-              <div className='flex items-center w-full rounded-[10px] bg-transparent border border-[#D1D5DB] p-3'>
-                <select
-                  name='regions'
-                  value={regions}
-                  className='appearance-none w-full outline-none font-jost bg-transparent text-base text-[#111827]'
-                  onChange={(e) => setRegions(e.target.value)}
-                >
-                  <option value="All Regions">All Regions</option>
-                </select>
-                <IoIosArrowDown className='w-5 h-5 text-[#4B5563]' />
-              </div>
-            </div>
-            <div className='flex flex-col gap-2 w-3/12'>
-              <p className='font-jost font-medium text-sm leading-[150%] text-[#374151]'>Alert Type</p>
-              <div className='flex items-center w-full rounded-[10px] bg-[#fcfcfc] border border-[#D1D5DB] p-3'>
-                <select
-                  name='alertType'
-                  value={alertType}
-                  className='appearance-none w-full outline-none bg-[#fcfcfc] font-jost text-base text-[#111827]'
-                  onChange={(e) => setAlertType(e.target.value)}
-                >
-                  <option value="All types">All types</option>
-                </select>
-                <IoIosArrowDown className='w-5 h-5 text-[#4B5563]' />
-              </div>
-            </div>
+         
           </div>
 
         </div>

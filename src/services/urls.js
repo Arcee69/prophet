@@ -8,5 +8,8 @@ export const appUrls = {
     RESETPASSWORD_URL: "/v1/auth/reset-password",
     RESEND_OTP_URL: "/v1/auth/resend-verification-code",
 
+    //SENTIMENT ENDPOINTS
+    SENTIMENT_URL: "/v1/sentiment-analysis"
+    
 
 };
