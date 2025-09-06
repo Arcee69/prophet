@@ -9,7 +9,15 @@ export const appUrls = {
     RESEND_OTP_URL: "/v1/auth/resend-verification-code",
 
     //SENTIMENT ENDPOINTS
-    SENTIMENT_URL: "/v1/sentiment-analysis"
-    
+    SENTIMENT_URL: "/v1/sentiment-analysis",
+
+    //BLOGS ENDPOINT
+    BLOGS_URL: "/v1/post",
+
+    // FAQ ENDPOINT
+    FAQ_URL: "/v1/faq",
+
+    //SUBSCRIPTION ENDPOINT
+    SUBSCRIPTION_SETTINGS_URL: "/v1/subscription-plans",
 
 };

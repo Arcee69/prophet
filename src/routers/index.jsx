@@ -23,6 +23,7 @@ import Blogs from '../pages/Blogs';
 import About from '../pages/About';
 import Suite from '../pages/Suite';
 import UseCases from '../pages/UseCases';
+import ViewBlogPost from '../pages/Blogs/components/ViewBlogPost';
 
 
 export default function Routers() {
@@ -35,6 +36,7 @@ export default function Routers() {
           <Route path="/" element={<Home />} />
           <Route path='/pricing' element={<Pricing />} />
           <Route path='/blogs' element={<Blogs />} />
+          <Route path="/blog/:slug" element={<ViewBlogPost />} />
           <Route path='/about' element={<About />} />
           <Route path='/our-suite' element={<Suite />} />
           <Route path='/use-cases' element={<UseCases />} />

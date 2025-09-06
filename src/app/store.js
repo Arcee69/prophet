@@ -1,8 +1,11 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import storage from 'redux-persist/lib/storage';
 import { persistReducer, persistStore } from 'redux-persist';
-import { thunk } from 'redux-thunk'; 
+
 import loginReducer from "../features/auth/loginSlice";
+import getPricingReducer from "../features/pricing/getPricingSlice";
+import getFaqsReducer from "../features/faqs/getFaqsSlice";
+import getBlogsReducer from "../features/blogs/getBlogsSlice";
 
 const persistConfig = {
     key: 'root',
@@ -12,7 +15,9 @@ const persistConfig = {
 const rootReducer = combineReducers({ 
     // Add reducers here
     userLogin: loginReducer,
- 
+    allPricing: getPricingReducer,
+    allFaqs: getFaqsReducer,
+    allBlogs: getBlogsReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

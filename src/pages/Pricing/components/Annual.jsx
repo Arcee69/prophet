@@ -1,64 +1,39 @@
 import React from 'react'
 import { FaCheck } from 'react-icons/fa6'
+import { useSelector } from 'react-redux';
+
+// Helper function to parse features HTML into title and list
+const parseFeatures = (htmlString) => {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlString, 'text/html');
+  
+  // Extract featuresTitle from the first <p><strong><em>...</em></strong></p>
+  const featuresTitleElement = doc.querySelector('p strong em');
+  const featuresTitle = featuresTitleElement ? featuresTitleElement.textContent.trim() : '';
+  
+  // Extract features from <ol><li>...</li></ol> (or adjust selector if it changes to <ul>)
+  const featuresElements = doc.querySelectorAll('ol li');
+  const features = Array.from(featuresElements).map(li => li.textContent.trim());
+  
+  return { featuresTitle, features };
+};
 
 const Annual = () => {
 
-    const annualPlan = [
-        {
-            title: "Prophet Lite",
-            price: "$990",
-            target: "For SMEs, startups, students, small PR firms",
-            featuresTitle: "Capture early adopters and grassroots innovators",
-            features:[
-                "Access to limited dashboard features",
-                "2 monthly insight snapshots",
-                "Basic sentiment analysis",
-                "email support"
-            ]
-        },
-        {
-            title: "Prophet Starter",
-            price: "$2490",
-            target: "For Small consultancies, NGO comms teams",
-            featuresTitle: "Everything in our Prophet Lite plus....",
-            features:[
-                "Access to Standard dashboard features",
-                "5 topics/keywords",
-                "2 automated reports",
-                "cultural mapping lite"
-            ]
-        },
-        {
-            title: "Prophet Professional",
-            price: "$8490",
-            target: "For PR agencies, mid-sized brands, corporates",
-            featuresTitle: "Everything in Prophet Starter plus....",
-            features:[
-                "Advanced sentiment analysis",
-                "Crisis dashboards",
-                "Up to 20 individual users",
-                "Predictive insights",
-                "Competitor tracking",
-                "10 reports",
-                "Chat support",
-            ]
-        },
-        {
-            title: "Prophet Premium",
-            price: "Custom",
-            target: "For Governments, multinationals, large enterprises",
-            featuresTitle: "Everything in Prophet Professional plus....",
-            features:[
-                "Unlimited reports",
-                "API integration",
-                "Custom datasets",
-                "Developer SDK",
-                "White-label dashboards",
-                "Dedicated account manager",
-            ]
-        },
+    const { pricing } = useSelector((state) => state.allPricing);
 
-    ]
+
+  // Transform pricing data to match the expected structure
+  const annualPlan = pricing.data?.map(plan => {
+    const { featuresTitle, features } = parseFeatures(plan.features);
+    return {
+      title: plan.name,
+      price: parseFloat(plan.annual_amount), // Convert string to number
+      target: plan.intended_users || '', // Fallback to empty if null; update with real data if available
+      featuresTitle,
+      features,
+    };
+  });
 
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 gap-8 px-[32px]'>
@@ -66,7 +41,7 @@ const Annual = () => {
             <div key={index} className='p-[32px] flex flex-col gap-[32px] rounded-2xl shadow'>
                 <div className='flex flex-col gap-4'>
                     <p className='font-jost font-medium text-[18px] leading-7 text-GREY-_500'>{item.title}</p>
-                    <p className='text-GREY-_900 font-jost text-[60px] leading-[72px] font-medium'>{item.price} <span className={`${item.price === "Custom" ? "hidden" : 'text-GREY-_500 font-jost text-base font-medium leading-6'}`}>per year</span></p>
+                    <p className='text-GREY-_900 font-jost text-[60px] leading-[72px] font-medium'>${item.price} <span className={`${item.price === "Custom" ? "hidden" : 'text-GREY-_500 font-jost text-base font-medium leading-6'}`}>per year</span></p>
                     <p className='text-GREY-_500 font-jost text-base leading-6'>{item.target}</p>
                 </div>
                 <div className='flex flex-col gap-3'>
