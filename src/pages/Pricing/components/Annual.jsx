@@ -1,6 +1,7 @@
 import React from 'react'
 import { FaCheck } from 'react-icons/fa6'
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 // Helper function to parse features HTML into title and list
 const parseFeatures = (htmlString) => {
@@ -21,6 +22,8 @@ const parseFeatures = (htmlString) => {
 const Annual = () => {
 
     const { pricing } = useSelector((state) => state.allPricing);
+
+    const navigate = useNavigate()
 
 
   // Transform pricing data to match the expected structure
@@ -45,10 +48,10 @@ const Annual = () => {
                     <p className='text-GREY-_500 font-jost text-base leading-6'>{item.target}</p>
                 </div>
                 <div className='flex flex-col gap-3'>
-                    <button className='bg-[#202633] rounded-lg flex items-center justify-center p-3'>
+                    <button onClick={() => {navigate("/register"), window.scrollTo(0,0)}} className='bg-[#202633] rounded-lg flex items-center justify-center p-3'>
                         <p className='text-white font-jost text-base leading-6 font-medium'>Get Started</p>
                     </button>
-                    <button className='border border-GREY-_400 bg-white rounded-lg flex items-center justify-center p-3'>
+                    <button onClick={() => {navigate("/contact"), window.scrollTo(0,0)}} className='border border-GREY-_400 bg-white rounded-lg flex items-center justify-center p-3'>
                         <p className='text-GREY-_700 font-jost text-base leading-6 font-medium'>Chat with sales</p>
                     </button>
                 </div>

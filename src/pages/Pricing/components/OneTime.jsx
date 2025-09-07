@@ -1,7 +1,11 @@
 import React from 'react'
 import { FaCheck } from 'react-icons/fa6'
+import { useNavigate } from 'react-router-dom'
 
 const OneTime = () => {
+
+    const navigate = useNavigate()
+
   return (
     <div className='flex flex-col w-full gap-[64px]'>
         <div className='py-[80px] px-[66px] flex flex-col gap-[47px]'>
@@ -15,9 +19,9 @@ const OneTime = () => {
                         <p className='font-jost text-[#2B303B] text-[20px] leading-[28px] font-semibold'>Industry Reports</p>
                         <p className='font-jost text-sm text-[#737B8C] text-center'>Comprehensive industry analysis and market intelligence</p>
                     </div>
-                    <p className='text-[#404040] font-jost font-semibold text-base leading-4'>$1,000 - $3,000</p>
-                    <button className='flex items-center justify-center group border border-[#2F394E] rounded-lg hover:bg-[#303A4F] w-full py-[11px]'>
-                        <p className='text-[#333D51] group-hover:text-white font-jost leading-5 text-sm font-semibold'>Request Quote</p>
+                    <p className='text-[#404040] font-jost font-semibold text-base leading-4'>$1,000 - $2,000</p>
+                    <button onClick={() => navigate("/register")} className='flex items-center justify-center group border border-[#2F394E] rounded-lg hover:bg-[#303A4F] w-full py-[11px]'>
+                        <p className='text-[#333D51] group-hover:text-white font-jost leading-5 text-sm font-semibold'>Get Started</p>
                     </button>
                 </div>
                 <div className='shadow flex flex-col items-center justify-center p-[24.8px] gap-4'>
@@ -25,9 +29,9 @@ const OneTime = () => {
                         <p className='font-jost text-[#2B303B] text-[20px] leading-[28px] font-semibold'>Cultural Audits</p>
                         <p className='font-jost text-sm text-[#737B8C] text-center'>Deep-dive cultural behavior mapping and insightse</p>
                     </div>
-                    <p className='text-[#404040] font-jost font-semibold text-base leading-4'>$1,000 - $3,000</p>
-                    <button className='flex items-center justify-center group border border-[#2F394E] rounded-lg hover:bg-[#303A4F] w-full py-[11px]'>
-                        <p className='text-[#333D51] group-hover:text-white font-jost leading-5 text-sm font-semibold'>Request Quote</p>
+                    <p className='text-[#404040] font-jost font-semibold text-base leading-4'>$2,000 - $4,000</p>
+                    <button onClick={() => navigate("/register")} className='flex items-center justify-center group border border-[#2F394E] rounded-lg hover:bg-[#303A4F] w-full py-[11px]'>
+                        <p className='text-[#333D51] group-hover:text-white font-jost leading-5 text-sm font-semibold'>Get Started</p>
                     </button>
                 </div>
                 <div className='shadow flex flex-col items-center justify-center p-[24.8px] gap-4'>
@@ -35,9 +39,9 @@ const OneTime = () => {
                         <p className='font-jost text-[#2B303B] text-[20px] leading-[28px] font-semibold'>Political Pulse Reports</p>
                         <p className='font-jost text-sm text-[#737B8C] text-center'>Political sentiment and policy impact analysis</p>
                     </div>
-                    <p className='text-[#404040] font-jost font-semibold text-base leading-4'>$1,000 - $3,000</p>
-                    <button className='flex items-center justify-center group border border-[#2F394E] rounded-lg hover:bg-[#303A4F] w-full py-[11px]'>
-                        <p className='text-[#333D51] group-hover:text-white font-jost leading-5 text-sm font-semibold'>Request Quote</p>
+                    <p className='text-[#404040] font-jost font-semibold text-base leading-4'>$5,000 - $10,000</p>
+                    <button onClick={() => navigate("/register")} className='flex items-center justify-center group border border-[#2F394E] rounded-lg hover:bg-[#303A4F] w-full py-[11px]'>
+                        <p className='text-[#333D51] group-hover:text-white font-jost leading-5 text-sm font-semibold'>Get Started</p>
                     </button>
                 </div>
                 <div className='shadow flex flex-col items-center justify-center p-[24.8px] gap-4'>
@@ -45,9 +49,9 @@ const OneTime = () => {
                         <p className='font-jost text-[#2B303B] text-[20px] leading-[28px] font-semibold'>Crisis Playbooks</p>
                         <p className='font-jost text-sm text-[#737B8C] text-center'>Custom crisis management strategies and protocols</p>
                     </div>
-                    <p className='text-[#404040] font-jost font-semibold text-base leading-4'>$1,000 - $3,000</p>
-                    <button className='flex items-center justify-center group border border-[#2F394E] rounded-lg hover:bg-[#303A4F] w-full py-[11px]'>
-                        <p className='text-[#333D51] group-hover:text-white font-jost leading-5 text-sm font-semibold'>Request Quote</p>
+                    <p className='text-[#404040] font-jost font-semibold text-base leading-4'>$3,000 - $5,000</p>
+                    <button onClick={() => navigate("/register")} className='flex items-center justify-center group border border-[#2F394E] rounded-lg hover:bg-[#303A4F] w-full py-[11px]'>
+                        <p className='text-[#333D51] group-hover:text-white font-jost leading-5 text-sm font-semibold'>Get Started</p>
                     </button>
                 </div>
             </div>

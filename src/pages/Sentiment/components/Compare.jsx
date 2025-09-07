@@ -235,7 +235,7 @@ const Compare = ({ search, setSearchList }) => {
                 xaxis: {
                     categories: ['Social Media', 'News'],
                 },
-                colors: hasCompare ? ['#BDDAFF', '#F2E5FF'] : ['#BDDAFF'],
+                colors: hasCompare ? ['#BDDAFF', '#F48A1F'] : ['#F48A1F', '#BDDAFF'],
             }
         };
     }, [summary1, summary2, hasCompare, search, compareBrand]);
@@ -407,7 +407,7 @@ const Compare = ({ search, setSearchList }) => {
                                 <XAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
                                 <YAxis type="category" dataKey="name" />
                                 <Tooltip formatter={formatNumber} />
-                                <Bar dataKey="value" fill="#BDDAFF">
+                                <Bar dataKey="value" fill="#F2E5FF">
                                     <LabelList dataKey="value" position="center" formatter={formatNumber} />
                                 </Bar>
                             </BarChart>
@@ -499,7 +499,7 @@ const Compare = ({ search, setSearchList }) => {
                                 <XAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
                                 <YAxis type="category" dataKey="name" />
                                 <Tooltip formatter={formatNumber} />
-                                <Bar dataKey="value" fill="#BDDAFF">
+                                <Bar dataKey="value" fill="#DEDEDE">
                                     <LabelList dataKey="value" position="center" formatter={formatNumber} />
                                 </Bar>
                             </BarChart>

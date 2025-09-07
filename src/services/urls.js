@@ -11,6 +11,15 @@ export const appUrls = {
     //SENTIMENT ENDPOINTS
     SENTIMENT_URL: "/v1/sentiment-analysis",
 
+    //BRANDS ENDPOINTS
+    BRANDS_URL: "/v1/brand",
+
+    //REPORTS ENDPOINTS
+    INDUSTRY_REPORT_URL: "/v1/reports/industry-deep-dive",
+    CRISIS_REPORT_URL: "/v1/reports/crisis-playbook",
+    POLITICAL_REPORT_URL: "/v1/reports/political-pulse",
+    ELECTION_REPORT_URL: "/v1/reports/election-analysis",
+
     //BLOGS ENDPOINT
     BLOGS_URL: "/v1/post",
 
