@@ -18,12 +18,12 @@ const Contact = () => {
           <p className='text-[#E57E46] font-jost text-base font-semibold leading-6'>Contact Us</p>
           <p className='text-GREY-_900 text-[48px] font-semibold leading-[60px]'>We’d love to hear from you</p>
         </div>
-        <p className='text-[#667085] w-[768px] text-center font-jost text-[18px] leading-[28px]'>
+        {/* <p className='text-[#667085] w-[768px] text-center font-jost text-[18px] leading-[28px]'>
           Our friendly team is always here to chat.
-        </p>
+        </p> */}
       </div>
 
-      <div className='w-full'>
+      <div className='w-full hidden'>
         <img src={ContactBig} alt='ContactBig' className='' />
       </div>
 

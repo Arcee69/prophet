@@ -11,8 +11,19 @@ export const appUrls = {
     //SENTIMENT ENDPOINTS
     SENTIMENT_URL: "/v1/sentiment-analysis",
 
+    //PROFILE ENDPOINTS
+    PROFILE_URL: "/v1/user",
+    PROFILE_DATA_URL: "/v1/user/update",
+    PHOTO_UPDATE_URL: "/v1/user/profile-pic",
+
     //BRANDS ENDPOINTS
     BRANDS_URL: "/v1/brand",
+
+    //SUBSCRIPTION ENDPOINTS
+    SUBSCRIPTION_URL: "/v1/subscriptions",
+
+    // PASSWORD ENDPOINTS
+    CHANGE_PASSWORD_URL: "/v1/user/change-password",
 
     //REPORTS ENDPOINTS
     INDUSTRY_REPORT_URL: "/v1/reports/industry-deep-dive",

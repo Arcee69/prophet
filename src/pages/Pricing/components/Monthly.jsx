@@ -39,7 +39,7 @@ const Monthly = () => {
 
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 gap-8 px-[32px]'>
-      {monthlyPlans.map((item, index) => (
+      {monthlyPlans?.map((item, index) => (
         <div key={index} className='p-[32px] flex flex-col gap-[32px] rounded-2xl shadow'>
           <div className='flex flex-col gap-4'>
             <p className='font-jost font-medium text-[18px] leading-7 text-GREY-_500'>{item.title}</p>

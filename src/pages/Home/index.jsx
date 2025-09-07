@@ -207,7 +207,7 @@ const Home = () => {
             </button>
         </section>
 
-        <section className='bg-[#F1F1F1] px-[118px] py-[64px] flex flex-col items-center gap-[64px]'>
+        <section className='bg-[#F1F1F1] px-[118px] py-[64px] hidden flex-col items-center gap-[64px]'>
             <div className='flex flex-col items-center gap-4'>
                 <p className='font-jost font-semibold text-[40px] leading-[36px] text-[#000000]'>What Our Clients Say</p>
                 <p className='text-[#4B5563] font-jost text-[24px] leading-[28px]'>Success stories from industry leaders</p>

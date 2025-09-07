@@ -22,7 +22,7 @@ const apiResource = () => {
             if (!token) return config;
             config.headers["Authorization"] = `Bearer ${token}`;
             // config.headers["Content-Type"] = "application/json";
-            if (config?.url === appUrls?.UPLOAD_IMAGE) {
+            if (config?.url === appUrls?.PHOTO_UPDATE_URL) {
                 config.headers["Content-Type"] = 'multipart/form-data';
             } else {
                 config.headers["Content-Type"] = "application/json";

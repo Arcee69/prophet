@@ -14,7 +14,7 @@ const parseFeatures = (htmlString) => {
   
   // Extract features from <ol><li>...</li></ol> (or adjust selector if it changes to <ul>)
   const featuresElements = doc.querySelectorAll('ol li');
-  const features = Array.from(featuresElements).map(li => li.textContent.trim());
+  const features = Array.from(featuresElements)?.map(li => li.textContent.trim());
   
   return { featuresTitle, features };
 };

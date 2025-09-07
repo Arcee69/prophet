@@ -10,7 +10,7 @@ const Header = () => {
   return (
     <div className='fixed z-50 w-full top-0 py-[20.5px] bg-[#F1F1F1]'>
         <div className='w-[854px] h-[67px] flex items-center gap-[40px] mx-auto'>
-            <img src={Logo} alt='Logo' className='w-[114px] h-[67px]' />
+            <img src={Logo} alt='Logo' className='w-[114px] h-[67px] cursor-pointer'  onClick={() => {navigate("/"), window.scrollTo(0, 0)}}/>
             <div className='flex items-center gap-6'>
                 <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => {navigate("/about"), window.scrollTo(0, 0)}}>About</p>
                 <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => {navigate("/our-suite"), window.scrollTo(0, 0)}}>Our Suite</p>
