@@ -62,7 +62,7 @@ const Annual = () => {
                         <p className='text-GREY-_500 italic font-jost font-semibold text-base leading-6'>{item.featuresTitle}</p>
                     </div>
                     <div className='flex flex-col gap-4'>
-                        {item.features.map((item, index) => (
+                        {item.features?.map((item, index) => (
                             <div key={index} className='flex items-center gap-3'>
                                 <div className='w-6 h-6 bg-[#FFFAEB] flex flex-col items-center justify-center rounded-full'>
                                     <FaCheck className='text-[#202633] w-4 h-4' />
