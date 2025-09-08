@@ -13,6 +13,19 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const jobFunction = [
+    "PR / Corporate Communications",
+    "Marketing / Brand Management",
+    "Social Media Management",
+    "Journalism / Media (Reporter, Editor, Producer)",
+    "Government / Public Affairs",
+    "Policy / Research & Strategy",
+    "Executive / Leadership",
+    "Agency / Consulting",
+    "NGO / Advocacy Communications",
+    "Other (Please Specify)"
+  ]
+
   const formValidationSchema = Yup.object().shape({
     fullName: Yup.string().required('Full Name is required'),
     email: Yup.string().email().required('Email is required'),
@@ -30,10 +43,12 @@ const Register = () => {
       "name": values?.fullName,
       "email": values?.email,
       "phone": `+234${values?.phone}`,
-      "job": values?.job,
+      "job": values.job === "Other (Please Specify)" ? values.other : values.job,
       "password": values?.password,
       "password_confirmation": values?.confirmPassword
     }
+    console.log(data, "max")
+    return
     try {
       const res = await api.post(appUrls?.REGISTER_URL, data)
       console.log(res, "appo")
@@ -58,8 +73,8 @@ const Register = () => {
   }
 
   return (
-    <div className="flex items-center justify-center ">
-      <div className="  w-[400px]">
+    <div className="flex items-center w-full justify-center ">
+      <div className="w-[500px]">
         {/* Logo */}
         <div className="flex justify-center">
           <img src={LogoBlack} alt="Logo" className="w-32 cursor-pointer" onClick={() => navigate("/")} />
@@ -70,14 +85,22 @@ const Register = () => {
 
         {/* Formik Form */}
         <Formik
-          initialValues={{ fullName: '', email: '', job: '', phone: '', password: '', confirmPassword: '' }}
+          initialValues={{ 
+            fullName: '', 
+            email: '', 
+            job: '',
+            other: '', 
+            phone: '', 
+            password: '', 
+            confirmPassword: '' 
+          }}
           validationSchema={formValidationSchema}
           onSubmit={(values, action) => {
             submitForm(values, action)
           }}
         >
           {({ handleSubmit, handleChange, values, errors, touched }) => (
-            <Form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-6">
+            <Form onSubmit={handleSubmit} className="flex flex-col w-full gap-4 mt-6">
               {/* Full Name Input */}
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium">Full Name</label>
@@ -145,14 +168,28 @@ const Register = () => {
                   className="border rounded-lg px-3 py-2 h-[48px] outline-none bg-white"
                 >
                   <option value="">Select from options</option>
-                  <option value="developer">Developer</option>
-                  <option value="designer">Designer</option>
-                  <option value="manager">Manager</option>
+                  {jobFunction.map((item, index) => (
+                    <option key={index} value={item}>{item}</option>
+                  ))}
                 </select>
                 {errors.job && touched.job && (
                   <div className="text-red-500 text-xs">{errors.job}</div>
                 )}
               </div>
+
+              {values.job === "Other (Please Specify)" &&      
+                <div className="flex flex-col gap-1">
+                    <label className="text-sm font-medium">Job</label>
+                    <input
+                        name="other"
+                        type="text"
+                        placeholder=""
+                        value={values.other}
+                        onChange={handleChange}
+                        className="border rounded-lg px-3 py-2 h-[48px] outline-none "
+                    />
+                  </div>
+              }
 
               {/* Phone Number Input */}
               <div className="flex flex-col gap-1">

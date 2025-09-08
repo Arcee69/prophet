@@ -34,30 +34,30 @@ const Footer = () => {
                     <p className='font-jost text-[#9CA3AF] text-base leading-6'>Features</p>
                     <p className='font-jost text-[#9CA3AF] text-base leading-6 cursor-pointer' onClick={() => {navigate("/use-cases"), window.scrollTo(0, 0)}}>Use Cases</p>
                     <p className='font-jost text-[#9CA3AF] text-base leading-6 cursor-pointer' onClick={() => {navigate("/pricing"), window.scrollTo(0, 0)}}>Pricing</p>
-                    <p className='font-jost text-[#9CA3AF] text-base leading-6'>API</p>
+                    {/* <p className='font-jost text-[#9CA3AF] text-base leading-6'>API</p> */}
                 </div>
                 <div className='flex flex-col gap-4 w-[268px] h-[164px]'>
                     <p className='text-[#fff] font-bold font-jost text-[20px] leading-7'>Resources</p>
                     <p className='font-jost text-[#9CA3AF] text-base leading-6 cursor-pointer' onClick={() => {navigate("/blogs"), window.scrollTo(0, 0)}}>Blog</p>
-                    <p className='font-jost text-[#9CA3AF] text-base leading-6'>Knowledge Base</p>
+                    {/* <p className='font-jost text-[#9CA3AF] text-base leading-6'>Knowledge Base</p>
                     <p className='font-jost text-[#9CA3AF] text-base leading-6'>Tutorials</p>
-                    <p className='font-jost text-[#9CA3AF] text-base leading-6'>Support</p>
+                    <p className='font-jost text-[#9CA3AF] text-base leading-6'>Support</p> */}
                 </div>
                 <div className='flex flex-col gap-4 w-[268px] h-[164px]'>
                     <p className='text-[#fff] font-bold font-jost text-[20px] leading-7'>Contact</p>
                     <div className='flex items-center gap-2'>
                         <MdMailOutline className='w-5 h-5 text-[#9CA3AF]' />
-                        <p className='font-jost text-[#9CA3AF] text-base leading-6'>contact@prophet.com</p>
+                        <p className='font-jost text-[#9CA3AF] text-base leading-6'>info@arabyprophet.com</p>
                     </div>
                     <div className='flex items-center gap-2'>
                         <HiOutlinePhone className='w-5 h-5 text-[#9CA3AF]' />
-                        <p className='font-jost text-[#9CA3AF] text-base leading-6'>+1 (555) 123-4567</p>
+                        <p className='font-jost text-[#9CA3AF] text-base leading-6'>+2349040177777</p>
                     </div>
                 </div>
             </div>
             <div className='bg-[#1F2937] w-full h-[1px]'></div>
             <div className='flex items-center justify-between'>
-                <p className='font-jost text-[#9CA3AF] text-base leading-6'>&copy; {new Date().getFullYear()} Prophet by Chain Media. All rights reserved.</p>
+                <p className='font-jost text-[#9CA3AF] text-base leading-6'>&copy; {new Date().getFullYear()} Prophet by Chain Reactions Media. All rights reserved.</p>
                 <div className='flex items-center gap-6'>
                     <p className='font-jost text-base leading-6 text-[#9CA3AF]'>Privacy Policy</p>
                     <p className='font-jost text-base leading-6 text-[#9CA3AF]'>Terms of Service</p>

@@ -105,6 +105,7 @@ const Pricing = () => {
                     </div>
                     <button
                         className='w-[130px] h-[44px] flex items-center justify-center p-2 rounded-lg bg-[#111827]'
+                        onClick={() => {navigate("/contact"), window.scrollTo(0, 0)}}
                     >
                         <p className='font-jost font-medium text-[#F2F2F2] text-base leading-6'>Get in touch</p>
                     </button>
