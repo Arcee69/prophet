@@ -24,6 +24,7 @@ import About from '../pages/About';
 import Suite from '../pages/Suite';
 import UseCases from '../pages/UseCases';
 import ViewBlogPost from '../pages/Blogs/components/ViewBlogPost';
+import BrandWatchReport from '../pages/Brandwatch/components/BrandReport';
 
 
 export default function Routers() {
@@ -56,6 +57,8 @@ export default function Routers() {
             <Route path='/ara' element={<Ara />} />
             <Route path="/sentiment-analysis" element={<Sentiment />} />
             <Route path="/brandwatch" element={<Brandwatch/>} />
+            <Route path="/brandwatch" element={<Brandwatch/>} />
+            <Route path="/brandwatch/report" element={<BrandWatchReport />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/contact" element={<Contact />} />

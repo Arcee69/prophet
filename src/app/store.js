@@ -7,6 +7,7 @@ import getPricingReducer from "../features/pricing/getPricingSlice";
 import getFaqsReducer from "../features/faqs/getFaqsSlice";
 import getBlogsReducer from "../features/blogs/getBlogsSlice";
 import getBrandsReducer from "../features/brands/getBrandsSlice";
+import getBrandWatchReducer from "../features/brandWatch/getBrandWatchSlice";
 import getProfileReducer from "../features/profile/getProfileSlice";
 import getSubscriptionReducer from "../features/subscriptions/getSubscriptionSlice";
 import getSubSettingsReducer from "../features/subSettings/getSubSettingsSlice";
@@ -24,6 +25,7 @@ const rootReducer = combineReducers({
     allFaqs: getFaqsReducer,
     allBlogs: getBlogsReducer,
     allBrands: getBrandsReducer,
+    allBrandWatch: getBrandWatchReducer,
     userProfile: getProfileReducer,
     allSubscriptions: getSubscriptionReducer,
     allSubSettings: getSubSettingsReducer,

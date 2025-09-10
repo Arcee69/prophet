@@ -16,11 +16,21 @@ export const appUrls = {
     PROFILE_DATA_URL: "/v1/user/update",
     PHOTO_UPDATE_URL: "/v1/user/profile-pic",
 
+    // PAYMENT ENDPOINT
+    PAYMENT_URL: "/v1/payments/initialize",
+
     //BRANDS ENDPOINTS
     BRANDS_URL: "/v1/brand",
 
+    //BRANDWATCH ENDPOINTS
+    BRANDWATCH_URL: "/v1/watches",
+
     //SUBSCRIPTION ENDPOINTS
     SUBSCRIPTION_URL: "/v1/subscriptions",
+    SUBSCRIPTION_SETTINGS_URL: "/v1/subscription-plans",
+
+    // TRANSACTIONS ENDPOINTS
+    TRANSACTIONS_URL: "/v1/transactions",
 
     // PASSWORD ENDPOINTS
     CHANGE_PASSWORD_URL: "/v1/user/change-password",
