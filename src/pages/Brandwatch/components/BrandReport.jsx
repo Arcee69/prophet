@@ -29,51 +29,36 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 const BrandWatchReport = () => {
   const [activeTab, setActiveTab] = useState(1)
-  const [compareBrand, setCompareBrand] = useState("")
-  const [compareBrandInput, setCompareBrandInput] = useState("");
   const [selectedTime, setSelectedTime] = useState("This Week")
   const [dateChange, setDateChange] = useState(1)
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [sentimentData, setSentimentData] = useState(null)
-  const [sentimentData2, setSentimentData2] = useState(null)
   
       console.log(sentimentData, "sentimentData")
-      console.log(sentimentData2, "sentimentData2")
   
       const navigate = useNavigate()
   
       const {state} = useLocation()
   
       useEffect(() => {
-          const fetchSentiment = async (keyword, isSecond = false) => {
-              if (!keyword) return;
-              const data = { "keyword1": keyword }
+          const fetchSentiment = async () => {
+              if (!state?.id) return;
               try {
                   const res = await api.get(appUrls?.BRANDWATCH_URL + `/data/${state.id}`)
-                  if (isSecond) {
-                      setSentimentData2(res?.data?.aggregated_brand_watch_data)
-                  } else {
-                      setSentimentData(res?.data?.aggregated_brand_watch_data)
-                  }
+                  setSentimentData(res?.data?.data?.aggregated_brand_watch_data)
+                  console.log(res?.data?.data?.aggregated_brand_watch_data, "micku")
               } catch (err) {
                   console.log(err)
               }
           }
   
           if (state) {
-              fetchSentiment(state?.brand?.name)
+              fetchSentiment()
           }
-          if (compareBrand) {
-              fetchSentiment(compareBrand, true)
-          } else {
-              setSentimentData2(null); 
-          }
-      }, [state, compareBrand])
+      }, [state])
   
       const summary1 = sentimentData ? Object.values(sentimentData)[0] || {} : {}
-      const summary2 = sentimentData2 ? Object.values(sentimentData2)[0] || {} : {}
-      const hasCompare = !!compareBrand && !!sentimentData2
   
       console.log(summary1, "summarypopo")
   
@@ -98,33 +83,20 @@ const BrandWatchReport = () => {
   
   
       const sent1 = getSentimentPercentages(summary1.summary || {})
-      const sent2 = getSentimentPercentages(summary2.summary || {})
   
-      const mentionsData = hasCompare ? [
-          { name: state?.brand?.name, value: summary1.summary?.total_mentions || 0 },
-          { name: compareBrand, value: summary2.summary?.total_mentions || 0 }
-      ] : [
+      const mentionsData = [
           { name: state?.brand?.name, value: summary1.summary?.total_mentions || 0 }
       ];
   
-      const engagementData = hasCompare ? [
-          { name: state?.brand?.name, value: summary1.summary?.total_mentions  || 0 },
-          { name: compareBrand, value: summary2.summary?.total_mentions  || 0 }
-      ] : [
+      const engagementData = [
           { name: state?.brand?.name, value: summary1.summary?.total_mentions || 0 }
       ];
   
-      const reachData = hasCompare ? [
-          { name: state?.brand?.name, value: summary1.summary?.estimated_reach || 0 },
-          { name: compareBrand, value: summary2.summary?.estimated_reach || 0 }
-      ] : [
+      const reachData = [
           { name: state?.brand?.name, value: summary1.summary?.estimated_reach || 0 }
       ];
   
-      const sentimentChartData = hasCompare ? [
-          { name: state?.brand?.name, positive: sent1.positive, negative: sent1.negative, neutral: sent1.neutral },
-          { name: compareBrand, positive: sent2.positive, negative: sent2.negative, neutral: sent2.neutral }
-      ] : [
+      const sentimentChartData = [
           { name: state?.brand?.name, positive: sent1.positive, negative: sent1.negative, neutral: sent1.neutral }
       ];
   
@@ -149,16 +121,7 @@ const BrandWatchReport = () => {
   
       // Line Chart Data
       const lineChartData = useMemo(() => ({
-          series: hasCompare ? [
-            {
-              name: state?.brand?.name,
-              data: [10, 20, 15, 25, 20, 30]
-            },
-            {
-              name: compareBrand,
-              data: [5, 10, 8, 12, 10, 15]
-            },
-          ] : [
+          series: [
             {
               name: state?.brand?.name,
               data: [10, 20, 15, 25, 20, 30]
@@ -182,29 +145,18 @@ const BrandWatchReport = () => {
             xaxis: {
               categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',]
             },
-            colors: hasCompare ? ['#BDDAFF', '#F2E5FF' ] : ['#BDDAFF'],
+            colors: ['#BDDAFF'],
           }
-      }), [hasCompare, state, compareBrand]);
+      }), [state]);
       
   
       //Barchart
       const barChartData = useMemo(() => {
           const socialMedia1 = summary1.summary?.social_media_sentiment?.mentions || 0;
           const news1 = summary1.summary?.news_sentiment?.mentions || 0;
-          const socialMedia2 = summary2.summary?.social_media_sentiment?.mentions || 0;
-          const news2 = summary2.summary?.news_sentiment?.mentions || 0;
   
           return {
-              series: hasCompare ? [
-                  {
-                      name: state?.brand?.name,
-                      data: [socialMedia1, news1]
-                  },
-                  {
-                      name: compareBrand,
-                      data: [socialMedia2, news2]
-                  },
-              ] : [
+              series: [
                   {
                       name: state?.brand?.name,
                       data: [socialMedia1, news1]
@@ -234,51 +186,31 @@ const BrandWatchReport = () => {
                   xaxis: {
                       categories: ['Social Media', 'News'],
                   },
-                  colors: hasCompare ? ['#BDDAFF', '#F48A1F'] : ['#F48A1F', '#BDDAFF'],
+                  colors: ['#F48A1F'],
               }
           };
-      }, [summary1, summary2, hasCompare, state, compareBrand]);
-  
-      const urlInfo = {
-          "https://www.youtube.com/watch?v=ZYgkg-GYvp0": {title: "Ethiopia, Dangote Industries sign $2.5 billion deal for mega fertilizer plant", snippet: "The deal paves the way for a $2.5 billion fertilizer plant in Ethiopia's Somali region, powered by natural gas, with an annual production capacity of 3 million tons of urea, aiming to boost food security and position Ethiopia as a regional fertilizer powerhouse.", sentiment: "positive"},
-          "https://www.youtube.com/watch?v=ygVvdTb9eis": {title: "Rewane Speaks On Dangote Refinery's First Gasoline Export To U.S.", snippet: "The video discusses Dangote Refinery's achievement of exporting its first gasoline cargo of 300,000 barrels to the United States, as reported by S&P Global, amidst Nigeria's challenges with fuel import dependence and foreign exchange shortages.", sentiment: "positive"},
-          "https://www.youtube.com/watch?v=krYLjJMcEzU": {title: "US & Europe vs Dangote, Oil War: They Fear Africa's Big Win", snippet: "Lynient Akotonou reports on the growing clash between the U.S. and Europe and Aliko Dangote’s oil ambitions, unpacking why Western powers fear what could become Africa’s biggest win in the global energy market.", sentiment: "negative"},
-          "https://tribuneonlineng.com/fuel-scarcity-imminent-as-nupeng-dangote-face-off-festers/": {title: "Fuel scarcity imminent as NUPENG, Dangote face-off festers", snippet: "Fuel scarcity imminent as the face-off between NUPENG and Dangote festers.", sentiment: "negative"},
-          "https://www.jeuneafrique.com/1718701/economie-entreprises/qui-est-huaxin-cement-le-chinois-qui-veut-se-faire-une-place-parmi-les-rois-nigerians-du-ciment/": {title: "Qui est Huaxin Cement, le chinois qui veut se faire une place parmi les rois nigérians du ciment ?", snippet: "Huaxin Cement frappe un grand coup au Nigeria en reprenant la participation du Suisse Holcim in Lafarge Africa. L’opération, budgétée à 1 milliard de dollars, marque l’arrivée en force du cimentier chinois sur le premier marché du continent, terrain privilégié des rois de l’or gris, les deux milliardaires nigérians Aliko Dangote et Abdul Samad Rabiu.", sentiment: "neutral"},
-          "https://businessday.ng/companies/article/whos-mairawani-business-tycoon-planning-600m-cement-plant-to-rival-dangote-bua/": {title: "Who’s Mairawani? Business tycoon planning $600m cement plant to rival Dangote, BUA", snippet: "Nigeria’s cement industry is set to have a new force with the announcement of a $600 million plant in Kebbi State by business tycoon Muazzam Mairawani, chairman of MSM Group, a move that’s considered to challenge market leaders such as Dangote and BUA Cement.", sentiment: "neutral"},
-          "https://www.informationng.com/2025/09/phynas-late-sisters-remains-evacuated-by-dangote-group.html": {title: "Phyna’s Late Sister’s Remains Evacuated By Dangote Group", snippet: "The Dangote Group on Sunday sent representatives to collect the remains of Ruth Otabor, the younger sister of Big Brother Naija Season 7 winner Phyna, from the hospital where she passed on, as reported by PUNCH Metro.", sentiment: "negative"},
-          "https://www.informationng.com/2025/09/dangote-tinubu-social-media-influencers-failed-ruth-otabor-verydarkman.html": {title: "Dangote, Tinubu, Social Media Influencers Failed Ruth Otabor – VeryDarkMan", snippet: "Nigerian social media commentator VeryDarkMan, has criticised key figures and institutions he believes failed Ruth Otabor, sister of former Big Brother Naija winner Phyna, who tragically died on Sunday after a road accident involving a Dangote truck.", sentiment: "negative"},
-          "https://www.informationng.com/2025/09/dangote-group-mourns-death-of-phynas-sister-says-she-was-to-be-flown-to-india-for-treatment.html": {title: "Dangote Group Mourns Death Of Phyna's Sister, Says She Was To Be Flown To India For Treatment", snippet: "The Dangote Group has expressed grief over the death of Ruth Otabor, sister of Big Brother Naija Season 7 winner Phyna. Ruth died on Sunday after being involved in an accident with a Dangote truck in Auchi, Edo State.", sentiment: "negative"},
-          "https://www.informationng.com/2025/08/phyna-loses-sister-ruth-otabor-weeks-after-dangotes-truck-accident.html": {title: "Phyna Loses Sister Ruth Otabor Weeks After Dangote’s Truck Accident", snippet: "Ruth Otabor, sister of Big Brother Naija Season 7 winner Phyna, has passed away. The family confirmed her passing on Sunday in a statement released by Eko Solicitors & Advocates, stating that Ruth departed for glory around 6:30 a.m.", sentiment: "negative"},
-          "https://www.informationng.com/2025/08/were-ready-to-consider-all-options-dangote-group-assures-phyna-over-sisters-treatment.html": {title: "“We're Ready To Consider All Options” – Dangote Group Assures Phyna Over Sister’s Treatment", snippet: "Big Brother Naija season 7 winner, Phyna, has given a fresh update on her ongoing issue with the Dangote Group regarding her sister’s medical treatment. The reality TV star has been in the spotlight after her younger sister was struck by a truck belonging to the company on August 13, 2025, an accident that sadly led to the amputation of her left leg.", sentiment: "neutral"},
-          "http://www.hiiraan.com/news4/2025/Aug/202705/ethiopia_dangote_group_ink_2_5_billion_deal_to_build_fertilizer_complex_in_gode_somali_region.aspx": {title: "Ethiopia, Dangote Group ink $2.5 billion deal to build fertilizer complex in Gode, Somali region", snippet: "Ethiopian Investment Holdings (EIH), the government’s strategic investment arm, and Dangote Group have signed a landmark shareholders’ agreement to develop and operate a $2.5 billion urea fertilizer production complex in Gode, Somali Regional State.", sentiment: "positive"},
-          "https://www.thisdaylive.com/2025/08/29/dangote-group-ethiopia-strike-deal-to-build-2-5-billion-fertiliser-plant/": {title: "Dangote Group, Ethiopia Strike Deal to Build $2.5 Billion Fertiliser Plant", snippet: "The Dangote Group and Ethiopia government yesterday signed an agreement to build a $2.5 billion fertiliser manufacturing plant in the North-eastern African country, part of Nigerian billionaire Aliko Dangote’s efforts to end the continent’s fertiliser imports.", sentiment: "positive"}
-      }
+      }, [summary1, state]);
   
       const sources = summary1.sources || {youtube: [], news: []}
       const allUrls = [...sources.youtube, ...sources.news];
       const uniqueUrls = [...new Set(allUrls)]; 
   
-      const topMentions = uniqueUrls?.map(url => ({
-          url,
-          type: url.includes('youtube') ? 'Youtube' : 'News',
-          ... ({title: new URL(url).pathname, snippet: 'No description available', sentiment: 'neutral'} || [])
-      }))
+      const topMentions = uniqueUrls.slice(0, 8).map(url => {
+          const isYoutube = url.includes('youtube.com');
+          const defaultInfo = {
+              title: new URL(url).pathname.split('/').pop() || url.split('/').pop() || 'Link',
+              snippet: 'No description available',
+              sentiment: 'neutral'
+          };
+          return {
+              url,
+              type: isYoutube ? 'Youtube' : 'News',
+              ...defaultInfo
+          };
+      })
 
 
    const reportRef = useRef(null);
-  // const handleDownloadPDF = async () => {
-  //   const input = reportRef.current;
-  //   const canvas = await html2canvas(input, { scale: 2 });
-  //   const imgData = canvas.toDataURL('image/png');
-
-  //   const pdf = new jsPDF('p', 'mm', 'a4');
-  //   const pdfWidth = pdf.internal.pageSize.getWidth();
-  //   const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-  //   pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-  //   pdf.save('report.pdf');
-  // };
 
   const handleDownloadPDF = async () => {
     const input = reportRef.current;
@@ -534,35 +466,11 @@ const BrandWatchReport = () => {
                 {/* <p className='font-jost text-[#4B5563] text-sm'>
                                 {mention.snippet.substring(0, 100) + '...'}
                                 </p> */}
-                {/* <div className='flex items-center gap-[30px] w-[278px] h-[28px]'>
-                                    <div className='flex flex-col gap-1'>
-                                        <p className='font-jost text-[10px] font-medium text-[#4B5563]'>45k</p>
-                                        <p className='font-jost text-[10px] font-medium text-[#4B5563]'>Comments</p>
-                                    </div>
-                                    <div className='flex flex-col gap-1'>
-                                        <p className='font-jost text-[10px] font-medium text-[#4B5563]'>45k</p>
-                                        <p className='font-jost text-[10px] font-medium text-[#4B5563]'>Likes</p>
-                                    </div>
-                                    <div className='flex flex-col gap-1'>
-                                        <p className='font-jost text-[10px] font-medium text-[#4B5563]'>45k</p>
-                                        <p className='font-jost text-[10px] font-medium text-[#4B5563]'>Reposts</p>
-                                    </div>
-                                    <div className='flex flex-col gap-1'>
-                                        <p className='font-jost text-[10px] font-medium text-[#4B5563]'>45k</p>
-                                        <p className='font-jost text-[10px] font-medium text-[#4B5563]'>Impressions</p>
-                                    </div>
-                                </div> */}
                 <div className='flex gap-5'>
                   <div className={`w-[57px] h-[24px] rounded-full p-1 ${mention.sentiment === 'positive' ? 'bg-[#DCFCE7]' : mention.sentiment === 'negative' ? 'bg-[#FFA8A8]' : 'bg-[#D3D3D3]'}`}>
                     <p className={`text-xs text-center font-inter ${mention.sentiment === 'positive' ? 'text-[#166534]' : mention.sentiment === 'negative' ? 'text-[#FF0000]' : 'text-[#808080]'}`}>{mention.sentiment}</p>
                   </div>
-                  {/* <div className='flex items-center gap-4'>
-                                        <LuShare2 className='w-5 h-5 text-[#9CA3AF]' />
-                                        <LuArchive className='w-5 h-5 text-[#9CA3AF]' />
-                                        <GoTag className='w-5 h-5 text-[#9CA3AF]' />
-                                        <FiCheckCircle className='w-5 h-5 text-[#9CA3AF]' />
-                                        <IoDocumentTextOutline className='w-5 h-5 text-[#9CA3AF]' />
-                                    </div> */}
+               
                   <a href={mention.url} target="_blank" rel="noopener noreferrer" className='font-jost text-[#F48A1F] text-sm'>Details</a>
                 </div>
               </div>
