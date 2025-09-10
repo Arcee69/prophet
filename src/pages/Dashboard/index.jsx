@@ -270,7 +270,7 @@ const Dashboard = () => {
       </div>
 
       {/* Small Stats Cards (Today Mentions, Total Mentions, etc.) */}
-      {/* <div className='flex gap-4'>
+      <div className='flex gap-4'>
 
         <div className='bg-white rounded-[18px] p-4 w-3/12 shadow-sm flex flex-col gap-[45px]'>
           <div className='flex items-center justify-between'>
@@ -370,10 +370,10 @@ const Dashboard = () => {
           </div>
         </div>
 
-      </div> */}
+      </div>
 
       {/* Tracked Brands */}
-       {/* <div className='flex flex-col gap-6'>
+       <div className='flex flex-col gap-6'>
       <p className='font-jost text-[#6B7280] text-[24px] leading-[28px] font-semibold'>
         Tracked Brands
       </p>
@@ -384,7 +384,7 @@ const Dashboard = () => {
             key={index}
             className='bg-white p-4 rounded-2xl shadow-md w-4/12 h-[321px] flex flex-col gap-6'
           >
-            {/* Header 
+            {/* Header */}
             <div className='flex items-center gap-4'>
               <div className='bg-[#F9FAFB] text-[#111827] font-bold text-2xl rounded-full w-[56px] h-[56px] flex items-center justify-center'>
                 {brand.initial}
@@ -398,7 +398,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Sentiment bars 
+            {/* Sentiment bars */}
             <div className='flex flex-col gap-[37px]'>
             {[
               { label: 'Positive', color: 'bg-[#1E5631]', value: brand.sentiment.positive },
@@ -424,7 +424,7 @@ const Dashboard = () => {
             ))}
             </div>
 
-            {/* Mentions and growth 
+            {/* Mentions and growth */}
             <div className='flex justify-between items-center pt-2'>
               <div className='flex flex-col gap-1'>
                 <p className='font-medium font-jost text-base text-[#667185]'>Total Mentions</p>
@@ -438,7 +438,7 @@ const Dashboard = () => {
           </div>
         ))}
 
-        {/* Add New Brand Card 
+        {/* Add New Brand Card */}
         <div className='w-4/12 h-[321px] rounded-2xl border border-white flex flex-col items-center justify-center px-5 py-8 text-center bg-white shadow-md'>
           <div className='bg-[#F9FAFB] w-10 h-10 flex items-center justify-center rounded-full mb-4'>
             <AiOutlinePlus className='text-gray-500 text-xl' />
@@ -457,9 +457,9 @@ const Dashboard = () => {
       </div>
     </div>
 
-      {/* Charts Row 
+      {/* Charts Row */}
       <div className='flex gap-4'>
-        {/* Sentiment Analysis Overview (Line Chart) *
+        {/* Sentiment Analysis Overview (Line Chart) */}
         <div className='bg-white rounded-[18px] w-1/2 p-4 shadow-sm'>
           <div className='flex justify-between items-start'>
             <p className='font-jost font-semibold text-[16px] mb-4 text-[#374151]'>
@@ -483,7 +483,7 @@ const Dashboard = () => {
           />
         </div>
 
-        {/* Channel Sentiment Distribution (Bar Chart) *
+        {/* Channel Sentiment Distribution (Bar Chart) */}
         <div className='bg-white rounded-[18px] w-1/2 p-4 shadow-sm'>
           <div className='flex items-start justify-between'>
             <p className='font-jost font-semibold text-[16px] mb-4 text-[#374151]'>
@@ -501,14 +501,14 @@ const Dashboard = () => {
       </div>
 
       <div className='flex items-start w-full gap-6'>
-        {/* Top Mentions *
+        {/* Top Mentions */}
         <div className='flex flex-col w-7/12 gap-[11px] '>
           <p className='font-jost font-semibold text-[18px]  text-[#6B7280]'>
             Top Mentions
           </p>
           <div className='flex flex-col gap-6'>
 
-            {/* Facebook Card *
+            {/* Facebook Card */}
             <div className='bg-[#fff] h-[232px] flex items-start gap-2 px-[22px] pt-[22px] pb-[45px] rounded-lg'>
               <img src={Girl} alt='Girl' className='w-[32px] h-[32px] ' />
               <div className='flex gap-5 flex-col w-full'>
@@ -562,7 +562,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Twitter Card *
+            {/* Twitter Card */}
             <div className='bg-[#fff] h-[232px] flex items-start gap-2 px-[22px] pt-[22px] pb-[45px] rounded-lg'>
               <img src={Girl} alt='Girl' className='w-[32px] h-[32px] ' />
               <div className='flex gap-5 flex-col w-full'>
@@ -616,7 +616,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Pinterest Card *
+            {/* Pinterest Card */}
             <div className='bg-[#fff] h-[232px] flex items-start gap-2 px-[22px] pt-[22px] pb-[45px] rounded-lg'>
               <img src={Girl} alt='Girl' className='w-[32px] h-[32px] ' />
               <div className='flex gap-5 flex-col w-full'>
@@ -670,7 +670,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* YouTube Card *
+            {/* YouTube Card */}
             <div className='bg-[#fff] h-[232px] flex items-start gap-2 px-[22px] pt-[22px] pb-[45px] rounded-lg'>
               <img src={Girl} alt='Girl' className='w-[32px] h-[32px] ' />
               <div className='flex gap-5 flex-col w-full'>
@@ -727,7 +727,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Quick Actions *
+        {/* Quick Actions */}
         <div className='flex flex-col w-5/12 gap-[11px] '>
           <p className='font-jost font-semibold text-[18px]  text-[#6B7280]'>
             Quick Actions
@@ -806,7 +806,7 @@ const Dashboard = () => {
 
         </div>
 
-      </div> */}
+      </div> 
 
     </div>
   )

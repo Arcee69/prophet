@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 import LogoBig from '../../assets/svg/logo_big.svg'
 
@@ -9,8 +9,15 @@ import { SiInstagram } from 'react-icons/si'
 import { SlSocialLinkedin } from 'react-icons/sl'
 import { TbBrandFacebook } from 'react-icons/tb'
 import { useNavigate } from 'react-router-dom'
+import ModalPop from '../../components/modalPop'
+import Terms from './Terms'
+import Cookies from './Cookies'
+import Privacy from './Privacy'
 
 const Footer = () => {
+    const [openTermsModal, setOpenTermsModal] = useState(false)
+    const [openCookiesModal, setOpenCookiesModal] = useState(false)
+    const [openPrivacyModal, setOpenPrivacyModal] = useState(false)
 
     const navigate = useNavigate()
 
@@ -72,15 +79,29 @@ const Footer = () => {
             <div className='flex items-center justify-between'>
                 <p className='font-jost text-[#9CA3AF] text-base leading-6'>&copy; {new Date().getFullYear()} Prophet by Chain Reactions Media. All rights reserved.</p>
                 <div className='flex items-center gap-6'>
-                    <p className='font-jost text-base leading-6 text-[#9CA3AF]'>Privacy Policy</p>
-                    <p className='font-jost text-base leading-6 text-[#9CA3AF]'>Terms of Service</p>
-                    <p className='font-jost text-base leading-6 text-[#9CA3AF]'>Cookie Policy</p>
+                    <p onClick={() => setOpenPrivacyModal(true)} className='font-jost cursor-pointer text-base leading-6 text-[#9CA3AF]'>Privacy Policy</p>
+                    <p onClick={() => setOpenTermsModal(true)} className='font-jost cursor-pointer text-base leading-6 text-[#9CA3AF]'>Terms of Service</p>
+                    <p onClick={() => setOpenCookiesModal(true)} className='font-jost cursor-pointer text-base leading-6 text-[#9CA3AF]'>Cookie Policy</p>
                 </div>
             </div>
             <div className='w-full h-[653px]'>
                 <img src={LogoBig} alt='LogoBig' className='w-full h-[653px]' />
             </div>
         </div>
+
+        <ModalPop isOpen={openTermsModal}>
+            <Terms handleClose={() => setOpenTermsModal(false)}/>
+        </ModalPop>
+
+        <ModalPop isOpen={openCookiesModal}>
+            <Cookies handleClose={() => setOpenCookiesModal(false)}/>
+        </ModalPop>
+
+        <ModalPop isOpen={openPrivacyModal}>
+            <Privacy handleClose={() => setOpenPrivacyModal(false)}/>
+        </ModalPop>
+        
+
     </div>
   )
 }
