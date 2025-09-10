@@ -13,25 +13,38 @@ import { useNavigate } from 'react-router-dom'
 const Footer = () => {
 
     const navigate = useNavigate()
+
   return (
     <div className='bg-[#111827] px-[116px] py-[64px] flex flex-col'>
         <div className='flex flex-col gap-[48px]'>
             <div className='flex gap-[48px] items-start'>
                 <div className='flex flex-col gap-4 w-[268px] h-[164px]'>
-                    <p className='text-[#fff] font-bold font-jost text-[20px] leading-7'>About Prophet</p>
+                    <p className='text-[#fff] font-bold font-jost text-[20px] leading-7'>The Prophet</p>
                     <p className='font-jost text-[#9CA3AF] text-base leading-6'>
                         AI-powered media monitoring and brand analytics platform.
                     </p>
                     <div className='flex gap-4'>
-                        <BsTwitterX className='w-5 h-5 text-[#9CA3AF]' />
-                        <SlSocialLinkedin className='w-5 h-5 text-[#9CA3AF]' />
-                        <TbBrandFacebook className='w-5 h-5 text-[#9CA3AF]' />
-                        <SiInstagram className='w-5 h-5 text-[#9CA3AF]'/>
+                        <BsTwitterX 
+                            className='w-5 h-5 text-[#9CA3AF] cursor-pointer' 
+                            onClick={() => window.open("https://x.com/arabyprophet?s=21", "_blank")}
+                        />
+                        <SlSocialLinkedin 
+                            className='w-5 h-5 text-[#9CA3AF] cursor-pointer' 
+                            onClick={() => window.open("https://www.linkedin.com/company/arabyprophet/about/", "_blank")}
+                        />
+                        <TbBrandFacebook 
+                            className='w-5 h-5 text-[#9CA3AF] cursor-pointer' 
+                            onClick={() => window.open("https://www.facebook.com/profile.php?id=61576820370395", "_blank")}
+                        />
+                        <SiInstagram 
+                            className='w-5 h-5 text-[#9CA3AF] cursor-pointer'
+                            onClick={() => window.open("https://www.instagram.com/arabyprophet?igsh=MW90ZTg0bng3bTRIYQ==", "_blank")}
+                        />
                     </div>
                 </div>
                 <div className='flex flex-col gap-4 w-[268px] h-[164px]'>
                     <p className='text-[#fff] font-bold font-jost text-[20px] leading-7'>Products</p>
-                    <p className='font-jost text-[#9CA3AF] text-base leading-6'>Features</p>
+                    <p className='font-jost text-[#9CA3AF] text-base leading-6' onClick={() => {navigate("/our-suite"), window.scrollTo(0, 0)}}>Our Suite</p>
                     <p className='font-jost text-[#9CA3AF] text-base leading-6 cursor-pointer' onClick={() => {navigate("/use-cases"), window.scrollTo(0, 0)}}>Use Cases</p>
                     <p className='font-jost text-[#9CA3AF] text-base leading-6 cursor-pointer' onClick={() => {navigate("/pricing"), window.scrollTo(0, 0)}}>Pricing</p>
                     {/* <p className='font-jost text-[#9CA3AF] text-base leading-6'>API</p> */}

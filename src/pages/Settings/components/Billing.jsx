@@ -33,7 +33,7 @@ const Billing = () => {
     }, [])
 
     // Filter users based on search, status, and category
-    const filteredTransactions = transactions.data
+    const filteredTransactions = transactions?.data
 
   return (
     <div className="bg-white border border-[#E0E0E0] rounded-[10px] p-8 flex flex-col gap-6">
@@ -59,11 +59,11 @@ const Billing = () => {
                     <thead>
                         <tr className='bg-NEUTRAL-200'>
                             <th className='p-4 text-left'><input type='checkbox' /></th>
-                            <th className='p-4 text-left text-sm font-jost font-semibold text-DARK-500'>Invoice  No</th>
-                            <th className='p-4 text-left text-sm font-jost font-semibold text-DARK-500'>Plan</th>
+                            <th className='p-4 text-left text-sm font-jost font-semibold text-DARK-500'>Tx Ref</th>
+                            <th className='p-4 text-left text-sm font-jost font-semibold text-DARK-500'>Provider</th>
+                            <th className='p-4 text-left text-sm font-jost font-semibold text-DARK-500'>Purpose</th>
                             <th className='p-4 text-left text-sm font-jost font-semibold text-DARK-500'>Amount</th>
-                            <th className='p-4 text-left text-sm font-jost font-semibold text-DARK-500'>Start Date</th>
-                            <th className='p-4 text-left text-sm font-jost font-semibold text-DARK-500'>End Date</th>
+                            {/* <th className='p-4 text-left text-sm font-jost font-semibold text-DARK-500'>End Date</th> */}
                             <th className='p-4 text-left text-sm font-jost font-semibold text-DARK-500'>Status</th>
                             <th className='p-4 text-left text-sm font-jost text-DARK-500'></th>
                         </tr>
@@ -78,20 +78,20 @@ const Billing = () => {
                         ) : filteredTransactions?.length > 0 ? filteredTransactions?.map((sub, index) => (
                             <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-GREY-50'}>
                                 <td className='p-4'><input type='checkbox' /></td>
-                                <td className='p-4'>
+                                {/* <td className='p-4'>
                                     <div className='flex flex-col gap-1'>
-                                        <p className='text-sm font-jost text-DARK-500'>{sub.user_id.slice(0, 10)}</p>
+                                        <p className='text-sm font-jost text-DARK-500'>{sub.tx_ref.slice(0, 10)}</p>
                                         <p className='text-[10px] font-jost text-DARK-500'>{sub.email}</p>
                                     </div>
-                                </td>
-                                <td className='p-4 text-sm font-jost text-DARK-500'>{sub.subscription_plan.name}</td>
-                                <td className='p-4 text-sm font-jost text-DARK-500'>{sub.type === 'monthly' ? sub.monthly_amount : sub.annual_amount}</td>
-                                <td className='p-4 text-sm font-jost text-DARK-500'>{sub.start_date}</td>
-                                <td className='p-4 text-sm font-jost text-DARK-500'>{sub.end_date}</td>
+                                </td> */}
+                                <td className='p-4 text-sm font-jost text-DARK-500'>{sub.tx_ref}</td>
+                                <td className='p-4 text-sm font-jost text-DARK-500'>{sub.provider}</td>
+                                <td className='p-4 text-sm font-jost text-DARK-500'>{sub.purpose}</td>
+                                <td className='p-4 text-sm font-jost text-DARK-500'>{sub.amount}</td>
                                 <td className='p-4'>
-                                    <span className={`${sub.is_active ? "bg-GREEN-50 text-GREEN-700" : "bg-red-100 text-red-500 "} text-xs font-medium px-2.5 py-2 rounded-lg`}>{sub.is_active ? "Active" : "Expired"}</span>
+                                    <span className={`${sub.status === "completed" ? "bg-GREEN-50 text-GREEN-700" : "bg-red-100 text-red-500 "} text-xs font-medium px-2.5 py-2 rounded-lg`}>{sub.is_active ? "Active" : "Expired"}</span>
                                 </td>
-                                <td className='p-4'>
+                                {/* <td className='p-4'>
                                     <div className='flex relative'>
                                         <img
                                             src={Kebab}
@@ -114,7 +114,7 @@ const Billing = () => {
                                             </div>
                                         )}
                                     </div>
-                                </td>
+                                </td> */}
                             </tr>
                         )) : (
                             <tr>

@@ -4,11 +4,13 @@ import { GoArrowUpRight } from 'react-icons/go';
 import { fetchSubscriptions } from '../../../features/subscriptions/getSubscriptionSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import ModalPop from '../../../components/modalPop';
+import Kebab from "../../../assets/svg/kebab.svg"
 import SubPlan from './SubPlan';
 
 const Subscription = () => {
     const [currentPage, setCurrentPage] = useState(1)
     const [openSubPlanModal, setOpenSubPlanModal] = useState(false)
+    const [openMenuIndex, setOpenMenuIndex] = useState(null)
 
     const dispatch = useDispatch()
 
@@ -104,7 +106,7 @@ const Subscription = () => {
                                 <th className='p-4 text-left text-sm font-jost font-semibold text-DARK-500'>Start Date</th>
                                 <th className='p-4 text-left text-sm font-jost font-semibold text-DARK-500'>End Date</th>
                                 <th className='p-4 text-left text-sm font-jost font-semibold text-DARK-500'>Status</th>
-                                <th className='p-4 text-left text-sm font-jost text-DARK-500'></th>
+                                {/* <th className='p-4 text-left text-sm font-jost text-DARK-500'></th> */}
                             </tr>
                         </thead>
                         <tbody>
@@ -124,13 +126,13 @@ const Subscription = () => {
                                         </div>
                                     </td>
                                     <td className='p-4 text-sm font-jost text-DARK-500'>{sub.subscription_plan.name}</td>
-                                    <td className='p-4 text-sm font-jost text-DARK-500'>{sub.type === 'monthly' ? sub.monthly_amount : sub.annual_amount}</td>
+                                    <td className='p-4 text-sm font-jost text-DARK-500'>{sub.type === 'monthly' ? sub.subscription_plan.monthly_amount : sub.subscription_plan.annual_amount}</td>
                                     <td className='p-4 text-sm font-jost text-DARK-500'>{sub.start_date}</td>
                                     <td className='p-4 text-sm font-jost text-DARK-500'>{sub.end_date}</td>
                                     <td className='p-4'>
                                         <span className={`${sub.is_active ? "bg-GREEN-50 text-GREEN-700" : "bg-red-100 text-red-500 "} text-xs font-medium px-2.5 py-2 rounded-lg`}>{sub.is_active ? "Active" : "Expired"}</span>
                                     </td>
-                                    <td className='p-4'>
+                                    {/* <td className='p-4'>
                                         <div className='flex relative'>
                                             <img
                                                 src={Kebab}
@@ -142,7 +144,6 @@ const Subscription = () => {
                                                 <div className='absolute top-full w-[100px] flex flex-col gap-3 right-0 mt-2 bg-white border border-gray-200 rounded shadow-lg p-2 z-10'>
                                                     <button
                                                         onClick={() => {
-                                                            setOpenDetailsModal(true);
                                                             setSubscriptionData(sub);
                                                             setOpenMenuIndex(null);
                                                         }}
@@ -153,7 +154,7 @@ const Subscription = () => {
                                                 </div>
                                             )}
                                         </div>
-                                    </td>
+                                    </td> */}
                                 </tr>
                             )) : (
                                 <tr>
