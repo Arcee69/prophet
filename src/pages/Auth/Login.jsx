@@ -6,7 +6,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { FaLinkedin } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
-import LogoBlack from '../../assets/svg/logo_black.svg';
+import LogoBlack from '../../assets/png/logo.png';
 
 import PasswordField from '../../components/InputFields/PasswordField';
 import { useDispatch } from 'react-redux';

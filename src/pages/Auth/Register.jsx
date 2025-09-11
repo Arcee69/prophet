@@ -3,7 +3,7 @@ import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { CgSpinner } from 'react-icons/cg';
 import { useNavigate } from 'react-router-dom';
-import LogoBlack from '../../assets/svg/logo_black.svg';
+import LogoBlack from '../../assets/png/logo.png';
 import PasswordField from '../../components/InputFields/PasswordField';
 import { api } from '../../services/api';
 import { appUrls } from '../../services/urls';

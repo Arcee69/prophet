@@ -1,7 +1,7 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import Logo from "../../assets/svg/logo_black.svg"
+import Logo from "../../assets/png/logo.png"
 
 const Header = () => {
 
