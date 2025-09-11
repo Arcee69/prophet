@@ -47,7 +47,7 @@ const Register = () => {
       "password": values?.password,
       "password_confirmation": values?.confirmPassword
     }
-    console.log(data, "max")
+    // console.log(data, "max")
     try {
       const res = await api.post(appUrls?.REGISTER_URL, data)
       console.log(res, "appo")
