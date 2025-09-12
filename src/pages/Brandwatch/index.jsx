@@ -70,48 +70,7 @@ const Brandwatch = () => {
     const { brandWatch } = useSelector((state) => state.allBrandWatch)
     console.log(brandWatch, "brandWatch")
 
-    const data = [
-        {
-            brandName: "Apple",
-            status: "Negative",
-            description: "Technology company operating in the digital marketplace with innovative solutions.",
-            mention: 3300,
-            rate: 60,
-            platform: "X (Twitter)",
-            sub: "Apple is performing well with strong positive sentiment and growing mentions."
-        },
-        {
-            brandName: "Samsung",
-            status: "Negative",
-            description: "Technology company operating in the digital marketplace with innovative solutions.",
-            mention: 2500,
-            rate: 51,
-            platform: "Instagram",
-            sub: "Samsung needs attention due to increased negative sentiment. Monitor closely."
-        },
-    ]
-
-    // const sentimentData = [
-    //     {
-    //         name: 'Apple',
-    //         positive: 40,
-    //         negative: 41,
-    //         neutral: 19, // calculated as 100 - (40 + 41)
-    //     },
-    //     {
-    //         name: 'Samsung',
-    //         positive: 22,
-    //         negative: 22,
-    //         neutral: 56, // calculated as 100 - (22 + 22)
-    //     },
-    // ];
-
-    // const channelData = [
-    //     { name: 'Twitter', samsung: 1200, apple: 1500 },
-    //     { name: 'Facebook', samsung: 800, apple: 1000 },
-    //     { name: 'Instagram', samsung: 600, apple: 750 },
-    //     { name: 'News Sites', samsung: 400, apple: 500 },
-    // ];
+ 
 
     const finalEndDate = new Date(endDate);
     finalEndDate.setDate(finalEndDate.getDate() + 14); // add 90 days

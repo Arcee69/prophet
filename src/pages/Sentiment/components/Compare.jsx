@@ -52,6 +52,7 @@ const Compare = ({ search, setSearchList }) => {
             const data = { "keyword1": keyword }
             try {
                 const res = await api.post(appUrls?.SENTIMENT_URL, data)
+                console.log(res, "pick")
                 if (isSecond) {
                     setSentimentData2(res?.data)
                 } else {
@@ -267,10 +268,43 @@ const Compare = ({ search, setSearchList }) => {
     }))
     // ... (urlInfo[url] || {title: new URL(url).pathname, snippet: 'No description available', sentiment: 'neutral'})
 
+    // const finalEndDate = new Date(endDate);
+    // finalEndDate.setDate(finalEndDate.getDate() + 14); // add 90 days
+    
+    // const handleAddBrand = async () => {
+    //     const data = {
+    //         "brand_id": brandId,
+    //         "end_date": new Date(finalEndDate).toISOString().split("T")[0]
+    //     }
+    //     setLoading(true)
+    //     try {
+    //         const res = await api.post(appUrls?.BRANDWATCH_URL, data)
+    //         console.log(res, "sapa")
+    //         toast.success(`${res.data.message}`, {
+    //             position: "top-right",
+    //             autoClose: 3500,
+    //             closeOnClick: true,
+    //         })
+    //         dispatch(fetchBrandWatch())
+    //     } catch (err) {
+    //         console.log(err, "sapa")
+    //         toast.error(`${err.data.message}`, {
+    //             position: "top-right",
+    //             autoClose: 3500,
+    //             closeOnClick: true,
+    //         })
+    //     } finally {
+    //         setLoading(false)
+    //     }
+    // }
+
   return (
     <div className='w-full flex flex-col gap-[32px]'>
-        <div onClick={() => setSearchList([])} className='w-[100px] flex items-center justify-center p-3 rounded-lg bg-black'>
-            <p className='text-white text-lg font-jost'>Back</p>
+        <div className='flex items-center justify-between'>
+            <div onClick={() => setSearchList([])} className='w-[100px] flex items-center justify-center p-3 rounded-lg bg-black'>
+                <p className='text-white text-lg font-jost'>Back</p>
+            </div>
+
         </div>
         <div className='bg-[#fff] h-[88px] rounded-[8px] flex justify-between p-[25px]'>
             <p className='font-jost font-semibold text-[#1F2937] leading-[32px] text-[24px]'>{search} : {compareBrand || null}</p>
