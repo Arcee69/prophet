@@ -220,7 +220,7 @@ const Footer = () => {
         </div>
 
         {/* Divider */}
-        <div className="bg-[#1F2937] w-full h-px"></div>
+        {/* <div className="bg-[#1F2937] w-full h-px"></div> */}
 
         {/* Bottom Section */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
