@@ -73,7 +73,7 @@ const Register = () => {
 
   return (
     <div className="flex items-center w-full justify-center ">
-      <div className="w-[500px]">
+      <div className="w-full lg:w-[500px]">
         {/* Logo */}
         <div className="flex justify-center">
           <img src={LogoBlack} alt="Logo" className="w-32 cursor-pointer" onClick={() => navigate("/")} />
