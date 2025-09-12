@@ -70,7 +70,7 @@ const Home = () => {
                 }}
             />
             
-            <div className='w-full max-w-[1094px] relative z-10 mx-auto px-4'>
+            <div className='w-full max-w-[1094px] relative mx-auto px-4'>
                 <img src={Brain} alt="Brain" className="w-full sm:w-10/12 mx-auto max-w-[800px]" />
                 <img src={Sentiments} alt='Sentiments' className='absolute hidden md:block left-1/4 sm:left-1/3 md:left-52 bottom-8 sm:bottom-16 md:bottom-32 w-[120px] sm:w-[150px] md:w-[171px]' />
                 <img src={Trends} alt='Trends' className='absolute hidden lg:block right-8 sm:right-20 lg:right-44 top-1/4 sm:top-1/3 lg:top-52 w-[100px] sm:w-[120px] lg:w-[128px]' />

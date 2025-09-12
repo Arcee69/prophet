@@ -13,7 +13,7 @@ const MobileNavBar = ({ handleClose }) => {
   }
 
   return (
-    <div className='fixed inset-0 z-50'>
+    <div className='fixed inset-0 above'>
       {/* Overlay */}
       <div 
         className='absolute inset-0 bg-black bg-opacity-50'
@@ -21,7 +21,7 @@ const MobileNavBar = ({ handleClose }) => {
       />
       
       {/* Navigation drawer */}
-      <div className='absolute right-0 top-0 h-full w-full bg-white shadow-lg'>
+      <div className='absolute right-0 top-0 h-screen w-full bg-white shadow-lg'>
         {/* Header with close button */}
         <div className='flex justify-between items-center p-4 '>
             <img src={Logo} alt='logo' className='w-[111px] lg:h-[50px]' onClick={() => navigate("/")} />

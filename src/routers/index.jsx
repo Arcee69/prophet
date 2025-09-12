@@ -64,12 +64,6 @@ export default function Routers() {
             <Route path="/contact" element={<Contact />} />
         </Route>
 
-    
-
-       
-
-      
-
       </Routes>
     </div>
   )

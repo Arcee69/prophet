@@ -5,11 +5,12 @@ import Cookies from "js-cookie"
 import { isObjectEmpty } from '../utils/CheckLoginData';
 import DashboardLayout from '../layouts/DashboardLayout';
 import AuthPageLayout from '../layouts/AuthPageLayout';
+import { isMobileOrTablet } from '../utils/deviceDetector';
+import UnsupportedDevice from '../pages/UnsupportedDevice';
 
 
 
 export const ProtectRoutes = () => {
-
     const location = useLocation();
     const isAuthed = isObjectEmpty((Cookies.get("userProps")))
     return !isAuthed ? (
@@ -22,6 +23,9 @@ export const ProtectRoutes = () => {
   };
 
   export const AuthProtectRoutes = () => {
+      if (isMobileOrTablet()) {
+    return <UnsupportedDevice />;
+  }
     const location = useLocation();
     const isAuthed =  isObjectEmpty((Cookies.get("userProps")))
     return isAuthed ? (
