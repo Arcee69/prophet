@@ -20,7 +20,7 @@ const Header = () => {
                 <p className='font-jost text-base leading-[23px] cursor-pointer' onClick={() => {navigate("/contact"), window.scrollTo(0, 0)}}>Contact</p>
             </div>
             <div className='flex items-center gap-4'>
-                <button onClick={() => {navigate("/register"), window.scrollTo(0, 0)}} className='w-[99px] rounded-[8px] h-[45px] flex items-center bg-[#202633] p-2 justify-center'>
+                <button onClick={() => {navigate("/register"), window.scrollTo(0, 0)}} className='w-[99px] group hover:bg-[#F48A1F] rounded-[8px] h-[45px] flex items-center bg-[#202633] p-2 justify-center'>
                     <p className='font-jost text-[#fff] font-semibold text-base leading-[23px]'>Start Free</p>
                 </button>
                 <button onClick={() => {navigate("/login"), window.scrollTo(0, 0)}} className='w-[73px] rounded-[8px] h-[45px] flex items-center bg-[#FFFFFF] p-2 justify-center'>

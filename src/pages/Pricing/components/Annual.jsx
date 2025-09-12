@@ -8,7 +8,7 @@ const parseFeatures = (htmlString) => {
   const parser = new DOMParser();
   const doc = parser.parseFromString(htmlString, 'text/html');
   
-  // Extract featuresTitle from the first <p><strong><em>...</em></strong></p>
+
   const featuresTitleElement = doc.querySelector('p strong em');
   const featuresTitle = featuresTitleElement ? featuresTitleElement.textContent.trim() : '';
   

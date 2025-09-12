@@ -81,7 +81,14 @@ const Sidebar = ({ closeSidebar }) => {
                 <img src={Home} className={`${location.pathname === "/dashboard" ? "text-[#fff]" : ""} w-4 h-4 text-[#E4E7EC] group-hover:text-[#fff]`}  />
                 <p className={`${location.pathname === "/dashboard" ? "text-[#fff]" : ""} font-inter text-[#E4E7EC] group-hover:text-[#fff] font-medium text-sm`}>Dashboard</p>
             </div> 
-   
+            
+            <div 
+                className={`${location.pathname === "/sentiment-analysis" ? "bg-[#F48A1F]" : ""} flex items-center gap-3 group hover:bg-[#F48A1F] p-2  cursor-pointer rounded-lg h-auto`} 
+                onClick={() => {navigate("/sentiment-analysis"); closeSidebar()}}
+            >
+                <img src={Speaker} className={`${location.pathname === "/sentiment-analysis" ? "text-[#fff]" : ""} w-4 h-4 text-[#E4E7EC] group-hover:text-[#fff]`} />
+                <p className={`${location.pathname === "/sentiment-analysis" ? "text-[#fff]" : ""} font-inter text-[#E4E7EC] group-hover:text-[#fff] font-medium text-sm`}>Sentiment Analysis</p>
+            </div>
 
             <div 
                 className={`${location.pathname === "/brandwatch" ? "bg-[#F48A1F]" : ""} flex items-center gap-3 group hover:bg-[#F48A1F] p-2  cursor-pointer rounded-lg h-auto`} 
@@ -91,13 +98,7 @@ const Sidebar = ({ closeSidebar }) => {
                 <p className={`${location.pathname === "/brandwatch" ? "text-[#fff]" : ""} font-inter text-[#E4E7EC] group-hover:text-[#fff] font-medium text-sm`}>Brand Watch</p>
             </div>
 
-            <div 
-                className={`${location.pathname === "/sentiment-analysis" ? "bg-[#F48A1F]" : ""} flex items-center gap-3 group hover:bg-[#F48A1F] p-2  cursor-pointer rounded-lg h-auto`} 
-                onClick={() => {navigate("/sentiment-analysis"); closeSidebar()}}
-            >
-                <img src={Speaker} className={`${location.pathname === "/sentiment-analysis" ? "text-[#fff]" : ""} w-4 h-4 text-[#E4E7EC] group-hover:text-[#fff]`} />
-                <p className={`${location.pathname === "/sentiment-analysis" ? "text-[#fff]" : ""} font-inter text-[#E4E7EC] group-hover:text-[#fff] font-medium text-sm`}>Sentiment Analysis</p>
-            </div>
+            
 
             <div 
                 className={`${location.pathname === "/reports" ? "bg-[#F48A1F]" : ""} flex items-center gap-3 group hover:bg-[#F48A1F] p-2  cursor-pointer rounded-lg h-auto`} 
