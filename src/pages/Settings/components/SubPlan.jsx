@@ -97,7 +97,7 @@ const SubPlan = ({ handleClose }) => {
   }
 
   if (error) {
-    return <div className="p-4 text-red-500">Error loading plans: {error}</div>;
+    return <div className="p-4 text-red-500">Error loading plans: {error}</div>
   }
 
   return (
