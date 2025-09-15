@@ -11,6 +11,8 @@ import LogoBlack from '../../assets/png/logo.png';
 import PasswordField from '../../components/InputFields/PasswordField';
 import { useDispatch } from 'react-redux';
 import { loginUser } from '../../features/auth/loginSlice';
+import { isMobileOrTablet } from '../../utils/deviceDetector';
+import UnsupportedDevice from '../UnsupportedDevice';
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
@@ -41,6 +43,10 @@ const Login = () => {
             }
         });
 };
+
+  if (isMobileOrTablet()) {
+    return <UnsupportedDevice />;
+  }
 
   return (
     <div className="flex flex-col items-center gap-6">
