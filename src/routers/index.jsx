@@ -25,6 +25,7 @@ import Suite from '../pages/Suite';
 import UseCases from '../pages/UseCases';
 import ViewBlogPost from '../pages/Blogs/components/ViewBlogPost';
 import BrandWatchReport from '../pages/Brandwatch/components/BrandReport';
+import MyReports from '../pages/Reports/component/MyReports';
 
 
 export default function Routers() {
@@ -60,6 +61,7 @@ export default function Routers() {
             <Route path="/brandwatch" element={<Brandwatch/>} />
             <Route path="/brandwatch/report" element={<BrandWatchReport />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/reports/my-reports" element={<MyReports />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/contact" element={<Contact />} />
         </Route>

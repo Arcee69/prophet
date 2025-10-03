@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { fetchBrands } from '../../features/brands/getBrandsSlice'
 import { api } from '../../services/api'
 import { appUrls } from '../../services/urls'
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -26,6 +27,7 @@ const Reports = () => {
   const [selectedTime, setSelectedTime] = useState("This Week")
   const [reportData, setReportData] = useState([])
   const [loading, setLoading] = useState(false)
+  const [description, setDescription] = useState("")
 
 
   const reportRef = useRef(null);
@@ -174,28 +176,26 @@ const Reports = () => {
     setReport(false)
   };
 
+  const navigate = useNavigate()
+
    
 
 
   return (
     <div className='flex flex-col gap-6 px-3 w-full'>
       <div className='flex flex-col gap-1'>
-        <p className='font-jost text-[#101928] font-semibold leading-[145%] text-[24px]'>One Time Report</p>
-        <p className='text-[#667185] text-sm font-jost'>This report provides a comprehensive overview.</p>
+        <p className='font-jost text-[#101928] font-semibold leading-[145%] text-[24px]'>Report</p>
+        <p className='text-[#667185] text-sm font-jost'></p>
       </div>
 
       <div className='border border-[#E0E0E0] rounded-xl  w-full p-5 flex flex-col gap-5'>
-        <div className='flex items-center justify-between'>
-          <div className='flex gap-2 flex-col '>
-            <p className='font-jost text-DARK-_100 font-semibold leading-7 text-[18px]'>Generate Report</p>
-            <p className='text-DARK-_200 text-sm font-jost leading-[150%]'>Apply all filters applicable to your report</p>
-          </div>
+        <div className='flex items-center gap-5 justify-end'>
           <button
             type='button'
-            className='w-[150px] h-[40px] bg-[#F48A1F] rounded-[8px] p-2'
-            onClick={handleGenerateReport}
+            className='w-[150px] h-[40px] bg-[#111827] rounded-[8px] p-2'
+            onClick={() => navigate("/reports/my-reports")}
           >
-            <p className='font-jost text-white text-base font-medium'>Generate Report</p>
+            <p className='font-jost text-white text-base font-medium'>My Report</p>
           </button>
         </div>
 
@@ -282,6 +282,28 @@ const Reports = () => {
               }
             </div>
 
+          </div>
+
+          <div className='flex flex-col gap-2 w-full'>
+            <p className='font-jost font-medium text-sm leading-[150%] text-[#374151]'>Description</p>
+            <div className='flex items-center w-full bg-transparent rounded-[10px] border border-[#D1D5DB] p-3'>
+              <textarea
+                name='description'
+                value={description}
+                className='appearance-none w-full outline-none bg-transparent h-[150px] font-jost text-base text-[#111827]'
+                onChange={(e) => setDescription(e.target.value)}
+              ></textarea>
+            </div>
+          </div>
+
+          <div className='flex justify-end'>
+            <button
+              type='button'
+              className='w-[150px] h-[40px] bg-[#F48A1F] rounded-[8px] p-2'
+              // onClick={handleGenerateReport}
+            >
+              <p className='font-jost text-white text-base font-medium'>Request Report</p>
+            </button>
           </div>
 
 

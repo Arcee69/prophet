@@ -29,6 +29,7 @@ const Brandwatch = () => {
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
     const [search, setSearch] = useState("");
+    const [searchMode, setSearchMode] = useState('brand'); // 'brand' or 'keyword'
     const [openAddBrandRequestModal, setOpenAddBrandRequestModal] = useState(false)
     const [addBrand, setAddBrand] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -48,9 +49,15 @@ const Brandwatch = () => {
     const { brands } = useSelector((state) => state.allBrands)
     console.log(brands.data, "brands")
 
+    // Reset search and related states when mode changes
+    useEffect(() => {
+        setSearch("");
+        setSuggestions([]);
+        setBrandId('');
+    }, [searchMode]);
 
     useEffect(() => {
-        if (search.trim()) {
+        if (searchMode === 'brand' && search.trim()) {
             const filtered = brands?.data?.filter((b) =>
                 b.name.toLowerCase().includes(search.toLowerCase())
             );
@@ -58,13 +65,17 @@ const Brandwatch = () => {
         } else {
             setSuggestions([]);
         }
-    }, [search, brands]);
+    }, [search, brands, searchMode]);
 
     const handleSelectSuggestion = (brand) => {
         console.log(brand, "myself")
         setSearch(brand.name);
         setBrandId(brand.id)
         setSuggestions([]); // close dropdown
+    };
+
+    const handleModeChange = (mode) => {
+        setSearchMode(mode);
     };
 
     const { brandWatch } = useSelector((state) => state.allBrandWatch)
@@ -77,9 +88,31 @@ const Brandwatch = () => {
 
     const handleAddBrand = async () => {
         const data = {
-            "brand_id": brandId,
-            "end_date": new Date(finalEndDate).toISOString().split("T")[0]
+            "end_date": new Date(finalEndDate).toISOString().split("T")[0],
+        };
+
+        if (searchMode === 'brand') {
+            if (!brandId) {
+                toast.error("Please select a brand.", {
+                    position: "top-right",
+                    autoClose: 3500,
+                    closeOnClick: true,
+                });
+                return;
+            }
+            data.brand_id = brandId;
+        } else {
+            if (!search.trim()) {
+                toast.error("Please enter a keyword.", {
+                    position: "top-right",
+                    autoClose: 3500,
+                    closeOnClick: true,
+                });
+                return;
+            }
+            data.keyword = search;
         }
+
         setLoading(true)
         try {
             const res = await api.post(appUrls?.BRANDWATCH_URL, data)
@@ -92,7 +125,7 @@ const Brandwatch = () => {
             dispatch(fetchBrandWatch())
         } catch (err) {
             console.log(err, "sapa")
-            toast.error(`${err.data.message}`, {
+            toast.error(`${err.response?.data?.message || err.message}`, {
                 position: "top-right",
                 autoClose: 3500,
                 closeOnClick: true,
@@ -101,12 +134,6 @@ const Brandwatch = () => {
             setLoading(false)
         }
     }
-
-
-    // setAddBrand(prev => !prev)
-    // if(!addBrand) {
-    //     setSearch('')
-    // }
 
 
     useEffect(() => {
@@ -184,6 +211,22 @@ const Brandwatch = () => {
             </div>
         </div>
 
+        {/* Search Mode Toggle */}
+        <div className='flex items-center gap-2'>
+            <button
+                className={`px-4 py-2 rounded-[10px] font-jost font-medium text-sm ${searchMode === 'brand' ? 'bg-[#F48A1F] text-white' : 'bg-white text-[#6B7280] border border-[#E2E8F0]'}`}
+                onClick={() => handleModeChange('brand')}
+            >
+                Search by Brand
+            </button>
+            <button
+                className={`px-4 py-2 rounded-[10px] font-jost font-medium text-sm ${searchMode === 'keyword' ? 'bg-[#F48A1F] text-white' : 'bg-white text-[#6B7280] border border-[#E2E8F0]'}`}
+                onClick={() => handleModeChange('keyword')}
+            >
+                Search by Keyword
+            </button>
+        </div>
+
         {/* Search */}
         <div className='flex items-start gap-2 w-full'>
             <div className='flex w-full flex-col'>
@@ -192,12 +235,12 @@ const Brandwatch = () => {
                         type="text"
                         onChange={(e) => setSearch(e.target.value)}
                         value={search}
-                        placeholder="Search brands"
+                        placeholder={searchMode === 'brand' ? "Search brands" : "Enter keyword"}
                         className="w-full bg-[#fcfcfc] pl-[38px] outline-none font-jost"
                     />
                 </div>
-                {/* Suggestions dropdown */}
-                {suggestions?.length > 0 && (
+                {/* Suggestions dropdown - only for brand mode */}
+                {searchMode === 'brand' && suggestions?.length > 0 && (
                     <div className="bg-white border border-[#E2E8F0] rounded-md shadow-md mt-1 w-full max-h-48 overflow-y-auto">
                         {suggestions?.length > 0 ? (
                             suggestions?.map((brand, index) => (
@@ -228,7 +271,9 @@ const Brandwatch = () => {
                     loading ?
                     <CgSpinner className='animate-spin text-white' />
                     :
-                    <p className='font-jost text-[#F8FAFC] whitespace-nowrap text-sm leading-[20px]'>Add Brand to Monitor</p>
+                    <p className='font-jost text-[#F8FAFC] whitespace-nowrap text-sm leading-[20px]'>
+                        {searchMode === 'brand' ? 'Add Brand to Monitor' : 'Add Keyword to Monitor'}
+                    </p>
                 }
             </button>
         </div>
@@ -258,7 +303,7 @@ const Brandwatch = () => {
                                             <div className='flex items-center justify-between'>
                                                 <div className='flex items-center gap-1'>
                                                     <LuPackage className='w-5 h-5 text-[#10B981]' />
-                                                    <p className='font-jost text-[#6B7280] font-semibold text-[20px] capitalize leading-7'>{item.brand.name}</p>
+                                                    <p className='font-jost text-[#6B7280] font-semibold text-[20px] capitalize leading-7'>{item.brand !== null ? item.brand.name : item.keyword}</p>
                                                 </div>
                                             
                                             </div>

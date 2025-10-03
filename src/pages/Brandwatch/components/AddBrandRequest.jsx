@@ -1,11 +1,30 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { CgSpinner } from 'react-icons/cg'
+import { api } from '../../../services/api'
+import { appUrls } from '../../../services/urls'
+import { toast } from 'react-toastify'
 
 const AddBrandRequest = ({ handleClose }) => {
     const [brandName, setBrandName] = useState("")
     const [loading, setLoading] = useState(false)
 
-    const submitForm = () => { }
+    const submitForm = async () => { 
+        setLoading(true)
+        const data = {
+            "name": brandName
+        }
+        try {
+            const res = await api.post(appUrls?.BRANDS_REQUEST_URL, data)
+            console.log(res, "milk")
+            toast.success(`${res.data.message}`)
+        } catch (err) {
+            console.log(err, "err")
+            toast.error(`${err.data.message}`)
+        } finally {
+            setLoading(false)
+            handleClose()
+        }
+    }
 
     return (
         <div className='bg-[#fff] w-[300px] h-[200px] shadow-md mt-[100px] flex flex-col items-center p-8 gap-8 rounded-lg'>

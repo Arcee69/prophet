@@ -21,6 +21,7 @@ export const appUrls = {
 
     //BRANDS ENDPOINTS
     BRANDS_URL: "/v1/brand",
+    BRANDS_REQUEST_URL: "/v1/brand-request",
 
     //BRANDWATCH ENDPOINTS
     BRANDWATCH_URL: "/v1/watches",
