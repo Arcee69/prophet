@@ -14,6 +14,7 @@ import { appUrls } from '../../services/urls'
 import { useNavigate } from 'react-router-dom';
 import ModalPop from '../../components/modalPop';
 import PaymentInfo from './component/PaymentInfo';
+import { toast } from 'react-toastify';
 
 
 
@@ -44,6 +45,7 @@ const Reports = () => {
 
     const handleIndustryReport = async () => {
       setOpenPaymentInfo(true)
+      setLoading(true)
       const data = {
         "subject": selectedBrand.name,
         "region": regions,
@@ -53,17 +55,18 @@ const Reports = () => {
       try {
         const res = await api.post(appUrls?.INDUSTRY_REPORT_URL, data)
         console.log(res, "maxwell")
-        // toast.success(res.data.message)
+        toast.success(res.data.message)
       } catch (err) {
         console.log(err, "salo")
-        // toast.error(err.data.message)
+        toast.error(err.data.message)
       } finally {
          setLoading(false)
       }
     }
 
     const handleCrisisReport = async () => {
-       setOpenPaymentInfo(true)
+      setOpenPaymentInfo(true)
+      setLoading(true)
       const data = {
         "subject": subject,
         "region": regions,
@@ -73,10 +76,10 @@ const Reports = () => {
       try {
         const res = await api.post(appUrls?.CRISIS_REPORT_URL, data)
         console.log(res, "crisis")
-        // toast.success(res.data.message)
+        toast.success(res.data.message)
       } catch (err) {
         console.log(err, "salo")
-        // toast.error(err.data.message)
+        toast.error(err.data.message)
       } finally {
          setLoading(false)
       }
@@ -84,6 +87,7 @@ const Reports = () => {
 
     const handlePoliticalReport = async () => {
        setOpenPaymentInfo(true)
+        setLoading(true)
       const data = {
         "subject": subject,
         "region": regions,
@@ -92,10 +96,10 @@ const Reports = () => {
       try {
         const res = await api.post(appUrls?.POLITICAL_REPORT_URL, data)
         console.log(res, "political")
-        // toast.success(res.data.message)
+        toast.success(res.data.message)
       } catch (err) {
         console.log(err, "salo")
-        // toast.error(err.data.message)
+        toast.error(err.data.message)
       } finally {
          setLoading(false)
       }
@@ -103,6 +107,7 @@ const Reports = () => {
 
     const handleElectionReport = async () => {
        setOpenPaymentInfo(true)
+        setLoading(true)
       const data = {
         "subject": subject,
         "region": regions,
@@ -111,10 +116,10 @@ const Reports = () => {
       try {
         const res = await api.post(appUrls?.ELECTION_REPORT_URL, data)
         console.log(res, "election")
-        // toast.success(res.data.message)
+        toast.success(res.data.message)
       } catch (err) {
         console.log(err, "salo")
-        // toast.error(err.data.message)
+        toast.error(err.data.message)
       } finally {
          setLoading(false)
       }
@@ -301,7 +306,7 @@ const Reports = () => {
       </div>
 
       <ModalPop isOpen={openPaymentInfo}>
-        <PaymentInfo handleClose={() => setOpenPaymentInfo(false)} />
+        <PaymentInfo loading={loading} handleClose={() => setOpenPaymentInfo(false)} />
       </ModalPop>
 
     </div>

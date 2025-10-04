@@ -151,6 +151,7 @@ const MyReports = () => {
                                 <table className="min-w-full divide-y divide-gray-200">
                                     <thead className="bg-[#F1F3F9]">
                                         <tr>
+                                            <th className="px-4 py-2 text-left text-base font-medium text-[#667185] uppercase tracking-wider font-jost">Date</th>
                                             <th className="px-4 py-2 text-left text-base font-medium text-[#667185] uppercase tracking-wider font-jost">Title</th>
                                             <th className="px-4 py-2 text-left text-base font-medium text-[#667185] uppercase tracking-wider font-jost">Type</th>
                                             <th className="px-4 py-2 text-left text-base font-medium text-[#667185] uppercase tracking-wider font-jost">Region</th>
@@ -161,8 +162,15 @@ const MyReports = () => {
                                     <tbody className="bg-white divide-y divide-gray-200">
                                         {filteredReports.length > 0 ? filteredReports.map((item) => {
                                             const { text, bgColor, textColor } = getStatusColor(item.status)
+                                            console.log(item, "item")
                                             return (
                                                 <tr key={item.id}>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-[#101928] font-jost capitalize">
+                                                        <div className='flex flex-col'>
+                                                            <p>{new Date(item.created_at).toLocaleDateString()}</p>
+                                                            <p>{new Date(item.created_at).toLocaleTimeString()}</p>
+                                                        </div>
+                                                    </td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-[#101928] font-jost capitalize">{item.subject}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-[#101928] font-jost capitalize">{item.report_type}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-[#101928] font-jost capitalize">{item.region}</td>
@@ -179,12 +187,6 @@ const MyReports = () => {
                                                         >
                                                             Download Report
                                                         </button>
-                                                        {/* <button
-                                                            onClick={() => handleKebabClick(item)}
-                                                            className="text-[#667185] hover:text-[#101928] focus:outline-none"
-                                                        >
-                                                            <CiMenuKebab className='w-5 h-5' />
-                                                        </button> */}
                                                     </td>
                                                 </tr>
                                             )
