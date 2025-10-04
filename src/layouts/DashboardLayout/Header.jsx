@@ -53,8 +53,8 @@ const Header = ({ toggleSidebar }) => {
                                 onChange={(e) => setSearch(e.target.value)}
                             />
                         </div>
-                        <LuBell className='w-5 h-5 text-[#9CA3AF]' />
-                        <FiUser className='w-5 h-5 text-[#9CA3AF]' />
+                        {/* <LuBell className='w-5 h-5 text-[#9CA3AF]' />
+                        <FiUser className='w-5 h-5 text-[#9CA3AF]' /> */}
                     </div>
                 </div>
             }
