@@ -41,6 +41,7 @@ export const appUrls = {
     CRISIS_REPORT_URL: "/v1/reports/crisis-playbook",
     POLITICAL_REPORT_URL: "/v1/reports/political-pulse",
     ELECTION_REPORT_URL: "/v1/reports/election-analysis",
+    REPORTS_URL: "/v1/reports",
 
     //BLOGS ENDPOINT
     BLOGS_URL: "/v1/post",

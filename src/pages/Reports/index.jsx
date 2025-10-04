@@ -12,22 +12,20 @@ import { fetchBrands } from '../../features/brands/getBrandsSlice'
 import { api } from '../../services/api'
 import { appUrls } from '../../services/urls'
 import { useNavigate } from 'react-router-dom';
+import ModalPop from '../../components/modalPop';
+import PaymentInfo from './component/PaymentInfo';
 
 
 
 const Reports = () => {
-  const [dateRange, setDateRange] = useState("")
   const [selectedBrand, setSelectedBrand] = useState({ id: "", name: "" });
   const [subject, setSubject] = useState("")
-  const [sentiment, setSentiment] = useState("")
-  const [source, setSource] = useState("")
   const [regions, setRegions] = useState("")
   const [reportType, setReportType] = useState("")
-  const [report, setReport] = useState(false)
-  const [selectedTime, setSelectedTime] = useState("This Week")
   const [reportData, setReportData] = useState([])
   const [loading, setLoading] = useState(false)
   const [description, setDescription] = useState("")
+  const [openPaymentInfo, setOpenPaymentInfo] = useState(false)
 
 
   const reportRef = useRef(null);
@@ -45,77 +43,84 @@ const Reports = () => {
     console.log(selectedBrand, "selectedBrand")
 
     const handleIndustryReport = async () => {
-      setLoading(true)
+      setOpenPaymentInfo(true)
       const data = {
         "subject": selectedBrand.name,
         "region": regions,
-        "brand_id": selectedBrand.id
+        "brand_id": selectedBrand.id,
+        "request": description
       }
       try {
         const res = await api.post(appUrls?.INDUSTRY_REPORT_URL, data)
         console.log(res, "maxwell")
-        setReportData(res.data.report)
+        // toast.success(res.data.message)
       } catch (err) {
         console.log(err, "salo")
+        // toast.error(err.data.message)
       } finally {
          setLoading(false)
       }
     }
 
     const handleCrisisReport = async () => {
-       setLoading(true)
+       setOpenPaymentInfo(true)
       const data = {
         "subject": subject,
         "region": regions,
-        "brand_id": null
+        "brand_id": null,
+        "request": description
       }
       try {
         const res = await api.post(appUrls?.CRISIS_REPORT_URL, data)
         console.log(res, "crisis")
-        setReportData(res.data.report)
+        // toast.success(res.data.message)
       } catch (err) {
         console.log(err, "salo")
+        // toast.error(err.data.message)
       } finally {
          setLoading(false)
       }
     }
 
     const handlePoliticalReport = async () => {
-       setLoading(true)
+       setOpenPaymentInfo(true)
       const data = {
         "subject": subject,
         "region": regions,
+        "request": description
       }
       try {
         const res = await api.post(appUrls?.POLITICAL_REPORT_URL, data)
         console.log(res, "political")
-        setReportData(res.data.report)
+        // toast.success(res.data.message)
       } catch (err) {
         console.log(err, "salo")
+        // toast.error(err.data.message)
       } finally {
          setLoading(false)
       }
     }
 
     const handleElectionReport = async () => {
-       setLoading(true)
+       setOpenPaymentInfo(true)
       const data = {
         "subject": subject,
         "region": regions,
+        "request": description
       }
       try {
         const res = await api.post(appUrls?.ELECTION_REPORT_URL, data)
         console.log(res, "election")
-        setReportData(res.data.report)
+        // toast.success(res.data.message)
       } catch (err) {
         console.log(err, "salo")
+        // toast.error(err.data.message)
       } finally {
          setLoading(false)
       }
     }
 
     const handleGenerateReport = () => {
-      setReport(true)
       if(reportType === "Industry Report") {
         handleIndustryReport()
       } 
@@ -132,18 +137,6 @@ const Reports = () => {
 
     console.log(reportData.data, "fafo")
 
-  // const handleDownloadPDF = async () => {
-  //   const input = reportRef.current;
-  //   const canvas = await html2canvas(input, { scale: 2 });
-  //   const imgData = canvas.toDataURL('image/png');
-
-  //   const pdf = new jsPDF('p', 'mm', 'a4');
-  //   const pdfWidth = pdf.internal.pageSize.getWidth();
-  //   const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-  //   pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-  //   pdf.save('report.pdf');
-  // };
 
   const handleDownloadPDF = async () => {
     const input = reportRef.current;
@@ -173,7 +166,6 @@ const Reports = () => {
     }
     pdf.save('report.pdf');
 
-    setReport(false)
   };
 
   const navigate = useNavigate()
@@ -285,7 +277,7 @@ const Reports = () => {
           </div>
 
           <div className='flex flex-col gap-2 w-full'>
-            <p className='font-jost font-medium text-sm leading-[150%] text-[#374151]'>Description</p>
+            <p className='font-jost font-medium text-sm leading-[150%] text-[#374151]'>Brief Description</p>
             <div className='flex items-center w-full bg-transparent rounded-[10px] border border-[#D1D5DB] p-3'>
               <textarea
                 name='description'
@@ -300,58 +292,17 @@ const Reports = () => {
             <button
               type='button'
               className='w-[150px] h-[40px] bg-[#F48A1F] rounded-[8px] p-2'
-              // onClick={handleGenerateReport}
+              onClick={handleGenerateReport}
             >
               <p className='font-jost text-white text-base font-medium'>Request Report</p>
             </button>
           </div>
-
-
         </div>
-
       </div>
 
-      {report && (
-        <div className='border border-[#E0E0E0] rounded-xl  w-full p-5 flex flex-col gap-5' ref={reportRef}>
-
-          <div className='flex items-center justify-between'>
-            <div className='flex gap-2 flex-col '>
-              <p className='font-jost text-DARK-_100 font-semibold leading-7 text-[18px]'>Report ready! Here’s what we found.</p>
-              <p className='text-DARK-_200 text-sm font-jost leading-[150%]'>Data shown below reflects your selected filters.</p>
-            </div>
-            <button
-              type='button'
-              className='w-[157px] h-[40px] bg-[#111827] rounded-[8px] p-2 flex items-center gap-2 justify-center'
-              onClick={handleDownloadPDF}
-            >
-              <AiOutlineDownload className='w-5 h-5 text-white' />
-              <p className='font-jost text-white text-base font-medium'>Export Report</p>
-            </button>
-          </div>
-
-          <div className='w-full bg-[#E5E7EB] h-[1.5px]'></div>
-
-          {loading ? 
-            <p className='font-jost text-center mt-5 font-medium text-base'>Generating Report....</p> 
-            :
-            <div className='flex flex-col gap-5'>
-              <div className='flex flex-col gap-2'>
-                <p className='font-jost font-medium text-[#374151] text-[18px] leading-[28px]'>{reportType}</p>
-              </div>
-              <div className="prose max-w-none font-jost text-[#111827] leading-relaxed">
-                <ReactMarkdown>{reportData?.data}</ReactMarkdown>
-              </div>
-
-            </div>
-          }
-
-
-        
-
-
-
-        </div>
-      )}
+      <ModalPop isOpen={openPaymentInfo}>
+        <PaymentInfo handleClose={() => setOpenPaymentInfo(false)} />
+      </ModalPop>
 
     </div>
   )
