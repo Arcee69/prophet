@@ -1,4 +1,4 @@
-// import React, { useState, useEffect, useMemo } from 'react'
+// import React, { useState, useEffect, useMemo, useRef } from 'react'
 // import { AiOutlineDownload } from 'react-icons/ai'
 // import { FaListUl } from 'react-icons/fa'
 // import { IoDocumentTextOutline, IoLocationOutline, IoTimeOutline } from 'react-icons/io5'
@@ -15,9 +15,9 @@
 // import { appUrls } from '../../../services/urls'
 // import { BarChart, Bar, XAxis, YAxis, Tooltip, LabelList, ResponsiveContainer } from 'recharts';
 // import { RiPieChartLine } from 'react-icons/ri';
+// import html2canvas from 'html2canvas';
+// import jsPDF from 'jspdf';
 
-// //Images
-// import Girl from "../../../assets/png/girl.png"
 
 // //svgs
 // import Facebook from "../../../assets/svg/facebook.svg"
@@ -268,35 +268,38 @@
 //     }))
 //     // ... (urlInfo[url] || {title: new URL(url).pathname, snippet: 'No description available', sentiment: 'neutral'})
 
-//     // const finalEndDate = new Date(endDate);
-//     // finalEndDate.setDate(finalEndDate.getDate() + 14); // add 90 days
-    
-//     // const handleAddBrand = async () => {
-//     //     const data = {
-//     //         "brand_id": brandId,
-//     //         "end_date": new Date(finalEndDate).toISOString().split("T")[0]
-//     //     }
-//     //     setLoading(true)
-//     //     try {
-//     //         const res = await api.post(appUrls?.BRANDWATCH_URL, data)
-//     //         console.log(res, "sapa")
-//     //         toast.success(`${res.data.message}`, {
-//     //             position: "top-right",
-//     //             autoClose: 3500,
-//     //             closeOnClick: true,
-//     //         })
-//     //         dispatch(fetchBrandWatch())
-//     //     } catch (err) {
-//     //         console.log(err, "sapa")
-//     //         toast.error(`${err.data.message}`, {
-//     //             position: "top-right",
-//     //             autoClose: 3500,
-//     //             closeOnClick: true,
-//     //         })
-//     //     } finally {
-//     //         setLoading(false)
-//     //     }
-//     // }
+
+//     const reportRef = useRef(null);
+
+//   const handleDownloadPDF = async () => {
+//     const input = reportRef.current;
+
+//     const canvas = await html2canvas(input, { scale: 2, useCORS: true });
+//     const imgData = canvas.toDataURL('image/png');
+
+//     const pdf = new jsPDF('p', 'mm', 'a4');
+//     const pageHeight = pdf.internal.pageSize.getHeight();
+//     const pageWidth = pdf.internal.pageSize.getWidth();
+
+//     const imgWidth = pageWidth;
+//     const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+//     let heightLeft = imgHeight;
+//     let position = 0;
+
+//     // First page
+//     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+//     heightLeft -= pageHeight;
+
+//     while (heightLeft > 0) {
+//       position = heightLeft - imgHeight;
+//       pdf.addPage();
+//       pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+//       heightLeft -= pageHeight;
+//     }
+
+//     pdf.save('report.pdf');
+//   };
 
 //   return (
 //     <div className='w-full flex flex-col gap-[32px]'>
@@ -308,10 +311,10 @@
 //         </div>
 //         <div className='bg-[#fff] h-[88px] rounded-[8px] flex justify-between p-[25px]'>
 //             <p className='font-jost font-semibold text-[#1F2937] leading-[32px] text-[24px]'>{search} : {compareBrand || null}</p>
-//             <div className='flex items-center'>
-//                 <div className='flex items-center gap-1 w-[101px] h-[40px]'>
-//                     <AiOutlineDownload className='w-5 h-5 text-[#374151]'/>
-//                     <p className='text-[#374151] text-base font-lato'>Export</p>
+//             <div className='flex gap-2 items-center'>
+//                 <div className='flex bg-black p-2 rounded-lg items-center gap-1.5 cursor-pointer w-[160px] h-[40px]' onClick={handleDownloadPDF}>
+//                     <AiOutlineDownload className='w-5 h-5 text-[#fff]' />
+//                     <p className='text-[#fff] text-base font-lato'>Export Analysis</p>
 //                 </div>
 //                 <div className='border border-[#E5E7EB] rounded-[8px] flex items-center'>
 //                     <div className={`${activeTab === 1 ? "bg-[#FFF4EE]" : ""} p-1 w-[36px] h-[36px] flex items-center justify-center cursor-pointer`} onClick={() => handleTabChange(1)}>
@@ -327,7 +330,7 @@
 //         <div className='flex items-center w-full gap-[15px]'>
 //             <div className='bg-[#fff] w-6/12 rounded-[8px] py-[14px] px-[17px] flex items-center justify-between'>
 //                 <p className='text-[18px] font-lato text-[#263238]'>{search}</p>
-//                 <CiMenuKebab className='text-[#98A2B3] w-5 h-5' />
+//                 {/* <CiMenuKebab className='text-[#98A2B3] w-5 h-5' /> */}
 //             </div>
 //             <div
 //                 className='bg-[#fff] w-6/12 rounded-[8px] py-[14px] px-[17px] flex items-center'
@@ -338,12 +341,14 @@
 //                     className='w-full  outline-none font-lato text-[#F48A1F] text-[18px]'
 //                     value={compareBrandInput}
 //                     onChange={(e) => setCompareBrandInput(e.target.value)}
-//                     onKeyDown={(e) => {
-//                         if (e.key === 'Enter') {
-//                             setCompareBrand(compareBrandInput); // Only set compareBrand on Enter
-//                         }
-//                     }}
 //                 />
+//                 <button
+//                     type='button' 
+//                     className='bg-[#F48A1F] w-[116px] h-[41px] rounded-[5px] flex items-center justify-center py-2.5'
+//                     onClick={() =>  setCompareBrand(compareBrandInput)}
+//                 >
+//                     <p className='font-lato text-[18px] text-[#FFFFFF]'>Compare</p>
+//                 </button>
 //             </div>
 //         </div>
 
@@ -423,185 +428,200 @@
 //             </div>
 //         </div>
 
-//         <div className="flex flex-col gap-4">
-//             <div className="flex items-center gap-4">
-//                 <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
-//                     <div className='flex items-center justify-between'>
-//                         <div className='flex items-center gap-2'>
-//                             <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Total Mentions</p>
+//         <div ref={reportRef}>
+//             <div className="flex flex-col gap-4">
+//                 <div className="flex items-center gap-4">
+//                     <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
+//                         <div className='flex items-center justify-between'>
+//                             <div className='flex items-center gap-2'>
+//                                 <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Total Mentions</p>
+//                             </div>
+//                         </div>
+//                         <div className="w-full h-[250px]">
+//                             <ResponsiveContainer width="100%" height="100%">
+//                                 <BarChart
+//                                     data={mentionsData}
+//                                     margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
+//                                 >
+//                                     <XAxis type="category" dataKey="name" />
+//                                     <YAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
+//                                     <Tooltip formatter={formatNumber} />
+//                                     <Bar dataKey="value" fill="#F2E5FF">
+//                                         <LabelList dataKey="value" position="top" formatter={formatNumber} />
+//                                     </Bar>
+//                                 </BarChart>
+//                             </ResponsiveContainer>
 //                         </div>
 //                     </div>
-//                     <div className="w-full h-[250px]">
-//                         <ResponsiveContainer width="100%" height="100%">
-//                             <BarChart
-//                                 layout="vertical"
-//                                 data={mentionsData}
-//                                 margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
-//                             >
-//                                 <XAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
-//                                 <YAxis type="category" dataKey="name" />
-//                                 <Tooltip formatter={formatNumber} />
-//                                 <Bar dataKey="value" fill="#F2E5FF">
-//                                     <LabelList dataKey="value" position="center" formatter={formatNumber} />
-//                                 </Bar>
-//                             </BarChart>
-//                         </ResponsiveContainer>
+//                     <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
+//                         <div className='flex items-center justify-between'>
+//                             <div className='flex items-center gap-2'>
+//                                 <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Engagement</p>
+//                             </div>
+//                         </div>
+//                         <div className="w-full h-[250px]">
+//                             <ResponsiveContainer width="100%" height="100%">
+//                                 <BarChart
+//                                     data={engagementData}
+//                                     margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
+//                                 >
+//                                     <XAxis type="category" dataKey="name" />
+//                                     <YAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
+//                                     <Tooltip formatter={formatNumber} />
+//                                     <Bar dataKey="value" fill="#BDDAFF">
+//                                         <LabelList dataKey="value" position="top" formatter={formatNumber} />
+//                                     </Bar>
+//                                 </BarChart>
+//                             </ResponsiveContainer>
+//                         </div>
 //                     </div>
 //                 </div>
-//                 <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
-//                     <div className='flex items-center justify-between'>
-//                         <div className='flex items-center gap-2'>
-//                             <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Engagement</p>
+//                 <div className="flex items-center gap-4">
+//                     <div className="h-[362px] w-full flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
+//                         <div className='flex items-center justify-between'>
+//                             <div className='flex items-center gap-2'>
+//                                 <RiPieChartLine className='w-5 h-5 text-[#F48A1F]' />
+//                                 <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Sentiment</p>
+//                             </div>
+//                             <div className='flex items-center gap-2'>
+//                                 <div className='flex items-center gap-1'>
+//                                     <div className='bg-[#D8FDE5] w-2 h-2 rounded-full'></div>
+//                                     <p className='font-jost text-black text-xs leading-[100%]'>Positive</p>
+//                                 </div>
+//                                 <div className='flex items-center gap-1'>
+//                                     <div className='bg-[#DEDEDE] w-2 h-2 rounded-full'></div>
+//                                     <p className='font-jost text-black text-xs leading-[100%]'>Neutral</p>
+//                                 </div>
+//                                 <div className='flex items-center gap-1'>
+//                                     <div className='bg-[#FFDCDB] w-2 h-2 rounded-full'></div>
+//                                     <p className='font-jost text-black text-xs leading-[100%]'>Negative</p>
+//                                 </div>
+//                             </div>
 //                         </div>
-//                     </div>
-//                     <div className="w-full h-[250px]">
-//                         <ResponsiveContainer width="100%" height="100%">
-//                             <BarChart
-//                                 layout="vertical"
-//                                 data={engagementData}
-//                                 margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
-//                             >
-//                                 <XAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
-//                                 <YAxis type="category" dataKey="name" />
-//                                 <Tooltip formatter={formatNumber} />
-//                                 <Bar dataKey="value" fill="#BDDAFF">
-//                                     <LabelList dataKey="value" position="center" formatter={formatNumber} />
-//                                 </Bar>
-//                             </BarChart>
-//                         </ResponsiveContainer>
+//                         <div className="w-full h-[250px]">
+//                             <ResponsiveContainer width="100%" height="100%">
+//                                 <BarChart
+//                                     layout="vertical"
+//                                     data={sentimentChartData}
+//                                     margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
+//                                 >
+//                                     <XAxis type="number" domain={[0, 100]} tickFormatter={(tick) => `${tick}%`} />
+//                                     <YAxis type="category" dataKey="name" className='w-full' />
+//                                     <Tooltip formatter={(value) => `${value}%`}  />
+//                                     <Bar dataKey="positive" stackId="a" fill="#D8FDE5">
+//                                         <LabelList dataKey="positive" position="center" formatter={(val) => `${val}%`} />
+//                                     </Bar>
+//                                     <Bar dataKey="neutral" stackId="a" fill="#E5E7EB">
+//                                         <LabelList dataKey="neutral" position="center" formatter={(val) => `${val}%`} />
+//                                     </Bar>
+//                                     <Bar dataKey="negative" stackId="a" fill="#FFDCDB">
+//                                         <LabelList dataKey="negative" position="center" formatter={(val) => `${val}%`} />
+//                                     </Bar>
+//                                 </BarChart>
+//                             </ResponsiveContainer>
+//                         </div>
 //                     </div>
 //                 </div>
 //             </div>
-//             <div className="flex items-center gap-4">
-//                 <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
-//                     <div className='flex items-center justify-between'>
-//                         <div className='flex items-center gap-2'>
-//                             <RiPieChartLine className='w-5 h-5 text-[#F48A1F]' />
-//                             <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Sentiment</p>
-//                         </div>
-//                         <div className='flex items-center gap-2'>
-//                             <div className='flex items-center gap-1'>
-//                                 <div className='bg-[#D8FDE5] w-2 h-2 rounded-full'></div>
-//                                 <p className='font-jost text-black text-xs leading-[100%]'>Positive</p>
-//                             </div>
-//                             <div className='flex items-center gap-1'>
-//                                 <div className='bg-[#DEDEDE] w-2 h-2 rounded-full'></div>
-//                                 <p className='font-jost text-black text-xs leading-[100%]'>Neutral</p>
-//                             </div>
-//                             <div className='flex items-center gap-1'>
-//                                 <div className='bg-[#FFDCDB] w-2 h-2 rounded-full'></div>
-//                                 <p className='font-jost text-black text-xs leading-[100%]'>Negative</p>
-//                             </div>
-//                         </div>
-//                     </div>
-//                     <div className="w-full h-[250px]">
-//                         <ResponsiveContainer width="100%" height="100%">
-//                             <BarChart
-//                                 layout="vertical"
-//                                 data={sentimentChartData}
-//                                 margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
-//                             >
-//                                 <XAxis type="number" domain={[0, 100]} tickFormatter={(tick) => `${tick}%`} />
-//                                 <YAxis type="category" dataKey="name" />
-//                                 <Tooltip formatter={(value) => `${value}%`} />
-//                                 <Bar dataKey="positive" stackId="a" fill="#D8FDE5">
-//                                     <LabelList dataKey="positive" position="center" formatter={(val) => `${val}%`} />
-//                                 </Bar>
-//                                 <Bar dataKey="neutral" stackId="a" fill="#E5E7EB">
-//                                     <LabelList dataKey="neutral" position="center" formatter={(val) => `${val}%`} />
-//                                 </Bar>
-//                                 <Bar dataKey="negative" stackId="a" fill="#FFDCDB">
-//                                     <LabelList dataKey="negative" position="center" formatter={(val) => `${val}%`} />
-//                                 </Bar>
-//                             </BarChart>
-//                         </ResponsiveContainer>
-//                     </div>
-//                 </div>
-//                 <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
+        
+
+//             {/* Charts Row */}
+//             <div className='flex gap-4 mt-4'>
+//                {/* Potent Reach Chart */}
+//                 <div className="h-full w-1/2 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
 //                     <div className='flex items-center justify-between'>
 //                         <div className='flex items-center gap-2'>
 //                             <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Potential Reach</p>
 //                         </div>
 //                     </div>
-//                     <div className="w-full h-[250px]">
+//                     <div className="w-full h-[300px]">
 //                         <ResponsiveContainer width="100%" height="100%">
 //                             <BarChart
-//                                 layout="vertical"
 //                                 data={reachData}
 //                                 margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
 //                             >
-//                                 <XAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
-//                                 <YAxis type="category" dataKey="name" />
+//                                 <XAxis type="category" dataKey="name" />
+//                                 <YAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
 //                                 <Tooltip formatter={formatNumber} />
 //                                 <Bar dataKey="value" fill="#DEDEDE">
-//                                     <LabelList dataKey="value" position="center" formatter={formatNumber} />
+//                                     <LabelList dataKey="value" position="top" formatter={formatNumber} />
 //                                 </Bar>
 //                             </BarChart>
 //                         </ResponsiveContainer>
 //                     </div>
 //                 </div>
+
+//                 {/* Channel Sentiment Distribution (Bar Chart) */}
+//                 <div className='bg-white rounded-[18px] w-1/2 p-4 shadow-sm'>
+//                     <div className='flex items-start justify-between'>
+//                         <p className='font-jost font-medium text-[20px] mb-4 text-[#4B5563]'>
+//                             Channel Sentiment Distribution
+//                         </p>
+//                         <p className='text-[#6B7280] font-jost text-sm'>Total Mentions: {summary1.summary?.total_mentions || 0}</p>
+//                     </div>
+//                     <Chart
+//                         options={barChartData.options}
+//                         series={barChartData.series}
+//                         type='bar'
+//                         height={300}
+//                     />
+//                 </div>
 //             </div>
+
+//              {/*  Results Over Time (Line Chart) */}
+//             <div className='bg-white rounded-[18px] mt-4 w-full p-4 shadow-sm'>
+//                 <div className='flex justify-between items-start'>
+//                     <p className='font-jost font-medium text-[20px] mb-4 text-[#4B5563]'>
+//                         Results Over Time
+//                     </p>
+//                     {/* <select
+//                         value={selectedTime}
+//                         onChange={(e) => setSelectedTime(e.target.value)}
+//                         className='font-jost text-[#252F3D]  text-xs cursor-pointer bg-transparent border-none outline-none'
+//                     >
+//                         {["This Week", "This Month"].map(year => (
+//                             <option key={year} value={year}>{year}</option>
+//                         ))}
+//                     </select> */}
+//                 </div>
+//                 <Chart
+//                     options={lineChartData.options}
+//                     series={lineChartData.series}
+//                     type='line'
+//                     height={300}
+//                 />
+//             </div>
+
 //         </div>
-       
-
-//         {/* Charts Row */}
-//           <div className='flex gap-4'>
-//               {/* Sentiment Analysis Overview (Line Chart) */}
-//               <div className='bg-white rounded-[18px] w-1/2 p-4 shadow-sm'>
-//                   <div className='flex justify-between items-start'>
-//                       <p className='font-jost font-medium text-[20px] mb-4 text-[#4B5563]'>
-//                           Results Over Time
-//                       </p>
-//                       {/* <select
-//                           value={selectedTime}
-//                           onChange={(e) => setSelectedTime(e.target.value)}
-//                           className='font-jost text-[#252F3D]  text-xs cursor-pointer bg-transparent border-none outline-none'
-//                       >
-//                           {["This Week", "This Month"].map(year => (
-//                               <option key={year} value={year}>{year}</option>
-//                           ))}
-//                       </select> */}
-//                   </div>
-//                   <Chart
-//                       options={lineChartData.options}
-//                       series={lineChartData.series}
-//                       type='line'
-//                       height={300}
-//                   />
-//               </div>
-
-//               {/* Channel Sentiment Distribution (Bar Chart) */}
-//               <div className='bg-white rounded-[18px] w-1/2 p-4 shadow-sm'>
-//                   <div className='flex items-start justify-between'>
-//                       <p className='font-jost font-medium text-[20px] mb-4 text-[#4B5563]'>
-//                           Channel Sentiment Distribution
-//                       </p>
-//                       <p className='text-[#6B7280] font-jost text-sm'>Total Mentions: {summary1.summary?.total_mentions || 0}</p>
-//                   </div>
-//                   <Chart
-//                       options={barChartData.options}
-//                       series={barChartData.series}
-//                       type='bar'
-//                       height={300}
-//                   />
-//               </div>
-//           </div>
     
 //         {/* Top Mentions */}
-//             <div className='flex flex-col gap-[11px] '>
-//                 <p className='font-jost font-semibold text-[18px]  text-[#6B7280]'>
-//                     Top Mentions
-//                 </p>
+//             <div className='flex flex-col gap-[11px]'>
+//                 <div className='flex items-center gap-5'>
+//                     <p className='font-jost font-semibold text-[18px]  text-[#6B7280]'>
+//                         Top Conversations 
+//                     </p>
+
+//                         {/* Toggle for all, youtube and news */}
+//                     <div className=''>
+
+//                     </div>
+
+//                 </div>
 
 //                 <div className='grid grid-cols-2 gap-4'>
 //                     {topMentions.map((mention, index) => (
 //                         <div key={index} className='bg-[#fff] h-auto flex items-start gap-2 px-[22px] pt-[22px] pb-[45px] rounded-lg'>
-//                         {/* <img src={Girl} alt='Girl' className='w-[32px] h-[32px] ' /> */}
-//                         <img src={mention.type === 'Youtube' ? Pinterest : Facebook} alt={mention.type} className='w-[32px] h-[32px] ' />
+//                         {
+//                             mention.type === 'Youtube' ?
+//                             <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt={mention.type} className='w-[32px] h-[32px]'/>
+//                             :
+//                             <div className='w-[32px] h-[32px] flex items-center justify-center rounded-full bg-[#10B981] p-2'>
+//                                 <p className='text-white font-jost font-semibold'>N</p>
+//                             </div>
+//                         }
 //                         <div className='flex gap-5 flex-col w-full'>
 //                             <div className='flex flex-col mt-1 gap-1'>
 //                                 <div className='flex items-center gap-1'>
-//                                 {/* <img src={mention.type === 'Youtube' ? Pinterest : Facebook} alt={mention.type} className='w-5 h-5' /> */}
 //                                 <p className='font-jost text-sm text-[#000000]'>{mention.type}</p>
 //                                 </div>
 //                             </div>
@@ -625,9 +645,6 @@
 //                                     {mention.url}
 //                                 </a>
 //                             )}
-//                             {/* <p className='font-jost text-[#4B5563] text-sm'>
-//                             {mention.snippet.substring(0, 100) + '...'}
-//                             </p> */}
 //                             <div className='flex gap-5'>
 //                                 <div className={`w-[57px] h-[24px] rounded-full p-1 ${mention.sentiment === 'positive' ? 'bg-[#DCFCE7]' : mention.sentiment === 'negative' ? 'bg-[#FFA8A8]' : 'bg-[#D3D3D3]'}`}>
 //                                     <p className={`text-xs text-center font-inter ${mention.sentiment === 'positive' ? 'text-[#166534]' : mention.sentiment === 'negative' ? 'text-[#FF0000]' : 'text-[#808080]'}`}>{mention.sentiment}</p>
@@ -645,7 +662,6 @@
 // }
 
 // export default Compare
-
 
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { AiOutlineDownload } from 'react-icons/ai'
@@ -667,8 +683,6 @@ import { RiPieChartLine } from 'react-icons/ri';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
-//Images
-import Girl from "../../../assets/png/girl.png"
 
 //svgs
 import Facebook from "../../../assets/svg/facebook.svg"
@@ -690,6 +704,8 @@ const Compare = ({ search, setSearchList }) => {
     const [endDate, setEndDate] = useState(new Date());
     const [sentimentData, setSentimentData] = useState(null)
     const [sentimentData2, setSentimentData2] = useState(null)
+    const [loading, setLoading] = useState(false)
+    const [mentionTab, setMentionTab] = useState('All')
 
     console.log(sentimentData, "sentimentData")
     console.log(sentimentData2, "sentimentData2")
@@ -701,6 +717,7 @@ const Compare = ({ search, setSearchList }) => {
         const fetchSentiment = async (keyword, isSecond = false) => {
             if (!keyword) return;
             const data = { "keyword1": keyword }
+            setLoading(true)
             try {
                 const res = await api.post(appUrls?.SENTIMENT_URL, data)
                 console.log(res, "pick")
@@ -711,6 +728,8 @@ const Compare = ({ search, setSearchList }) => {
                 }
             } catch (err) {
                 console.log(err)
+            } finally {
+                setLoading(false)
             }
         }
 
@@ -850,17 +869,21 @@ const Compare = ({ search, setSearchList }) => {
         return {
             series: hasCompare ? [
                 {
-                    name: search,
-                    data: [socialMedia1, news1]
+                    name: 'Social Media',
+                    data: [socialMedia1, socialMedia2]
                 },
                 {
-                    name: compareBrand,
-                    data: [socialMedia2, news2]
+                    name: 'News',
+                    data: [news1, news2]
                 },
             ] : [
                 {
-                    name: search,
-                    data: [socialMedia1, news1]
+                    name: 'Social Media',
+                    data: [socialMedia1]
+                },
+                {
+                    name: 'News',
+                    data: [news1]
                 }
             ],
             options: {
@@ -885,9 +908,9 @@ const Compare = ({ search, setSearchList }) => {
                     position: 'top',
                 },
                 xaxis: {
-                    categories: ['Social Media', 'News'],
+                    categories: hasCompare ? [search, compareBrand] : [search],
                 },
-                colors: hasCompare ? ['#BDDAFF', '#F48A1F'] : ['#F48A1F', '#BDDAFF'],
+                colors: ['#BDDAFF', '#F48A1F'],
             }
         };
     }, [summary1, summary2, hasCompare, search, compareBrand]);
@@ -915,39 +938,11 @@ const Compare = ({ search, setSearchList }) => {
     const topMentions = uniqueUrls?.map(url => ({
         url,
         type: url.includes('youtube') ? 'Youtube' : 'News',
-        ... ({title: new URL(url).pathname, snippet: 'No description available', sentiment: 'neutral'} || [])
+        ...(urlInfo[url] || {title: new URL(url).pathname, snippet: 'No description available', sentiment: 'neutral'})
     }))
-    // ... (urlInfo[url] || {title: new URL(url).pathname, snippet: 'No description available', sentiment: 'neutral'})
 
-    // const finalEndDate = new Date(endDate);
-    // finalEndDate.setDate(finalEndDate.getDate() + 14); // add 90 days
-    
-    // const handleAddBrand = async () => {
-    //     const data = {
-    //         "brand_id": brandId,
-    //         "end_date": new Date(finalEndDate).toISOString().split("T")[0]
-    //     }
-    //     setLoading(true)
-    //     try {
-    //         const res = await api.post(appUrls?.BRANDWATCH_URL, data)
-    //         console.log(res, "sapa")
-    //         toast.success(`${res.data.message}`, {
-    //             position: "top-right",
-    //             autoClose: 3500,
-    //             closeOnClick: true,
-    //         })
-    //         dispatch(fetchBrandWatch())
-    //     } catch (err) {
-    //         console.log(err, "sapa")
-    //         toast.error(`${err.data.message}`, {
-    //             position: "top-right",
-    //             autoClose: 3500,
-    //             closeOnClick: true,
-    //         })
-    //     } finally {
-    //         setLoading(false)
-    //     }
-    // }
+    const filteredMentions = topMentions.filter(m => mentionTab === 'All' || m.type === mentionTab)
+
 
     const reportRef = useRef(null);
 
@@ -981,10 +976,17 @@ const Compare = ({ search, setSearchList }) => {
     pdf.save('report.pdf');
   };
 
+  const SkeletonCard = () => (
+    <div className="animate-pulse flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl h-[362px] w-full">
+      <div className="h-6 bg-[#E5E7EB] rounded w-1/4 mb-4"></div>
+      <div className="h-full bg-[#E5E7EB] rounded"></div>
+    </div>
+  );
+
   return (
     <div className='w-full flex flex-col gap-[32px]'>
         <div className='flex items-center justify-between'>
-            <div onClick={() => setSearchList([])} className='w-[100px] flex items-center justify-center p-3 rounded-lg bg-black'>
+            <div onClick={() => setSearchList([])} className='w-[100px] flex cursor-pointer items-center justify-center p-3 rounded-lg bg-black'>
                 <p className='text-white text-lg font-jost'>Back</p>
             </div>
 
@@ -1010,7 +1012,7 @@ const Compare = ({ search, setSearchList }) => {
         <div className='flex items-center w-full gap-[15px]'>
             <div className='bg-[#fff] w-6/12 rounded-[8px] py-[14px] px-[17px] flex items-center justify-between'>
                 <p className='text-[18px] font-lato text-[#263238]'>{search}</p>
-                <CiMenuKebab className='text-[#98A2B3] w-5 h-5' />
+                {/* <CiMenuKebab className='text-[#98A2B3] w-5 h-5' /> */}
             </div>
             <div
                 className='bg-[#fff] w-6/12 rounded-[8px] py-[14px] px-[17px] flex items-center'
@@ -1021,12 +1023,14 @@ const Compare = ({ search, setSearchList }) => {
                     className='w-full  outline-none font-lato text-[#F48A1F] text-[18px]'
                     value={compareBrandInput}
                     onChange={(e) => setCompareBrandInput(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                            setCompareBrand(compareBrandInput); // Only set compareBrand on Enter
-                        }
-                    }}
                 />
+                <button
+                    type='button' 
+                    className='bg-[#F48A1F] w-[116px] h-[41px] rounded-[5px] flex items-center justify-center py-2.5'
+                    onClick={() =>  setCompareBrand(compareBrandInput)}
+                >
+                    <p className='font-lato text-[18px] text-[#FFFFFF]'>Compare</p>
+                </button>
             </div>
         </div>
 
@@ -1109,126 +1113,170 @@ const Compare = ({ search, setSearchList }) => {
         <div ref={reportRef}>
             <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-4">
-                    <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
-                        <div className='flex items-center justify-between'>
-                            <div className='flex items-center gap-2'>
-                                <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Total Mentions</p>
+                    {loading ? (
+                        <>
+                            <SkeletonCard />
+                            <SkeletonCard />
+                        </>
+                    ) : (
+                        <>
+                            <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
+                                <div className='flex items-center justify-between'>
+                                    <div className='flex items-center gap-2'>
+                                        <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Total Mentions</p>
+                                    </div>
+                                </div>
+                                <div className="w-full h-[250px]">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart
+                                            data={mentionsData}
+                                            margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
+                                        >
+                                            <XAxis type="category" dataKey="name" />
+                                            <YAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
+                                            <Tooltip formatter={formatNumber} />
+                                            <Bar dataKey="value" fill="#F2E5FF">
+                                                <LabelList dataKey="value" position="top" formatter={formatNumber} />
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
                             </div>
-                        </div>
-                        <div className="w-full h-[250px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart
-                                    data={mentionsData}
-                                    margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
-                                >
-                                    <XAxis type="category" dataKey="name" />
-                                    <YAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
-                                    <Tooltip formatter={formatNumber} />
-                                    <Bar dataKey="value" fill="#F2E5FF">
-                                        <LabelList dataKey="value" position="top" formatter={formatNumber} />
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-                    <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
-                        <div className='flex items-center justify-between'>
-                            <div className='flex items-center gap-2'>
-                                <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Engagement</p>
+                            <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
+                                <div className='flex items-center justify-between'>
+                                    <div className='flex items-center gap-2'>
+                                        <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Engagement</p>
+                                    </div>
+                                </div>
+                                <div className="w-full h-[250px]">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart
+                                            data={engagementData}
+                                            margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
+                                        >
+                                            <XAxis type="category" dataKey="name" />
+                                            <YAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
+                                            <Tooltip formatter={formatNumber} />
+                                            <Bar dataKey="value" fill="#BDDAFF">
+                                                <LabelList dataKey="value" position="top" formatter={formatNumber} />
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
                             </div>
-                        </div>
-                        <div className="w-full h-[250px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart
-                                    data={engagementData}
-                                    margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
-                                >
-                                    <XAxis type="category" dataKey="name" />
-                                    <YAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
-                                    <Tooltip formatter={formatNumber} />
-                                    <Bar dataKey="value" fill="#BDDAFF">
-                                        <LabelList dataKey="value" position="top" formatter={formatNumber} />
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
+                        </>
+                    )}
                 </div>
                 <div className="flex items-center gap-4">
-                    <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
-                        <div className='flex items-center justify-between'>
-                            <div className='flex items-center gap-2'>
-                                <RiPieChartLine className='w-5 h-5 text-[#F48A1F]' />
-                                <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Sentiment</p>
+                    {loading ? (
+                        <SkeletonCard />
+                    ) : (
+                        <div className="h-[362px] w-full flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
+                            <div className='flex items-center justify-between'>
+                                <div className='flex items-center gap-2'>
+                                    <RiPieChartLine className='w-5 h-5 text-[#F48A1F]' />
+                                    <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Sentiment</p>
+                                </div>
+                                <div className='flex items-center gap-2'>
+                                    <div className='flex items-center gap-1'>
+                                        <div className='bg-[#D8FDE5] w-2 h-2 rounded-full'></div>
+                                        <p className='font-jost text-black text-xs leading-[100%]'>Positive</p>
+                                    </div>
+                                    <div className='flex items-center gap-1'>
+                                        <div className='bg-[#DEDEDE] w-2 h-2 rounded-full'></div>
+                                        <p className='font-jost text-black text-xs leading-[100%]'>Neutral</p>
+                                    </div>
+                                    <div className='flex items-center gap-1'>
+                                        <div className='bg-[#FFDCDB] w-2 h-2 rounded-full'></div>
+                                        <p className='font-jost text-black text-xs leading-[100%]'>Negative</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div className='flex items-center gap-2'>
-                                <div className='flex items-center gap-1'>
-                                    <div className='bg-[#D8FDE5] w-2 h-2 rounded-full'></div>
-                                    <p className='font-jost text-black text-xs leading-[100%]'>Positive</p>
-                                </div>
-                                <div className='flex items-center gap-1'>
-                                    <div className='bg-[#DEDEDE] w-2 h-2 rounded-full'></div>
-                                    <p className='font-jost text-black text-xs leading-[100%]'>Neutral</p>
-                                </div>
-                                <div className='flex items-center gap-1'>
-                                    <div className='bg-[#FFDCDB] w-2 h-2 rounded-full'></div>
-                                    <p className='font-jost text-black text-xs leading-[100%]'>Negative</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="w-full h-[250px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart
-                                    layout="vertical"
-                                    data={sentimentChartData}
-                                    margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
-                                >
-                                    <XAxis type="number" domain={[0, 100]} tickFormatter={(tick) => `${tick}%`} />
-                                    <YAxis type="category" dataKey="name" />
-                                    <Tooltip formatter={(value) => `${value}%`} />
-                                    <Bar dataKey="positive" stackId="a" fill="#D8FDE5">
-                                        <LabelList dataKey="positive" position="center" formatter={(val) => `${val}%`} />
-                                    </Bar>
-                                    <Bar dataKey="neutral" stackId="a" fill="#E5E7EB">
-                                        <LabelList dataKey="neutral" position="center" formatter={(val) => `${val}%`} />
-                                    </Bar>
-                                    <Bar dataKey="negative" stackId="a" fill="#FFDCDB">
-                                        <LabelList dataKey="negative" position="center" formatter={(val) => `${val}%`} />
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-                    <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
-                        <div className='flex items-center justify-between'>
-                            <div className='flex items-center gap-2'>
-                                <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Potential Reach</p>
+                            <div className="w-full h-[250px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart
+                                        layout="vertical"
+                                        data={sentimentChartData}
+                                        margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
+                                    >
+                                        <XAxis type="number" domain={[0, 100]} tickFormatter={(tick) => `${tick}%`} />
+                                        <YAxis type="category" dataKey="name" width={100} />
+                                        <Tooltip formatter={(value) => `${value}%`}  />
+                                        <Bar dataKey="positive" stackId="a" fill="#D8FDE5">
+                                            <LabelList dataKey="positive" position="center" formatter={(val) => `${val}%`} />
+                                        </Bar>
+                                        <Bar dataKey="neutral" stackId="a" fill="#E5E7EB">
+                                            <LabelList dataKey="neutral" position="center" formatter={(val) => `${val}%`} />
+                                        </Bar>
+                                        <Bar dataKey="negative" stackId="a" fill="#FFDCDB">
+                                            <LabelList dataKey="negative" position="center" formatter={(val) => `${val}%`} />
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
                             </div>
                         </div>
-                        <div className="w-full h-[250px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart
-                                    data={reachData}
-                                    margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
-                                >
-                                    <XAxis type="category" dataKey="name" />
-                                    <YAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
-                                    <Tooltip formatter={formatNumber} />
-                                    <Bar dataKey="value" fill="#DEDEDE">
-                                        <LabelList dataKey="value" position="top" formatter={formatNumber} />
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
+                    )}
                 </div>
             </div>
         
 
             {/* Charts Row */}
-            <div className='flex gap-4'>
-                {/* Sentiment Analysis Overview (Line Chart) */}
-                <div className='bg-white rounded-[18px] w-1/2 p-4 shadow-sm'>
+            <div className='flex gap-4 mt-4'>
+               {/* Potent Reach Chart */}
+                {loading ? (
+                    <>
+                        <SkeletonCard />
+                        <SkeletonCard />
+                    </>
+                ) : (
+                    <>
+                        <div className="h-full w-1/2 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
+                            <div className='flex items-center justify-between'>
+                                <div className='flex items-center gap-2'>
+                                    <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Potential Reach</p>
+                                </div>
+                            </div>
+                            <div className="w-full h-[300px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart
+                                        data={reachData}
+                                        margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
+                                    >
+                                        <XAxis type="category" dataKey="name" />
+                                        <YAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
+                                        <Tooltip formatter={formatNumber} />
+                                        <Bar dataKey="value" fill="#DEDEDE">
+                                            <LabelList dataKey="value" position="top" formatter={formatNumber} />
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+
+                        {/* Channel Sentiment Distribution (Bar Chart) */}
+                        <div className='bg-white rounded-[18px] w-1/2 p-4 shadow-sm'>
+                            <div className='flex items-start justify-between'>
+                                <p className='font-jost font-medium text-[20px] mb-4 text-[#4B5563]'>
+                                    Channel Sentiment Distribution
+                                </p>
+                                <p className='text-[#6B7280] font-jost text-sm'>Total Mentions: {summary1.summary?.total_mentions || 0}</p>
+                            </div>
+                            <Chart
+                                options={barChartData.options}
+                                series={barChartData.series}
+                                type='bar'
+                                height={300}
+                            />
+                        </div>
+                    </>
+                )}
+            </div>
+
+             {/*  Results Over Time (Line Chart) */}
+            {loading ? (
+                <div className="animate-pulse bg-[#E5E7EB] h-[362px] w-full rounded-xl"></div>
+            ) : (
+                <div className='bg-white rounded-[18px] mt-4 w-full p-4 shadow-sm'>
                     <div className='flex justify-between items-start'>
                         <p className='font-jost font-medium text-[20px] mb-4 text-[#4B5563]'>
                             Results Over Time
@@ -1250,77 +1298,104 @@ const Compare = ({ search, setSearchList }) => {
                         height={300}
                     />
                 </div>
-
-                {/* Channel Sentiment Distribution (Bar Chart) */}
-                <div className='bg-white rounded-[18px] w-1/2 p-4 shadow-sm'>
-                    <div className='flex items-start justify-between'>
-                        <p className='font-jost font-medium text-[20px] mb-4 text-[#4B5563]'>
-                            Channel Sentiment Distribution
-                        </p>
-                        <p className='text-[#6B7280] font-jost text-sm'>Total Mentions: {summary1.summary?.total_mentions || 0}</p>
-                    </div>
-                    <Chart
-                        options={barChartData.options}
-                        series={barChartData.series}
-                        type='bar'
-                        height={300}
-                    />
-                </div>
-            </div>
+            )}
 
         </div>
     
         {/* Top Mentions */}
-            <div className='flex flex-col gap-[11px] '>
-                <p className='font-jost font-semibold text-[18px]  text-[#6B7280]'>
-                    Top Mentions
-                </p>
+            <div className='flex flex-col gap-[11px]'>
+                <div className='flex items-center gap-5'>
+                    <p className='font-jost font-semibold text-[18px]  text-[#6B7280]'>
+                        Top Conversations 
+                    </p>
 
-                <div className='grid grid-cols-2 gap-4'>
-                    {topMentions.map((mention, index) => (
-                        <div key={index} className='bg-[#fff] h-auto flex items-start gap-2 px-[22px] pt-[22px] pb-[45px] rounded-lg'>
-                        {/* <img src={Girl} alt='Girl' className='w-[32px] h-[32px] ' /> */}
-                        <img src={mention.type === 'Youtube' ? Pinterest : Facebook} alt={mention.type} className='w-[32px] h-[32px] ' />
-                        <div className='flex gap-5 flex-col w-full'>
-                            <div className='flex flex-col mt-1 gap-1'>
-                                <div className='flex items-center gap-1'>
-                                {/* <img src={mention.type === 'Youtube' ? Pinterest : Facebook} alt={mention.type} className='w-5 h-5' /> */}
-                                <p className='font-jost text-sm text-[#000000]'>{mention.type}</p>
-                                </div>
-                            </div>
-                            {mention.type === "Youtube" ? (
-                                <iframe
-                                    width="100%"
-                                    height="200"
-                                    src={`https://www.youtube.com/embed/${new URL(mention.url).searchParams.get("v")}`}
-                                    title="YouTube video"
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                ></iframe>
-                                ) : (
-                                <a 
-                                    href={mention.url} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 underline break-words"
-                                >
-                                    {mention.url}
-                                </a>
-                            )}
-                            {/* <p className='font-jost text-[#4B5563] text-sm'>
-                            {mention.snippet.substring(0, 100) + '...'}
-                            </p> */}
-                            <div className='flex gap-5'>
-                                <div className={`w-[57px] h-[24px] rounded-full p-1 ${mention.sentiment === 'positive' ? 'bg-[#DCFCE7]' : mention.sentiment === 'negative' ? 'bg-[#FFA8A8]' : 'bg-[#D3D3D3]'}`}>
-                                    <p className={`text-xs text-center font-inter ${mention.sentiment === 'positive' ? 'text-[#166534]' : mention.sentiment === 'negative' ? 'text-[#FF0000]' : 'text-[#808080]'}`}>{mention.sentiment}</p>
-                                </div>
-                                <a href={mention.url} target="_blank" rel="noopener noreferrer" className='font-jost text-[#F48A1F] text-sm'>Details</a>
-                            </div>
-                        </div>
-                        </div>
-                    ))}
+                        {/* Toggle for all, youtube and news */}
+                    <div className='flex gap-2'>
+                        <button 
+                            className={`px-4 py-2 rounded ${mentionTab === 'All' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+                            onClick={() => setMentionTab('All')}
+                        >
+                            All
+                        </button>
+                        <button 
+                            className={`px-4 py-2 rounded ${mentionTab === 'Youtube' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+                            onClick={() => setMentionTab('Youtube')}
+                        >
+                            Youtube
+                        </button>
+                        <button 
+                            className={`px-4 py-2 rounded ${mentionTab === 'News' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+                            onClick={() => setMentionTab('News')}
+                        >
+                            News
+                        </button>
+                    </div>
+
                 </div>
+
+                {loading ? (
+                    <div className="grid grid-cols-2 gap-4">
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="animate-pulse bg-[#E5E7EB] h-[300px] rounded-lg"></div>
+                        ))}
+                    </div>
+                ) : (
+                    
+                        filteredMentions?.length > 0 ? (
+                        <div className='grid grid-cols-2 gap-4'>
+                            {filteredMentions?.map((mention, index) => (
+                                <div key={index} className='bg-[#fff] h-auto flex items-start gap-2 px-[22px] pt-[22px] pb-[45px] rounded-lg'>
+                                {
+                                    mention.type === 'Youtube' ?
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt={mention.type} className='w-[32px] h-[32px]'/>
+                                    :
+                                    <div className='w-[32px] h-[32px] flex items-center justify-center rounded-full bg-[#10B981] p-2'>
+                                        <p className='text-white font-jost font-semibold'>N</p>
+                                    </div>
+                                }
+                                <div className='flex gap-5 flex-col w-full'>
+                                    <div className='flex flex-col mt-1 gap-1'>
+                                        <div className='flex items-center gap-1'>
+                                        <p className='font-jost text-sm text-[#000000]'>{mention.type}</p>
+                                        </div>
+                                    </div>
+                                    {mention.type === "Youtube" ? (
+                                        <iframe
+                                            width="100%"
+                                            height="200"
+                                            src={`https://www.youtube.com/embed/${new URL(mention.url).searchParams.get("v")}`}
+                                            title="YouTube video"
+                                            frameBorder="0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        ></iframe>
+                                        ) : (
+                                        <a 
+                                            href={mention.url} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 underline break-words"
+                                        >
+                                            {mention.url}
+                                        </a>
+                                    )}
+                                    <div className='flex gap-5'>
+                                        <div className={`w-[57px] h-[24px] rounded-full p-1 ${mention.sentiment === 'positive' ? 'bg-[#DCFCE7]' : mention.sentiment === 'negative' ? 'bg-[#FFA8A8]' : 'bg-[#D3D3D3]'}`}>
+                                            <p className={`text-xs text-center font-inter ${mention.sentiment === 'positive' ? 'text-[#166534]' : mention.sentiment === 'negative' ? 'text-[#FF0000]' : 'text-[#808080]'}`}>{mention.sentiment}</p>
+                                        </div>
+                                        <a href={mention.url} target="_blank" rel="noopener noreferrer" className='font-jost text-[#F48A1F] text-sm'>Details</a>
+                                    </div>
+                                </div>
+                                </div>
+                            ))}
+                        </div>
+                        ) : (
+                             <div className='flex items-center mt-5 justify-center'>
+                                    <p className='font-jost text-2xl text-[#6B7280] font-medium'>No Conversation Available</p>
+                                </div>
+                        )
+                    
+                )}
             </div>
 
     </div>
