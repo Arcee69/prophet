@@ -800,6 +800,10 @@ const Compare = ({ search, setSearchList }) => {
         { name: search, positive: sent1.positive, negative: sent1.negative, neutral: sent1.neutral }
     ];
 
+    const hasPositive = sentimentChartData.some(d => d.positive > 0);
+    const hasNeutral = sentimentChartData.some(d => d.neutral > 0);
+    const hasNegative = sentimentChartData.some(d => d.negative > 0);
+
     const formatNumber = (num) => {
         if (num >= 1000000) {
             return (num / 1000000).toFixed(1) + 'M';
@@ -982,6 +986,8 @@ const Compare = ({ search, setSearchList }) => {
       <div className="h-full bg-[#E5E7EB] rounded"></div>
     </div>
   );
+
+  const labelFormatter = (val) => val > 0 ? `${val}%` : '';
 
   return (
     <div className='w-full flex flex-col gap-[32px]'>
@@ -1178,18 +1184,24 @@ const Compare = ({ search, setSearchList }) => {
                                     <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Sentiment</p>
                                 </div>
                                 <div className='flex items-center gap-2'>
-                                    <div className='flex items-center gap-1'>
-                                        <div className='bg-[#D8FDE5] w-2 h-2 rounded-full'></div>
-                                        <p className='font-jost text-black text-xs leading-[100%]'>Positive</p>
-                                    </div>
-                                    <div className='flex items-center gap-1'>
-                                        <div className='bg-[#DEDEDE] w-2 h-2 rounded-full'></div>
-                                        <p className='font-jost text-black text-xs leading-[100%]'>Neutral</p>
-                                    </div>
-                                    <div className='flex items-center gap-1'>
-                                        <div className='bg-[#FFDCDB] w-2 h-2 rounded-full'></div>
-                                        <p className='font-jost text-black text-xs leading-[100%]'>Negative</p>
-                                    </div>
+                                    {/* {hasPositive && ( */}
+                                        <div className='flex items-center gap-1'>
+                                            <div className='bg-[#D8FDE5] w-2 h-2 rounded-full'></div>
+                                            <p className='font-jost text-black text-xs leading-[100%]'>Positive</p>
+                                        </div>
+                                    {/* )} */}
+                                    {/* {hasNeutral && ( */}
+                                        <div className='flex items-center gap-1'>
+                                            <div className='bg-[#DEDEDE] w-2 h-2 rounded-full'></div>
+                                            <p className='font-jost text-black text-xs leading-[100%]'>Neutral</p>
+                                        </div>
+                                    {/* )} */}
+                                    {/* {hasNegative && ( */}
+                                        <div className='flex items-center gap-1'>
+                                            <div className='bg-[#FFDCDB] w-2 h-2 rounded-full'></div>
+                                            <p className='font-jost text-black text-xs leading-[100%]'>Negative</p>
+                                        </div>
+                                    {/*  )} */}
                                 </div>
                             </div>
                             <div className="w-full h-[250px]">
@@ -1203,13 +1215,13 @@ const Compare = ({ search, setSearchList }) => {
                                         <YAxis type="category" dataKey="name" width={100} />
                                         <Tooltip formatter={(value) => `${value}%`}  />
                                         <Bar dataKey="positive" stackId="a" fill="#D8FDE5">
-                                            <LabelList dataKey="positive" position="center" formatter={(val) => `${val}%`} />
+                                            <LabelList dataKey="positive" position="center" formatter={labelFormatter} />
                                         </Bar>
                                         <Bar dataKey="neutral" stackId="a" fill="#E5E7EB">
-                                            <LabelList dataKey="neutral" position="center" formatter={(val) => `${val}%`} />
+                                            <LabelList dataKey="neutral" position="center" formatter={labelFormatter} />
                                         </Bar>
                                         <Bar dataKey="negative" stackId="a" fill="#FFDCDB">
-                                            <LabelList dataKey="negative" position="center" formatter={(val) => `${val}%`} />
+                                            <LabelList dataKey="negative" position="center" formatter={labelFormatter} />
                                         </Bar>
                                     </BarChart>
                                 </ResponsiveContainer>
@@ -1245,7 +1257,7 @@ const Compare = ({ search, setSearchList }) => {
                                         <XAxis type="category" dataKey="name" />
                                         <YAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
                                         <Tooltip formatter={formatNumber} />
-                                        <Bar dataKey="value" fill="#DEDEDE">
+                                        <Bar dataKey="value" fill="#2D84FF">
                                             <LabelList dataKey="value" position="top" formatter={formatNumber} />
                                         </Bar>
                                     </BarChart>

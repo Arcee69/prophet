@@ -167,7 +167,7 @@ const Dashboard = () => {
         <p className='font-jost text-[#101928] font-semibold leading-[145%] text-[24px]'>Dashboard</p>
         <p className='text-[#667185] text-sm font-jost'>Monitor your brand performance and sentiment analysis</p>
       </div>
-      <div className='flex items-center justify-between'>
+      <div className=' items-center hidden justify-between'>
         <div className="w-[472px] h-[36px] rounded-[8px] px-[7px] py-2 flex items-center gap-8">
           {/* Date Range Options */}
           <div className="flex items-center w-5/12 gap-[5px]">
