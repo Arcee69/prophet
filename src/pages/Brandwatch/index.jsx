@@ -123,7 +123,7 @@ const Brandwatch = () => {
 
         if (searchMode === 'brand') {
             if (!brandId) {
-                toast.error("Please select a brand.", {
+                toast.error("Oops, this brand is not listed yet, request Brand Addition", {
                     position: "top-right",
                     autoClose: 3500,
                     closeOnClick: true,

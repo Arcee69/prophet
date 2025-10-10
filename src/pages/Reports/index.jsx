@@ -192,7 +192,7 @@ const Reports = () => {
             className='w-[150px] h-[40px] bg-[#111827] rounded-[8px] p-2'
             onClick={() => navigate("/reports/my-reports")}
           >
-            <p className='font-jost text-white text-base font-medium'>My Report</p>
+            <p className='font-jost text-white text-base font-medium'>My Reports</p>
           </button>
         </div>
 
