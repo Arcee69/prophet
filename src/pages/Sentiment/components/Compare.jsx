@@ -1065,7 +1065,7 @@ const Compare = ({ search, setSearchList }) => {
         ...(urlInfo[url] || {title: new URL(url).pathname, snippet: 'No description available', sentiment: 'neutral'})
     }))
 
-    const filteredMentions = topMentions.filter(m => mentionTab === 'All' || m.type === mentionTab)
+    const filteredMentions = topMentions?.filter(m => mentionTab === 'All' || m.type === mentionTab)
 
 
     const reportRef = useRef(null);
