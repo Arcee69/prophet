@@ -10,7 +10,7 @@ import Lightning from "../../assets/svg/lightning_white.svg"
 import Settings from "../../assets/svg/settings.svg"
 import Speaker from "../../assets/svg/speaker.svg"
 import Voice from "../../assets/svg/voice_ai.svg"
-import LogoWhite from "../../assets/png/logo_white.jpg"
+import LogoWhite from "../../assets/png/logo.png"
 
 import Jane from "../../assets/png/jane.png"
 import { logout } from '../../features/auth/loginSlice'

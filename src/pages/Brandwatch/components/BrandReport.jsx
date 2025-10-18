@@ -142,7 +142,7 @@ const BrandWatchReport = () => {
       xaxis: {
         categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',]
       },
-      colors: ['#BDDAFF'],
+      colors: ['#1E5631'],
     }
   }), [state]);
 
@@ -183,7 +183,7 @@ const BrandWatchReport = () => {
         xaxis: {
           categories: ['Social Media', 'News'],
         },
-        colors: ['#F48A1F'],
+        colors: ['#1E5631'],
       }
     };
   }, [summary1, state]);
@@ -406,7 +406,7 @@ const BrandWatchReport = () => {
       type: 'donut',
     },
     labels: labels,
-    colors: ['#BDDAFF', '#7FB3FF', '#4D9EFF', '#1A88FF'],
+    colors: ['#1E5631', '#FF4E4C', '#4D9EFF', '#1A88FF'],
     legend: {
       position: 'bottom',
     },
@@ -449,7 +449,7 @@ const BrandWatchReport = () => {
       type: 'donut',
     },
     labels: labels,
-    colors: ['#2D84FF', '#5B9FFF', '#88BBFF', '#B6D7FF'], // Adjusted shades to match #2D84FF theme
+    colors: ['#1E5631', '#FF4E4C', '#4D9EFF', '#1A88FF'], // Adjusted shades to match #2D84FF theme
     legend: {
       position: 'bottom',
     },
@@ -532,7 +532,7 @@ const BrandWatchReport = () => {
                         <XAxis type="category" dataKey="name" />
                         <YAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
                         <Tooltip formatter={formatNumber} />
-                        <Bar dataKey="value" fill="#F2E5FF">
+                        <Bar dataKey="value" fill="#FF4E4C">
                           <LabelList dataKey="value" position="top" formatter={formatNumber} />
                         </Bar>
                       </BarChart>
@@ -572,7 +572,7 @@ const BrandWatchReport = () => {
                   <div className='flex items-center gap-2'>
 
                     <div className='flex items-center gap-1'>
-                      <div className='bg-[#D8FDE5] w-2 h-2 rounded-full'></div>
+                      <div className='bg-[#1E5631] w-2 h-2 rounded-full'></div>
                       <p className='font-jost text-black text-xs leading-[100%]'>Positive</p>
                     </div>
 
@@ -582,7 +582,7 @@ const BrandWatchReport = () => {
                     </div>
 
                     <div className='flex items-center gap-1'>
-                      <div className='bg-[#FFDCDB] w-2 h-2 rounded-full'></div>
+                      <div className='bg-[#FF4E4C] w-2 h-2 rounded-full'></div>
                       <p className='font-jost text-black text-xs leading-[100%]'>Negative</p>
                     </div>
 
@@ -600,14 +600,14 @@ const BrandWatchReport = () => {
                       <XAxis type="category" dataKey="name" position="top" />
                       <YAxis type="number" domain={[0, 100]} tickFormatter={(tick) => `${tick}%`} />
                       <Tooltip formatter={(value) => `${value}%`} />
-                      <Bar dataKey="positive" stackId="a" fill="#D8FDE5">
-                        <LabelList dataKey="positive" position="center" formatter={labelFormatter} />
+                      <Bar dataKey="positive" stackId="a" fill="#1E5631">
+                        <LabelList dataKey="positive" fill='#fff' position="center" formatter={labelFormatter} />
                       </Bar>
-                      <Bar dataKey="neutral" stackId="a" fill="#E5E7EB">
-                        <LabelList dataKey="neutral" position="center" formatter={labelFormatter} />
+                      <Bar dataKey="neutral" stackId="a" fill="#DEDEDE">
+                        <LabelList dataKey="neutral" fill='#fff' position="center" formatter={labelFormatter} />
                       </Bar>
-                      <Bar dataKey="negative" stackId="a" fill="#FFDCDB">
-                        <LabelList dataKey="negative" position="center" formatter={labelFormatter} />
+                      <Bar dataKey="negative" stackId="a" fill="#FF4E4C">
+                        <LabelList dataKey="negative" fill='#fff' position="center" formatter={labelFormatter} />
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
