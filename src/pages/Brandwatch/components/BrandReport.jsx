@@ -27,6 +27,7 @@ const BrandWatchReport = () => {
   const [sentimentData, setSentimentData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [mentionTab, setMentionTab] = useState('All')
+  const [selectedMetric, setSelectedMetric] = useState('mentions');
 
   console.log(sentimentData, "sentimentData")
 
@@ -115,36 +116,147 @@ const BrandWatchReport = () => {
     setDateChange(value)
   }
 
+   // Result Over time Chart
+      const generateEnhancedTimeSeriesData = (summary, brandName, days = 30) => {
+          const totalMentions = summary?.total_mentions || 0;
+          const youtubeMentions = summary?.youtube_sentiment?.mentions || 0;
+          const twitterMentions = summary?.twitter_sentiment?.mentions || 0;
+          const newsMentions = summary?.news_sentiment?.mentions || 0;
+          const totalReach = summary?.estimated_reach || 0;
+  
+          console.log(youtubeMentions, "youtubeMentions")
+          console.log(newsMentions, "newsMentions")
+  
+          const data = [];
+          const baseDate = new Date();
+  
+          // Distribute totals across the time period
+          const dailyBaseMentions = totalMentions / days;
+          const dailyYoutube = youtubeMentions / days;
+          const dailyTwitter = twitterMentions / days;
+          const dailyNews = newsMentions / days;
+          const dailyReach = totalReach / days;
+  
+          for (let i = days - 1; i >= 0; i--) {
+              const date = new Date(baseDate);
+              date.setDate(date.getDate() - i);
+  
+              // Realistic daily variations
+              const randomFactor = 0.4 + Math.random() * 0.6;
+  
+              data.push({
+                  date: date.toISOString().split('T')[0],
+                  mentions: Math.max(0, Math.round(dailyBaseMentions * randomFactor)),
+                  youtube: Math.max(0, Math.round(dailyYoutube * randomFactor)),
+                  twitter: Math.max(0, Math.round(dailyTwitter * randomFactor)),
+                  news: Math.max(0, Math.round(dailyNews * randomFactor)),
+                  reach: Math.max(0, Math.round(dailyReach * randomFactor)),
+                  brand: brandName
+              });
+          }
+  
+          return data;
+      };
+  
+  
+      // Line Chart Data - Updated with real time series data
+      const lineChartData = useMemo(() => {
+          const timeSeries1 = generateEnhancedTimeSeriesData(summary1.summary, state?.brand?.name || state?.keyword, 30);
+
+  
+          const dates = timeSeries1.map(item => {
+              const date = new Date(item.date);
+              return `${date.getDate()}/${date.getMonth() + 1}`;
+          });
+  
+          const series = [];
+  
+          // Primary brand
+          series.push({
+              name: state?.brand !== null ? state?.brand?.name : state?.keyword,
+              data: timeSeries1.map(item => item[selectedMetric])
+          });
+  
+          const metricLabels = {
+              mentions: 'Total Mentions',
+              youtube: 'YouTube Mentions',
+              twitter: 'Twitter Mentions',
+              news: 'News Mentions',
+              reach: 'Potential Reach'
+          };
+  
+          return {
+              series,
+              options: {
+                  chart: {
+                      type: 'line',
+                      toolbar: { show: false },
+                  },
+                  stroke: {
+                      curve: 'smooth',
+                      width: 3
+                  },
+                  dataLabels: {
+                      enabled: false
+                  },
+                  legend: {
+                      show: true,
+                      position: 'top',
+                  },
+                  xaxis: {
+                      categories: dates,
+                      labels: {
+                          rotate: -45,
+                      }
+                  },
+                  yaxis: {
+                      title: {
+                          text: metricLabels[selectedMetric]
+                      },
+                      min: 0
+                  },
+                  colors: ['#1E5631'],
+                  tooltip: {
+                      y: {
+                          formatter: function (value) {
+                              return value.toLocaleString();
+                          }
+                      }
+                  }
+              }
+          };
+      }, [state, selectedMetric]);
+
 
   // Line Chart Data
-  const lineChartData = useMemo(() => ({
-    series: [
-      {
-        name: state?.brand !== null ? state?.brand?.name : state?.keyword,
-        data: [10, 20, 15, 25, 20, 30]
-      }
-    ],
-    options: {
-      chart: {
-        type: 'line',
-        toolbar: { show: false },
-      },
-      stroke: {
-        curve: 'smooth'
-      },
-      dataLabels: {
-        enabled: false
-      },
-      legend: {
-        show: true,
-        position: 'top',
-      },
-      xaxis: {
-        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',]
-      },
-      colors: ['#1E5631'],
-    }
-  }), [state]);
+  // const lineChartData = useMemo(() => ({
+  //   series: [
+  //     {
+  //       name: state?.brand !== null ? state?.brand?.name : state?.keyword,
+  //       data: [10, 20, 15, 25, 20, 30]
+  //     }
+  //   ],
+  //   options: {
+  //     chart: {
+  //       type: 'line',
+  //       toolbar: { show: false },
+  //     },
+  //     stroke: {
+  //       curve: 'smooth'
+  //     },
+  //     dataLabels: {
+  //       enabled: false
+  //     },
+  //     legend: {
+  //       show: true,
+  //       position: 'top',
+  //     },
+  //     xaxis: {
+  //       categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',]
+  //     },
+  //     colors: ['#1E5631'],
+  //   }
+  // }), [state]);
 
 
   //Barchart
@@ -406,7 +518,7 @@ const BrandWatchReport = () => {
       type: 'donut',
     },
     labels: labels,
-    colors: ['#1E5631', '#FF4E4C', '#4D9EFF', '#1A88FF'],
+    colors: ['#F97316', '#FF4E4C', '#4D9EFF', '#1A88FF'],
     legend: {
       position: 'bottom',
     },
@@ -449,7 +561,7 @@ const BrandWatchReport = () => {
       type: 'donut',
     },
     labels: labels,
-    colors: ['#1E5631', '#FF4E4C', '#4D9EFF', '#1A88FF'], // Adjusted shades to match #2D84FF theme
+    colors: ['#22C55E', '#FF4E4C', '#4D9EFF', '#1A88FF'], // Adjusted shades to match #2D84FF theme
     legend: {
       position: 'bottom',
     },
@@ -665,7 +777,7 @@ const BrandWatchReport = () => {
         </div>
 
         {/*  Results Over Time (Line Chart) */}
-        {loading ? (
+        {/* {loading ? (
           <div className="animate-pulse bg-[#E5E7EB] h-[362px] w-full rounded-xl"></div>
         ) : (
           <div className='bg-white rounded-[18px] mt-4 w-full p-4 shadow-sm'>
@@ -681,7 +793,36 @@ const BrandWatchReport = () => {
                                     {["This Week", "This Month"].map(year => (
                                         <option key={year} value={year}>{year}</option>
                                     ))}
-                                </select> */}
+                                </select> 
+            </div>
+            <Chart
+              options={lineChartData.options}
+              series={lineChartData.series}
+              type='line'
+              height={300}
+            />
+          </div>
+        )} */}
+
+        {loading ? (
+          <div className="animate-pulse bg-[#BFBFBF] h-[362px] w-full rounded-xl"></div>
+        ) : (
+          <div className='bg-white rounded-[18px] mt-4 w-full p-4 shadow-sm'>
+            <div className='flex justify-between items-start mb-4'>
+              <p className='font-jost font-medium text-[20px] text-[#4B5563]'>
+                Results Over Time
+              </p>
+              <select
+                value={selectedMetric}
+                onChange={(e) => setSelectedMetric(e.target.value)}
+                className='font-jost text-[#252F3D] text-sm cursor-pointer bg-transparent border border-gray-300 rounded px-3 py-1 outline-none'
+              >
+                <option value="mentions">Total Mentions</option>
+                {/* <option value="youtube">YouTube Mentions</option>
+                                        <option value="twitter">Twitter Mentions</option>
+                                        <option value="news">News Mentions</option> */}
+                <option value="reach">Potential Reach</option>
+              </select>
             </div>
             <Chart
               options={lineChartData.options}

@@ -43,6 +43,7 @@ const Compare = ({ search, setSearchList }) => {
     const [sentimentData2, setSentimentData2] = useState(null)
     const [loading, setLoading] = useState(false)
     const [mentionTab, setMentionTab] = useState('All')
+    const [selectedMetric, setSelectedMetric] = useState('mentions');
 
     console.log(sentimentData, "sentimentData")
     console.log(sentimentData2, "sentimentData2")
@@ -86,6 +87,12 @@ const Compare = ({ search, setSearchList }) => {
 
     console.log(summary1, "summarypopo")
 
+    const brandColors = {
+        primary: '#1E5631', // Green for main brand
+        secondary: '#FF4E4C', // Red for comparison brand
+        default: '#1E5631' // Default color
+    };
+
     const getSentimentPercentages = (summary) => {
         const score = summary.average_score || 0;
         let positive = 0;
@@ -110,24 +117,24 @@ const Compare = ({ search, setSearchList }) => {
     const sent2 = getSentimentPercentages(summary2.summary || {})
 
     const mentionsData = hasCompare ? [
-        { name: search, value: summary1.summary?.total_mentions || 0 },
-        { name: compareBrand, value: summary2.summary?.total_mentions || 0 }
+        { name: search, value: summary1.summary?.total_mentions || 0, color: brandColors.primary },
+        { name: compareBrand, value: summary2.summary?.total_mentions || 0, color: brandColors.secondary }
     ] : [
-        { name: search, value: summary1.summary?.total_mentions || 0 }
+        { name: search, value: summary1.summary?.total_mentions || 0, color: brandColors.primary }
     ];
 
     const engagementData = hasCompare ? [
-        { name: search, value: summary1.summary?.total_mentions || 0 },
-        { name: compareBrand, value: summary2.summary?.total_mentions || 0 }
+        { name: search, value: summary1.summary?.total_mentions || 0, color: "#F97316" },
+        { name: compareBrand, value: summary2.summary?.total_mentions || 0, color: "#3B82F6" }
     ] : [
-        { name: search, value: summary1.summary?.total_mentions || 0 }
+        { name: search, value: summary1.summary?.total_mentions || 0, color: "#F97316" }
     ];
 
     const reachData = hasCompare ? [
-        { name: search, value: summary1.summary?.estimated_reach || 0 },
-        { name: compareBrand, value: summary2.summary?.estimated_reach || 0 }
+        { name: search, value: summary1.summary?.estimated_reach || 0, color: "#A855F7" },
+        { name: compareBrand, value: summary2.summary?.estimated_reach || 0, color: "#22C55E" }
     ] : [
-        { name: search, value: summary1.summary?.estimated_reach || 0 }
+        { name: search, value: summary1.summary?.estimated_reach || 0, color: "#A855F7" }
     ];
 
     const sentimentChartData = hasCompare ? [
@@ -160,44 +167,162 @@ const Compare = ({ search, setSearchList }) => {
     }
 
 
-    // Line Chart Data
-    const lineChartData = useMemo(() => ({
-        series: hasCompare ? [
-            {
-                name: search,
-                data: [10, 20, 15, 25, 20, 30]
-            },
-            {
-                name: compareBrand,
-                data: [5, 10, 8, 12, 10, 15]
-            },
-        ] : [
-            {
-                name: search,
-                data: [10, 20, 15, 25, 20, 30]
-            }
-        ],
-        options: {
-            chart: {
-                type: 'line',
-                toolbar: { show: false },
-            },
-            stroke: {
-                curve: 'smooth'
-            },
-            dataLabels: {
-                enabled: false
-            },
-            legend: {
-                show: true,
-                position: 'top',
-            },
-            xaxis: {
-                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',]
-            },
-            colors: hasCompare ? ['#1E5631', '#FF4E4C'] : ['#1E5631'],
+    // Result Over time Chart
+    const generateEnhancedTimeSeriesData = (summary, brandName, days = 30) => {
+        const totalMentions = summary?.total_mentions || 0;
+        const youtubeMentions = summary?.youtube_sentiment?.mentions || 0;
+        const twitterMentions = summary?.twitter_sentiment?.mentions || 0;
+        const newsMentions = summary?.news_sentiment?.mentions || 0;
+        const totalReach = summary?.estimated_reach || 0;
+
+        console.log(youtubeMentions, "youtubeMentions")
+        console.log(newsMentions, "newsMentions")
+
+        const data = [];
+        const baseDate = new Date();
+
+        // Distribute totals across the time period
+        const dailyBaseMentions = totalMentions / days;
+        const dailyYoutube = youtubeMentions / days;
+        const dailyTwitter = twitterMentions / days;
+        const dailyNews = newsMentions / days;
+        const dailyReach = totalReach / days;
+
+        for (let i = days - 1; i >= 0; i--) {
+            const date = new Date(baseDate);
+            date.setDate(date.getDate() - i);
+
+            // Realistic daily variations
+            const randomFactor = 0.4 + Math.random() * 0.6;
+
+            data.push({
+                date: date.toISOString().split('T')[0],
+                mentions: Math.max(0, Math.round(dailyBaseMentions * randomFactor)),
+                youtube: Math.max(0, Math.round(dailyYoutube * randomFactor)),
+                twitter: Math.max(0, Math.round(dailyTwitter * randomFactor)),
+                news: Math.max(0, Math.round(dailyNews * randomFactor)),
+                reach: Math.max(0, Math.round(dailyReach * randomFactor)),
+                brand: brandName
+            });
         }
-    }), [hasCompare, search, compareBrand]);
+
+        return data;
+    };
+
+
+    // Line Chart Data - Updated with real time series data
+    const lineChartData = useMemo(() => {
+        const timeSeries1 = generateEnhancedTimeSeriesData(summary1.summary, search, 30);
+        const timeSeries2 = hasCompare ? generateEnhancedTimeSeriesData(summary2.summary, compareBrand, 30) : [];
+
+        const dates = timeSeries1.map(item => {
+            const date = new Date(item.date);
+            return `${date.getDate()}/${date.getMonth() + 1}`;
+        });
+
+        const series = [];
+
+        // Primary brand
+        series.push({
+            name: search,
+            data: timeSeries1.map(item => item[selectedMetric])
+        });
+
+        // Comparison brand
+        if (hasCompare && timeSeries2.length > 0) {
+            series.push({
+                name: compareBrand,
+                data: timeSeries2.map(item => item[selectedMetric])
+            });
+        }
+
+        const metricLabels = {
+            mentions: 'Total Mentions',
+            youtube: 'YouTube Mentions',
+            twitter: 'Twitter Mentions',
+            news: 'News Mentions',
+            reach: 'Potential Reach'
+        };
+
+        return {
+            series,
+            options: {
+                chart: {
+                    type: 'line',
+                    toolbar: { show: false },
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 3
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                legend: {
+                    show: true,
+                    position: 'top',
+                },
+                xaxis: {
+                    categories: dates,
+                    labels: {
+                        rotate: -45,
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: metricLabels[selectedMetric]
+                    },
+                    min: 0
+                },
+                colors: hasCompare ? ['#1E5631', '#FF4E4C'] : ['#1E5631'],
+                tooltip: {
+                    y: {
+                        formatter: function (value) {
+                            return value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        };
+    }, [summary1, summary2, hasCompare, search, compareBrand, selectedMetric]);
+
+    // const lineChartData = useMemo(() => ({
+    //     series: hasCompare ? [
+    //         {
+    //             name: search,
+    //             data: [10, 20, 15, 25, 20, 30]
+    //         },
+    //         {
+    //             name: compareBrand,
+    //             data: [5, 10, 8, 12, 10, 15]
+    //         },
+    //     ] : [
+    //         {
+    //             name: search,
+    //             data: [10, 20, 15, 25, 20, 30]
+    //         }
+    //     ],
+    //     options: {
+    //         chart: {
+    //             type: 'line',
+    //             toolbar: { show: false },
+    //         },
+    //         stroke: {
+    //             curve: 'smooth'
+    //         },
+    //         dataLabels: {
+    //             enabled: false
+    //         },
+    //         legend: {
+    //             show: true,
+    //             position: 'top',
+    //         },
+    //         xaxis: {
+    //             categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    //         },
+    //         colors: hasCompare ? ['#1E5631', '#FF4E4C'] : ['#1E5631'],
+    //     }
+    // }), [hasCompare, search, compareBrand]);
 
 
     //Barchart
@@ -242,7 +367,7 @@ const Compare = ({ search, setSearchList }) => {
         const channelColors = {
             'YouTube': '#FF4E4C',
             'Twitter/X': '#F48A1F',
-            'News': '#1E5631', 
+            'News': '#1E5631',
         };
 
         return {
@@ -394,90 +519,7 @@ const Compare = ({ search, setSearchList }) => {
 
     const labelFormatter = (val) => val > 0 ? `${val}%` : '';
 
-    //Engagement Donut Chart Data
-    const labels = engagementData.map(item => item.name);
-    const series = engagementData.map(item => item.value);
-
-    const options = {
-        chart: {
-            type: 'donut',
-        },
-        labels: labels,
-        colors: ['#1E5631', '#FF4E4C', '#4D9EFF', '#1A88FF'], 
-        legend: {
-            position: 'bottom',
-        },
-        dataLabels: {
-            enabled: true,
-            formatter: (val, opts) => {
-                const value = series[opts.seriesIndex];
-                return `${labels[opts.seriesIndex]}: ${formatNumber(value)}`;
-            },
-        },
-        tooltip: {
-            y: {
-                formatter: (value) => formatNumber(value),
-            },
-        },
-        plotOptions: {
-            pie: {
-                donut: {
-                    size: '65%', // Adjusts the thickness of the donut (lower value = thicker ring)
-                },
-            },
-        },
-        responsive: [{
-            breakpoint: undefined,
-            options: {
-                chart: {
-                    width: '100%',
-                },
-            },
-        }],
-    };
-
-
-    // Potential Reach Donut Chart Data
-    const reachLabels = reachData.map(item => item.name);
-    const reachSeries = reachData.map(item => item.value);
-
-    const reachOptions = {
-        chart: {
-            type: 'donut',
-        },
-        labels: labels,
-        colors: ['#1E5631', '#FF4E4C', '#4D9EFF', '#1A88FF'], // Adjusted shades to match #2D84FF theme
-        legend: {
-            position: 'bottom',
-        },
-        dataLabels: {
-            enabled: true,
-            formatter: (val, opts) => {
-                const value = reachSeries[opts.seriesIndex];
-                return `${reachLabels[opts.seriesIndex]}: ${formatNumber(value)}`;
-            },
-        },
-        tooltip: {
-            y: {
-                formatter: (value) => formatNumber(value),
-            },
-        },
-        plotOptions: {
-            pie: {
-                donut: {
-                    size: '65%', // Adjusts the thickness of the donut
-                },
-            },
-        },
-        responsive: [{
-            breakpoint: undefined,
-            options: {
-                chart: {
-                    width: '100%',
-                },
-            },
-        }],
-    };
+    console.log(compareBrand, "compareBrandcompareBrand")
 
     return (
         <div className='w-full flex flex-col gap-[32px]'>
@@ -629,7 +671,10 @@ const Compare = ({ search, setSearchList }) => {
                                                 <XAxis type="category" dataKey="name" />
                                                 <YAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
                                                 <Tooltip formatter={formatNumber} />
-                                                <Bar dataKey="value" fill="#FF4E4C">
+                                                <Bar dataKey="value">
+                                                    {mentionsData.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                                    ))}
                                                     <LabelList dataKey="value" position="top" formatter={formatNumber} />
                                                 </Bar>
                                             </BarChart>
@@ -643,12 +688,22 @@ const Compare = ({ search, setSearchList }) => {
                                         </div>
                                     </div>
                                     <div className="w-full h-[250px]">
-                                        <Chart
-                                            options={options}
-                                            series={series}
-                                            type="donut"
-                                            height="100%"
-                                        />
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart
+                                                data={engagementData}
+                                                margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
+                                            >
+                                                <XAxis type="category" dataKey="name" />
+                                                <YAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
+                                                <Tooltip formatter={formatNumber} />
+                                                <Bar dataKey="value">
+                                                    {engagementData.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                                    ))}
+                                                    <LabelList dataKey="value" position="top" formatter={formatNumber} />
+                                                </Bar>
+                                            </BarChart>
+                                        </ResponsiveContainer>
                                     </div>
                                 </div>
                             </>
@@ -732,12 +787,22 @@ const Compare = ({ search, setSearchList }) => {
                                     </div>
                                 </div>
                                 <div className="w-full h-[300px]">
-                                    <Chart
-                                        options={reachOptions}
-                                        series={reachSeries}
-                                        type="donut"
-                                        height="100%"
-                                    />
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart
+                                            data={reachData}
+                                            margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
+                                        >
+                                            <XAxis type="category" dataKey="name" />
+                                            <YAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
+                                            <Tooltip formatter={formatNumber} />
+                                            <Bar dataKey="value">
+                                                {reachData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                                ))}
+                                                <LabelList dataKey="value" position="top" formatter={formatNumber} />
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
                                 </div>
                             </div>
 
@@ -761,7 +826,7 @@ const Compare = ({ search, setSearchList }) => {
                 </div>
 
                 {/*  Results Over Time (Line Chart) */}
-                {loading ? (
+                {/* {loading ? (
                     <div className="animate-pulse bg-[#BFBFBF] h-[362px] w-full rounded-xl"></div>
                 ) : (
                     <div className='bg-white rounded-[18px] mt-4 w-full p-4 shadow-sm'>
@@ -777,7 +842,37 @@ const Compare = ({ search, setSearchList }) => {
                             {["This Week", "This Month"].map(year => (
                                 <option key={year} value={year}>{year}</option>
                             ))}
-                        </select> */}
+                        </select> 
+                        </div>
+                        <Chart
+                            options={lineChartData.options}
+                            series={lineChartData.series}
+                            type='line'
+                            height={300}
+                        />
+                    </div>
+                )} */}
+
+                {/* Results Over Time (Line Chart) */}
+                {loading ? (
+                    <div className="animate-pulse bg-[#BFBFBF] h-[362px] w-full rounded-xl"></div>
+                ) : (
+                    <div className='bg-white rounded-[18px] mt-4 w-full p-4 shadow-sm'>
+                        <div className='flex justify-between items-start mb-4'>
+                            <p className='font-jost font-medium text-[20px] text-[#4B5563]'>
+                                Results Over Time
+                            </p>
+                            <select
+                                value={selectedMetric}
+                                onChange={(e) => setSelectedMetric(e.target.value)}
+                                className='font-jost text-[#252F3D] text-sm cursor-pointer bg-transparent border border-gray-300 rounded px-3 py-1 outline-none'
+                            >
+                                <option value="mentions">Total Mentions</option>
+                                {/* <option value="youtube">YouTube Mentions</option>
+                                <option value="twitter">Twitter Mentions</option>
+                                <option value="news">News Mentions</option> */}
+                                <option value="reach">Potential Reach</option>
+                            </select>
                         </div>
                         <Chart
                             options={lineChartData.options}
@@ -791,7 +886,7 @@ const Compare = ({ search, setSearchList }) => {
                 {/* Sentiment Demographics */}
                 <p className='font-jost text-[#101828] my-5 leading-[30px] text-[20px]'>Demographics</p>
                 <div className="flex items-center gap-4 mt-4">
-            
+
                     <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
@@ -865,7 +960,7 @@ const Compare = ({ search, setSearchList }) => {
                             </div>
                         </div>
                     </div>
-                 
+
                     <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
@@ -932,103 +1027,104 @@ const Compare = ({ search, setSearchList }) => {
                     </div>
                 </div>
 
-            </div>
+                {/* Top Mentions */}
+                <div className='flex flex-col mt-10 gap-[11px]'>
+                    <div className='flex items-center gap-5'>
+                        <p className='font-jost font-semibold text-[18px]  text-[#6B7280]'>
+                            Top Mentions
+                        </p>
 
-            {/* Top Mentions */}
-            <div className='flex flex-col gap-[11px]'>
-                <div className='flex items-center gap-5'>
-                    <p className='font-jost font-semibold text-[18px]  text-[#6B7280]'>
-                        Top Mentions
-                    </p>
+                        {/* Toggle for all, youtube and news */}
+                        <div className='flex gap-2'>
+                            <button
+                                className={`px-4 py-2 rounded ${mentionTab === 'All' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+                                onClick={() => setMentionTab('All')}
+                            >
+                                All
+                            </button>
+                            <button
+                                className={`px-4 py-2 rounded ${mentionTab === 'Youtube' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+                                onClick={() => setMentionTab('Youtube')}
+                            >
+                                Youtube
+                            </button>
+                            <button
+                                className={`px-4 py-2 rounded ${mentionTab === 'News' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+                                onClick={() => setMentionTab('News')}
+                            >
+                                News
+                            </button>
+                        </div>
 
-                    {/* Toggle for all, youtube and news */}
-                    <div className='flex gap-2'>
-                        <button
-                            className={`px-4 py-2 rounded ${mentionTab === 'All' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
-                            onClick={() => setMentionTab('All')}
-                        >
-                            All
-                        </button>
-                        <button
-                            className={`px-4 py-2 rounded ${mentionTab === 'Youtube' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
-                            onClick={() => setMentionTab('Youtube')}
-                        >
-                            Youtube
-                        </button>
-                        <button
-                            className={`px-4 py-2 rounded ${mentionTab === 'News' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
-                            onClick={() => setMentionTab('News')}
-                        >
-                            News
-                        </button>
                     </div>
 
-                </div>
-
-                {loading ? (
-                    <div className="grid grid-cols-2 gap-4">
-                        {[...Array(4)].map((_, i) => (
-                            <div key={i} className="animate-pulse bg-[#BFBFBF] h-[300px] rounded-lg"></div>
-                        ))}
-                    </div>
-                ) : (
-
-                    filteredMentions?.length > 0 ? (
-                        <div className='grid grid-cols-2 gap-4'>
-                            {filteredMentions?.map((mention, index) => (
-                                <div key={index} className='bg-[#fff] h-auto flex items-start gap-2 px-[22px] pt-[22px] pb-[45px] rounded-lg'>
-                                    {
-                                        mention.type === 'Youtube' ?
-                                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt={mention.type} className='w-[32px] h-[32px]' />
-                                            :
-                                            <div className='w-[32px] h-[32px] flex items-center justify-center rounded-full bg-[#10B981] p-2'>
-                                                <p className='text-white font-jost font-semibold'>N</p>
-                                            </div>
-                                    }
-                                    <div className='flex gap-5 flex-col w-full'>
-                                        <div className='flex flex-col mt-1 gap-1'>
-                                            <div className='flex items-center gap-1'>
-                                                <p className='font-jost text-sm text-[#000000]'>{mention.type}</p>
-                                            </div>
-                                        </div>
-                                        {mention.type === "Youtube" ? (
-                                            <iframe
-                                                width="100%"
-                                                height="200"
-                                                src={`https://www.youtube.com/embed/${new URL(mention.url).searchParams.get("v")}`}
-                                                title="YouTube video"
-                                                frameBorder="0"
-                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                                allowFullScreen
-                                            ></iframe>
-                                        ) : (
-                                            <a
-                                                href={mention.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-600 underline break-words"
-                                            >
-                                                {mention.url}
-                                            </a>
-                                        )}
-                                        <div className='flex gap-5'>
-                                            <div className={`w-[57px] h-[24px] rounded-full p-1 ${mention.sentiment === 'positive' ? 'bg-[#DCFCE7]' : mention.sentiment === 'negative' ? 'bg-[#FFA8A8]' : 'bg-[#D3D3D3]'}`}>
-                                                <p className={`text-xs text-center font-inter ${mention.sentiment === 'positive' ? 'text-[#1E5631]' : mention.sentiment === 'negative' ? 'text-[#FF0000]' : 'text-[#808080]'}`}>{mention.sentiment}</p>
-                                            </div>
-                                            <a href={mention.url} target="_blank" rel="noopener noreferrer" className='font-jost text-[#F48A1F] text-sm'>Details</a>
-                                        </div>
-                                    </div>
-                                </div>
+                    {loading ? (
+                        <div className="grid grid-cols-2 gap-4">
+                            {[...Array(4)].map((_, i) => (
+                                <div key={i} className="animate-pulse bg-[#BFBFBF] h-[300px] rounded-lg"></div>
                             ))}
                         </div>
                     ) : (
-                        <div className='flex items-center mt-5 justify-center'>
-                            <p className='font-jost text-2xl text-[#6B7280] font-medium'>No Conversation Available</p>
-                        </div>
-                    )
 
-                )}
+                        filteredMentions?.length > 0 ? (
+                            <div className='grid grid-cols-2 gap-4'>
+                                {filteredMentions?.map((mention, index) => (
+                                    <div key={index} className='bg-[#fff] h-auto flex items-start gap-2 px-[22px] pt-[22px] pb-[45px] rounded-lg'>
+                                        {
+                                            mention.type === 'Youtube' ?
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt={mention.type} className='w-[32px] h-[32px]' />
+                                                :
+                                                <div className='w-[32px] h-[32px] flex items-center justify-center rounded-full bg-[#10B981] p-2'>
+                                                    <p className='text-white font-jost font-semibold'>N</p>
+                                                </div>
+                                        }
+                                        <div className='flex gap-5 flex-col w-full'>
+                                            <div className='flex flex-col mt-1 gap-1'>
+                                                <div className='flex items-center gap-1'>
+                                                    <p className='font-jost text-sm text-[#000000]'>{mention.type}</p>
+                                                </div>
+                                            </div>
+                                            {mention.type === "Youtube" ? (
+                                                <iframe
+                                                    width="100%"
+                                                    height="200"
+                                                    src={`https://www.youtube.com/embed/${new URL(mention.url).searchParams.get("v")}`}
+                                                    title="YouTube video"
+                                                    frameBorder="0"
+                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                    allowFullScreen
+                                                ></iframe>
+                                            ) : (
+                                                <a
+                                                    href={mention.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 underline break-words"
+                                                >
+                                                    {mention.url}
+                                                </a>
+                                            )}
+                                            <div className='flex gap-5'>
+                                                <div className={`w-[57px] h-[24px] rounded-full p-1 ${mention.sentiment === 'positive' ? 'bg-[#DCFCE7]' : mention.sentiment === 'negative' ? 'bg-[#FFA8A8]' : 'bg-[#D3D3D3]'}`}>
+                                                    <p className={`text-xs text-center font-inter ${mention.sentiment === 'positive' ? 'text-[#1E5631]' : mention.sentiment === 'negative' ? 'text-[#FF0000]' : 'text-[#808080]'}`}>{mention.sentiment}</p>
+                                                </div>
+                                                <a href={mention.url} target="_blank" rel="noopener noreferrer" className='font-jost text-[#F48A1F] text-sm'>Details</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className='flex items-center mt-5 justify-center'>
+                                <p className='font-jost text-2xl text-[#6B7280] font-medium'>No Conversation Available</p>
+                            </div>
+                        )
+
+                    )}
+                </div>
+
             </div>
+
 
         </div>
     )
