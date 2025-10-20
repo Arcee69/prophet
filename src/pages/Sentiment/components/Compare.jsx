@@ -577,24 +577,16 @@ const Compare = ({ search, setSearchList }) => {
                     <p className='font-lato text-base font-semibold text-[#1F2937]'>Filters</p>
                     <p className='font-lato text-[#E57E46] text-sm'>Clear All</p>
                 </div>
-                <div className='flex gap-4 items-center'>
-                    <div className='bg-[#F9FAFB] w-[181px] h-[36px] rounded-[8px] p-2 flex items-center gap-2'>
-                        <IoIosRadio className='w-5 h-5 text-[#374151]' />
-                        <p className='text-sm text-[#374151] font-lato'>All Media</p>
-                    </div>
+                <div className='flex gap-4 justify-between items-center'>
                     <div className='bg-[#F9FAFB] w-[181px] h-[36px] rounded-[8px] p-2 flex items-center gap-2'>
                         <GoGlobe className='w-5 h-5 text-[#374151]' />
                         <p className='text-sm text-[#374151] font-lato'>All sources</p>
                     </div>
-                    <div className='bg-[#F9FAFB] w-[181px] h-[36px] rounded-[8px] p-2 flex items-center gap-2'>
-                        <IoLocationOutline className='w-5 h-5 text-[#374151]' />
-                        <p className='text-sm text-[#374151] font-lato'>Worldwide</p>
-                    </div>
-                    <div className='bg-[#F9FAFB] w-[90px] h-[36px] rounded-[8px] p-2 flex items-center gap-1'>
+                    {/* <div className='bg-[#F9FAFB] w-[90px] h-[36px] rounded-[8px] p-2 flex items-center gap-1'>
                         <img src={Happy} className='w-[18px] h-[18px]' />
                         <img src={Normal} className='w-[18px] h-[18px]' />
                         <img src={Sad} className='w-[18px] h-[18px]' />
-                    </div>
+                    </div> */}
 
                     <div className="bg-[#F9FAFB] w-[472px] h-[36px] rounded-[8px] px-[26px] py-2 flex items-center gap-1">
                         {/* Date Range Options */}
@@ -871,7 +863,7 @@ const Compare = ({ search, setSearchList }) => {
                                 {/* <option value="youtube">YouTube Mentions</option>
                                 <option value="twitter">Twitter Mentions</option>
                                 <option value="news">News Mentions</option> */}
-                                <option value="reach">Potential Reach</option>
+                                {/* <option value="reach">Potential Reach</option> */}
                             </select>
                         </div>
                         <Chart
@@ -887,7 +879,7 @@ const Compare = ({ search, setSearchList }) => {
                 <p className='font-jost text-[#101828] my-5 leading-[30px] text-[20px]'>Demographics</p>
                 <div className="flex items-center gap-4 mt-4">
 
-                    <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
+                    {/* <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <p className="font-semibold font-jost text-[#6B7280] text-[20px]">Sentiment by Gender</p>
@@ -959,9 +951,9 @@ const Compare = ({ search, setSearchList }) => {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
 
-                    <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
+                    <div className="h-[362px] w-full flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <p className="font-semibold font-jost text-[#6B7280] text-[20px]">Sentiment by Region</p>
