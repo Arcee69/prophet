@@ -88,9 +88,9 @@ const Compare = ({ search, setSearchList }) => {
     console.log(summary1, "summarypopo")
 
     const brandColors = {
-        primary: '#1E5631', // Green for main brand
+        primary: '#BDDAFF', // Green for main brand
         secondary: '#FF4E4C', // Red for comparison brand
-        default: '#1E5631' // Default color
+        default: '#BDDAFF' // Default color
     };
 
     const getSentimentPercentages = (summary) => {
@@ -432,6 +432,55 @@ const Compare = ({ search, setSearchList }) => {
 
     const reportRef = useRef(null);
 
+    // const handleDownloadPDF = async () => {
+    //     const input = reportRef.current;
+
+    //     // Capture the report content as a canvas
+    //     const canvas = await html2canvas(input, { scale: 2, useCORS: true });
+    //     const imgData = canvas.toDataURL('image/png');
+
+    //     // Create a new jsPDF instance
+    //     const pdf = new jsPDF('p', 'mm', 'a4');
+    //     const pageWidth = pdf.internal.pageSize.getWidth();
+    //     const pageHeight = pdf.internal.pageSize.getHeight();
+
+    //     // Logo details (replace with your logo URL or base64 string)
+    //     const logoUrl = Logo; // Replace with your logo URL
+    //     const logoWidth = 50; // Width of the logo in mm
+    //     const logoHeight = 30; // Height of the logo in mm
+    //     const logoX = 10; // X-coordinate for top-left corner
+    //     const logoY = 10; // Y-coordinate for top-left corner
+
+    //     // Add the logo to the first page
+    //     pdf.addImage(logoUrl, 'PNG', logoX, logoY, logoWidth, logoHeight);
+
+    //     // Adjust the report content to avoid overlapping with the logo
+    //     const imgWidth = pageWidth;
+    //     const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    //     const contentMarginTop = logoHeight + 20; // Adjust margin to account for logo height and some spacing
+
+    //     let heightLeft = imgHeight;
+    //     let position = contentMarginTop;
+
+    //     // Add the captured report content
+    //     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    //     heightLeft -= (pageHeight - contentMarginTop);
+
+    //     // Handle additional pages if the content exceeds one page
+    //     while (heightLeft > 0) {
+    //         position = heightLeft - imgHeight + contentMarginTop;
+    //         pdf.addPage();
+    //         // Add the logo to subsequent pages
+    //         pdf.addImage(logoUrl, 'PNG', logoX, logoY, logoWidth, logoHeight);
+    //         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    //         heightLeft -= pageHeight;
+    //     }
+
+    //     // Save the PDF
+    //     pdf.save('report.pdf');
+    // };
+
+
     const handleDownloadPDF = async () => {
         const input = reportRef.current;
 
@@ -451,14 +500,39 @@ const Compare = ({ search, setSearchList }) => {
         const logoX = 10; // X-coordinate for top-left corner
         const logoY = 10; // Y-coordinate for top-left corner
 
-        // Add the logo to the first page
-        pdf.addImage(logoUrl, 'PNG', logoX, logoY, logoWidth, logoHeight);
+        // Title and description details
+        const titleText = `Sentiment Analysis Report - ${search}${compareBrand ? ` vs ${compareBrand}` : ''}`;
+        const descriptionText = 'This report provides a comprehensive overview of brand sentiment and engagement.';
+        const titleX = 10; // Align with logo X
+        const titleY = logoY + logoHeight + 5; // Below logo with 5mm spacing
+        const descriptionX = 10; // Align with title X
+        const descriptionY = titleY + 8; // Below title with 8mm spacing (approx. for 24px font + gap)
 
-        // Adjust the report content to avoid overlapping with the logo
+        // Add content to each page
+        const addHeader = () => {
+            // Add logo
+            pdf.addImage(logoUrl, 'PNG', logoX, logoY, logoWidth, logoHeight);
+
+            // Set font for title (mimicking font-jost, bold, 24px)
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(18); // Approx. 24px (1px ≈ 0.75pt)
+            pdf.setTextColor(16, 25, 40); // #101928
+            pdf.text(titleText, titleX, titleY);
+
+            // Set font for description (mimicking font-jost, regular, 14px)
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(10); // Approx. 14px
+            pdf.setTextColor(102, 113, 133); // #667185
+            pdf.text(descriptionText, descriptionX, descriptionY, { maxWidth: pageWidth - 20 }); // Wrap text within page width
+        };
+
+        // Add header to the first page
+        addHeader();
+
+        // Calculate content position to avoid overlap
+        const contentMarginTop = logoHeight + 30; // Adjust for logo, title, description, and spacing
         const imgWidth = pageWidth;
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        const contentMarginTop = logoHeight + 20; // Adjust margin to account for logo height and some spacing
-
         let heightLeft = imgHeight;
         let position = contentMarginTop;
 
@@ -470,8 +544,8 @@ const Compare = ({ search, setSearchList }) => {
         while (heightLeft > 0) {
             position = heightLeft - imgHeight + contentMarginTop;
             pdf.addPage();
-            // Add the logo to subsequent pages
-            pdf.addImage(logoUrl, 'PNG', logoX, logoY, logoWidth, logoHeight);
+            // Add header (logo, title, description) to subsequent pages
+            addHeader();
             pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
             heightLeft -= pageHeight;
         }
@@ -509,6 +583,8 @@ const Compare = ({ search, setSearchList }) => {
 
     //     pdf.save('report.pdf');
     // };
+
+
 
     const SkeletonCard = () => (
         <div className="animate-pulse flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl h-[362px] w-full">
@@ -1077,15 +1153,22 @@ const Compare = ({ search, setSearchList }) => {
                                                 </div>
                                             </div>
                                             {mention.type === "Youtube" ? (
-                                                <iframe
-                                                    width="100%"
-                                                    height="200"
-                                                    src={`https://www.youtube.com/embed/${new URL(mention.url).searchParams.get("v")}`}
-                                                    title="YouTube video"
-                                                    frameBorder="0"
-                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                                    allowFullScreen
-                                                ></iframe>
+                                                // <iframe
+                                                //     width="100%"
+                                                //     height="200"
+                                                //     src={`https://www.youtube.com/embed/${new URL(mention.url).searchParams.get("v")}`}
+                                                //     title="YouTube video"
+                                                //     frameBorder="0"
+                                                //     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                //     allowFullScreen
+                                                // ></iframe>
+                                                <a href={mention.url} target="_blank" rel="noopener noreferrer">
+                                                    <img
+                                                        src={`https://img.youtube.com/vi/${new URL(mention.url).searchParams.get("v")}/hqdefault.jpg`}
+                                                        alt="YouTube Thumbnail"
+                                                        className="w-full h-[200px] object-cover rounded-md"
+                                                    />
+                                                </a>
                                             ) : (
                                                 <a
                                                     href={mention.url}
