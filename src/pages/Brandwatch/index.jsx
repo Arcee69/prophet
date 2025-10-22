@@ -427,13 +427,14 @@ const Brandwatch = () => {
     const itemsPerPage = 8; // assuming 10 items per page
 
     const dateOptions = [
-        { value: 1, label: '1 Day', key: '1D' },
-        { value: 2, label: '7 Days', key: '7D' },
-        { value: 3, label: '30 Days', key: '30D' },
-        { value: 4, label: '3 Months', key: '3M' },
-        { value: 5, label: '6 Months', key: '6M' },
-        { value: 6, label: '12 Months', key: '12M' },
-        { value: 7, label: 'Custom', key: 'Custom' }
+        { value: 1, label: 'Select Duration', key: 'select' },
+        { value: 2, label: '1 Day', key: '1D' },
+        { value: 3, label: '7 Days', key: '7D' },
+        { value: 4, label: '30 Days', key: '30D' },
+        { value: 5, label: '3 Months', key: '3M' },
+        { value: 6, label: '6 Months', key: '6M' },
+        { value: 7, label: '12 Months', key: '12M' },
+        { value: 8, label: 'Custom', key: 'Custom' }
     ]
 
     const handleDateChange = (value) => {
@@ -685,7 +686,7 @@ const Brandwatch = () => {
                     )}
                 </div>
 
-                <div className="w-[472px] h-[42px] rounded-[8px] px-[7px] py-2 flex items-center gap-8 relative">
+                <div className="w-[672px] h-[42px] rounded-[8px] px-[7px] py-2 flex items-center gap-8 relative">
                     {/* Date Range Dropdown */}
                     <div className="w-5/12 relative">
                         <div
@@ -765,7 +766,7 @@ const Brandwatch = () => {
             <div className='h-[450px] w-full  flex flex-col px-[25px] gap-[48px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl'>
                 <div className='flex items-center gap-2'>
                     <img src={Bubble} alt='Bubble' className='w-6 h-6' />
-                    <p className='font-jost text-[#6B7280] font-semibold text-lg'>Tracked Brands</p>
+                    <p className='font-jost text-[#6B7280] font-semibold text-lg'>Tracked Brands & Keywords</p>
                 </div>
 
                 <div className='px-[25px] pb-[28px]'>

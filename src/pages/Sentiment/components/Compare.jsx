@@ -111,6 +111,8 @@ const Compare = ({ search, setSearchList }) => {
         return { positive, negative, neutral };
     }
 
+    const formatter = new Intl.NumberFormat('en-US');
+
 
     const sent1 = getSentimentPercentages(summary1.summary || {})
     const sent2 = getSentimentPercentages(summary2.summary || {})
@@ -692,7 +694,7 @@ const Compare = ({ search, setSearchList }) => {
 
     const donutChartSeries = regionSentimentData.map(item => item.mentions);
 
-    const sentimentSources = ["youtube", "news", "twitter"]
+    console.log(mentionsData, "mentionsData")
 
 
     const SkeletonCard = () => (
@@ -835,7 +837,57 @@ const Compare = ({ search, setSearchList }) => {
             </div>
 
             <div ref={reportRef}>
-                <div className="flex flex-col gap-4">
+
+                <div className='grid grid-cols-3 gap-4'>
+                    {loading ? (
+                        <>
+                            <SkeletonCard />
+                            <SkeletonCard />
+                            <SkeletonCard />
+                        </>
+                    ) : (
+                        <>
+                            <div className='flex flex-col justify-between p-4 bg-white rounded-lg h-[200px] shadow-md'>
+                                <p className='font-jost text-2xl font-semibold text-[#252F3D]'>Total Mentions</p>
+                                <div className='flex items-center justify-between'>
+                                    {mentionsData?.map((item, index) => (
+                                        <div key={index} className='flex flex-col gap-1.5'>
+                                            <p className={`font-jost font-medium text-xl`} style={{ color: item.color }}>{item.name}</p>
+                                            <p className={`font-jost font-medium text-xl`} style={{ color: item.color }}>{formatter.format(item.value)}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className='flex flex-col justify-between p-4 bg-white rounded-lg h-[200px] shadow-md'>
+                                <p className='font-jost text-2xl font-semibold text-[#252F3D]'>Total Engagement</p>
+                                <div className='flex items-center justify-between'>
+                                    {engagementData?.map((item, index) => (
+                                        <div key={index} className='flex flex-col gap-1.5'>
+                                            <p className={`font-jost font-medium text-xl`} style={{ color: item.color }}>{item.name}</p>
+                                            <p className={`font-jost font-medium text-xl`} style={{ color: item.color }}>{formatter.format(item.value)}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className='flex flex-col justify-between p-4 bg-white rounded-lg h-[200px] shadow-md'>
+                                <p className='font-jost text-2xl font-semibold text-[#252F3D]'>Estimated  Reach</p>
+                                <div className='flex items-center justify-between'>
+                                    {reachData?.map((item, index) => (
+                                        <div key={index} className='flex flex-col gap-1.5'>
+                                            <p className={`font-jost font-medium text-xl`} style={{ color: item.color }}>{item.name}</p>
+                                            <p className={`font-jost font-medium text-xl`} style={{ color: item.color }}>{formatter.format(item.value)}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+                </div>
+
+                <div className="flex flex-col gap-4 mt-5">
                     <div className="flex items-center gap-4">
                         {loading ? (
                             <>
@@ -953,7 +1005,7 @@ const Compare = ({ search, setSearchList }) => {
 
 
                 {/* Charts Row */}
-                <div className='flex gap-4 mt-4'>
+                <div className='flex gap-4 mt-5'>
                     {/* Potent Reach Chart */}
                     {loading ? (
                         <>
@@ -1305,13 +1357,13 @@ const Compare = ({ search, setSearchList }) => {
                                         {
                                             mention.type === 'Youtube' ?
                                                 <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt={mention.type} className='w-[32px] h-[32px]' />
-                                            :
-                                            mention.type === 'Twitter' ?
-                                                <img width="48" height="48" src="https://img.icons8.com/fluency/48/twitterx--v1.png" alt="twitterx--v1"/>
-                                            :
-                                                <div className='w-[32px] h-[32px] flex items-center justify-center rounded-full bg-[#10B981] p-2'>
-                                                    <p className='text-white font-jost font-semibold'>N</p>
-                                                </div>
+                                                :
+                                                mention.type === 'Twitter' ?
+                                                    <img width="48" height="48" src="https://img.icons8.com/fluency/48/twitterx--v1.png" alt="twitterx--v1" />
+                                                    :
+                                                    <div className='w-[32px] h-[32px] flex items-center justify-center rounded-full bg-[#10B981] p-2'>
+                                                        <p className='text-white font-jost font-semibold'>N</p>
+                                                    </div>
                                         }
                                         <div className='flex gap-5 flex-col w-full'>
                                             <div className='flex flex-col mt-1 gap-1'>
@@ -1328,7 +1380,7 @@ const Compare = ({ search, setSearchList }) => {
                                                     />
                                                 </a>
                                             ) : mention.type === "Twitter" ? (
-                                               <a
+                                                <a
                                                     href={mention.url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
