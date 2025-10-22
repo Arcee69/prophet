@@ -1,13 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { AiOutlineDownload } from 'react-icons/ai'
 import { FaListUl } from 'react-icons/fa'
-import { IoDocumentTextOutline, IoLocationOutline, IoTimeOutline } from 'react-icons/io5'
+import { IoTimeOutline } from 'react-icons/io5'
 import Chart from 'react-apexcharts'
-import { FiCheckCircle } from 'react-icons/fi'
-import { GoGlobe, GoTag } from 'react-icons/go'
-import { LuArchive, LuCalendarDays, LuShare2 } from 'react-icons/lu'
-import { CiMenuKebab } from 'react-icons/ci'
-import { IoIosRadio } from 'react-icons/io'
+import { GoGlobe } from 'react-icons/go'
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaRegCalendarAlt } from "react-icons/fa";
@@ -21,13 +17,8 @@ import Logo from '../../../assets/png/logo.png';
 
 
 //svgs
-import Facebook from "../../../assets/svg/facebook.svg"
-import Twitter from "../../../assets/svg/twitter.svg"
-import Pinterest from "../../../assets/svg/pinterest.svg"
-import Happy from "../../../assets/svg/happy.svg"
-import Sad from "../../../assets/svg/sad.svg"
-import Normal from "../../../assets/svg/normal.svg"
 import { useNavigate } from 'react-router-dom'
+import { countryMap } from '../../../utils/CountryMap'
 
 
 
@@ -35,7 +26,6 @@ const Compare = ({ search, setSearchList }) => {
     const [activeTab, setActiveTab] = useState(1)
     const [compareBrand, setCompareBrand] = useState("")
     const [compareBrandInput, setCompareBrandInput] = useState("");
-    const [selectedTime, setSelectedTime] = useState("This Week")
     const [dateChange, setDateChange] = useState(1)
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
@@ -44,6 +34,8 @@ const Compare = ({ search, setSearchList }) => {
     const [loading, setLoading] = useState(false)
     const [mentionTab, setMentionTab] = useState('All')
     const [selectedMetric, setSelectedMetric] = useState('mentions');
+    const [activeBrandView, setActiveBrandView] = useState('primary');
+    const [selectedSources, setSelectedSources] = useState(["youtube", "news", "twitter"]);
 
     console.log(sentimentData, "sentimentData")
     console.log(sentimentData2, "sentimentData2")
@@ -54,7 +46,14 @@ const Compare = ({ search, setSearchList }) => {
     useEffect(() => {
         const fetchSentiment = async (keyword, isSecond = false) => {
             if (!keyword) return;
-            const data = { "keyword1": keyword }
+
+            const formatDate = (date) => date.toISOString().split('T')[0];
+            const data = {
+                "keyword1": keyword,
+                "sources": selectedSources ? selectedSources : "",
+                "start_date": formatDate(startDate),
+                "end_date": formatDate(endDate)
+            }
             setLoading(true)
             try {
                 const res = await api.post(appUrls?.SENTIMENT_URL, data)
@@ -79,7 +78,7 @@ const Compare = ({ search, setSearchList }) => {
         } else {
             setSentimentData2(null);
         }
-    }, [search, compareBrand])
+    }, [search, compareBrand, selectedSources, startDate, endDate])
 
     const summary1 = sentimentData ? Object.values(sentimentData)[0] || {} : {}
     const summary2 = sentimentData2 ? Object.values(sentimentData2)[0] || {} : {}
@@ -162,9 +161,62 @@ const Compare = ({ search, setSearchList }) => {
         setActiveTab(value)
     }
 
-    const handleDateChange = (value) => {
-        setDateChange(value)
-    }
+    // Add date range presets
+    const handleDateChange = (presetIndex) => {
+        const today = new Date();
+        let newStart, newEnd;
+
+        switch (presetIndex) {
+            case 1: // 1D
+                newEnd = today;
+                newStart = new Date(today);
+                newStart.setDate(today.getDate() - 1);
+                break;
+            case 2: // 7D
+                newEnd = today;
+                newStart = new Date(today);
+                newStart.setDate(today.getDate() - 7);
+                break;
+            case 3: // 30D
+                newEnd = today;
+                newStart = new Date(today);
+                newStart.setDate(today.getDate() - 30);
+                break;
+            case 4: // 3M
+                newEnd = today;
+                newStart = new Date(today);
+                newStart.setMonth(today.getMonth() - 3);
+                break;
+            case 5: // 6M
+                newEnd = today;
+                newStart = new Date(today);
+                newStart.setMonth(today.getMonth() - 6);
+                break;
+            default: // 13M
+                newEnd = today;
+                newStart = new Date(today);
+                newStart.setMonth(today.getMonth() - 13);
+                break;
+        }
+
+        setStartDate(newStart);
+        setEndDate(newEnd);
+        setDateChange(presetIndex);
+    };
+
+    // Initialize dates to last 30 days
+    useEffect(() => {
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today);
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+
+        setStartDate(thirtyDaysAgo);
+        setEndDate(today);
+    }, []);
+
+    // const handleDateChange = (value) => {
+    //     setDateChange(value)
+    // }
 
 
     // Result Over time Chart
@@ -286,46 +338,9 @@ const Compare = ({ search, setSearchList }) => {
         };
     }, [summary1, summary2, hasCompare, search, compareBrand, selectedMetric]);
 
-    // const lineChartData = useMemo(() => ({
-    //     series: hasCompare ? [
-    //         {
-    //             name: search,
-    //             data: [10, 20, 15, 25, 20, 30]
-    //         },
-    //         {
-    //             name: compareBrand,
-    //             data: [5, 10, 8, 12, 10, 15]
-    //         },
-    //     ] : [
-    //         {
-    //             name: search,
-    //             data: [10, 20, 15, 25, 20, 30]
-    //         }
-    //     ],
-    //     options: {
-    //         chart: {
-    //             type: 'line',
-    //             toolbar: { show: false },
-    //         },
-    //         stroke: {
-    //             curve: 'smooth'
-    //         },
-    //         dataLabels: {
-    //             enabled: false
-    //         },
-    //         legend: {
-    //             show: true,
-    //             position: 'top',
-    //         },
-    //         xaxis: {
-    //             categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-    //         },
-    //         colors: hasCompare ? ['#1E5631', '#FF4E4C'] : ['#1E5631'],
-    //     }
-    // }), [hasCompare, search, compareBrand]);
 
 
-    //Barchart
+    //Barchart    
     const barChartData = useMemo(() => {
         const youTube1 = summary1.summary?.youtube_sentiment?.mentions || 0;
         const twitter1 = summary1.summary?.twitter_sentiment?.mentions || 0;
@@ -417,13 +432,13 @@ const Compare = ({ search, setSearchList }) => {
         "https://www.thisdaylive.com/2025/08/29/dangote-group-ethiopia-strike-deal-to-build-2-5-billion-fertiliser-plant/": { title: "Dangote Group, Ethiopia Strike Deal to Build $2.5 Billion Fertiliser Plant", snippet: "The Dangote Group and Ethiopia government yesterday signed an agreement to build a $2.5 billion fertiliser manufacturing plant in the North-eastern African country, part of Nigerian billionaire Aliko Dangote’s efforts to end the continent’s fertiliser imports.", sentiment: "positive" }
     }
 
-    const sources = summary1.sources || { youtube: [], news: [] }
-    const allUrls = [...sources.youtube, ...sources.news];
+    const sources = summary1.sources || { youtube: [], twitter: [], news: [] }
+    const allUrls = [...sources.youtube, ...sources.twitter, ...sources.news];
     const uniqueUrls = [...new Set(allUrls)];
 
     const topMentions = uniqueUrls?.map(url => ({
         url,
-        type: url.includes('youtube') ? 'Youtube' : 'News',
+        type: url.includes('youtube') ? 'Youtube' : url.includes('twitter') ? 'Twitter' : 'News',
         ...(urlInfo[url] || { title: new URL(url).pathname, snippet: 'No description available', sentiment: 'neutral' })
     }))
 
@@ -585,6 +600,100 @@ const Compare = ({ search, setSearchList }) => {
     // };
 
 
+    // Add these functions after your existing state
+    const getCountryName = (code) => {
+        return countryMap[code] || code.toUpperCase();
+    };
+
+    const getSentimentColor = (score) => {
+        if (score > 0.1) return '#10B981'; // Positive - Green
+        if (score < -0.1) return '#EF4444'; // Negative - Red
+        return '#D1D5DB'; // Neutral - Gray
+    };
+
+    // Comparison-aware Top Words Data Processing
+    const topWordsData = useMemo(() => {
+        const data = activeBrandView === 'primary' ? summary1 : summary2;
+
+        const twitterPos = data?.top_words?.twitter?.positive || [];
+        const twitterNeg = data?.top_words?.twitter?.negative || [];
+        const youtubePos = data?.top_words?.youtube?.positive || [];
+        const youtubeNeg = data?.top_words?.youtube?.negative || [];
+        const newsPos = data?.top_words?.news?.positive || [];
+        const newsNeg = data?.top_words?.news?.negative || [];
+
+        return {
+            positive: [...twitterPos, ...youtubePos, ...newsPos],
+            negative: [...twitterNeg, ...youtubeNeg, ...newsNeg]
+        };
+    }, [summary1, summary2, activeBrandView]);
+
+    // Comparison-aware Sentiment by Region Data
+    const regionSentimentData = useMemo(() => {
+        const data = activeBrandView === 'primary' ? summary1 : summary2;
+        const regions = data?.country_sentiments?.news || {};
+
+        return Object.entries(regions).map(([code, regionData]) => ({
+            name: getCountryName(code),
+            mentions: regionData.mentions,
+            score: regionData.average_score,
+            color: getSentimentColor(regionData.average_score)
+        })).sort((a, b) => b.mentions - a.mentions);
+    }, [summary1, summary2, activeBrandView]);
+
+    // Update donut chart options to use dynamic data
+    const donutChartOptions = useMemo(() => ({
+        chart: {
+            type: 'donut',
+            fontFamily: 'Jost, sans-serif'
+        },
+        labels: regionSentimentData.map(item => item.name),
+        colors: regionSentimentData.map(item => item.color),
+        legend: { show: false },
+        dataLabels: { enabled: false },
+        plotOptions: {
+            pie: {
+                donut: {
+                    size: '75%',
+                    labels: {
+                        show: true,
+                        name: { show: false },
+                        value: {
+                            show: true,
+                            fontSize: '16px',
+                            fontWeight: 600,
+                            color: '#1F2937',
+                            formatter: function (val) {
+                                return val.toLocaleString();
+                            }
+                        },
+                        total: {
+                            show: true,
+                            label: 'Total',
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            color: '#6B7280',
+                            formatter: function (w) {
+                                return w.globals.seriesTotals.reduce((a, b) => a + b, 0).toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: { width: 200 },
+                legend: { position: 'bottom' }
+            }
+        }]
+    }), [regionSentimentData]);
+
+    const donutChartSeries = regionSentimentData.map(item => item.mentions);
+
+    const sentimentSources = ["youtube", "news", "twitter"]
+
 
     const SkeletonCard = () => (
         <div className="animate-pulse flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl h-[362px] w-full">
@@ -656,13 +765,24 @@ const Compare = ({ search, setSearchList }) => {
                 <div className='flex gap-4 justify-between items-center'>
                     <div className='bg-[#F9FAFB] w-[181px] h-[36px] rounded-[8px] p-2 flex items-center gap-2'>
                         <GoGlobe className='w-5 h-5 text-[#374151]' />
-                        <p className='text-sm text-[#374151] font-lato'>All sources</p>
+                        <select
+                            className='outline-none w-full h-auto bg-transparent'
+                            value={selectedSources.join(',')} // Display as comma-separated
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                if (value === "") {
+                                    setSelectedSources(["youtube", "news", "twitter"]);
+                                } else {
+                                    setSelectedSources([value]);
+                                }
+                            }}
+                        >
+                            <option value="">All sources</option>
+                            <option value="youtube">YouTube only</option>
+                            <option value="news">News only</option>
+                            <option value="twitter">Twitter only</option>
+                        </select>
                     </div>
-                    {/* <div className='bg-[#F9FAFB] w-[90px] h-[36px] rounded-[8px] p-2 flex items-center gap-1'>
-                        <img src={Happy} className='w-[18px] h-[18px]' />
-                        <img src={Normal} className='w-[18px] h-[18px]' />
-                        <img src={Sad} className='w-[18px] h-[18px]' />
-                    </div> */}
 
                     <div className="bg-[#F9FAFB] w-[472px] h-[36px] rounded-[8px] px-[26px] py-2 flex items-center gap-1">
                         {/* Date Range Options */}
@@ -788,24 +908,18 @@ const Compare = ({ search, setSearchList }) => {
                                         <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Sentiment</p>
                                     </div>
                                     <div className='flex items-center gap-2'>
-                                        {/* {hasPositive && ( */}
                                         <div className='flex items-center gap-1'>
                                             <div className='bg-[#1E5631] w-2 h-2 rounded-full'></div>
                                             <p className='font-jost text-black text-xs leading-[100%]'>Positive</p>
                                         </div>
-                                        {/* )} */}
-                                        {/* {hasNeutral && ( */}
                                         <div className='flex items-center gap-1'>
                                             <div className='bg-[#DEDEDE] w-2 h-2 rounded-full'></div>
                                             <p className='font-jost text-black text-xs leading-[100%]'>Neutral</p>
                                         </div>
-                                        {/* )} */}
-                                        {/* {hasNegative && ( */}
                                         <div className='flex items-center gap-1'>
                                             <div className='bg-[#FF4E4C] w-2 h-2 rounded-full'></div>
                                             <p className='font-jost text-black text-xs leading-[100%]'>Negative</p>
                                         </div>
-                                        {/*  )} */}
                                     </div>
                                 </div>
                                 <div className="w-full h-[250px]">
@@ -893,33 +1007,6 @@ const Compare = ({ search, setSearchList }) => {
                     )}
                 </div>
 
-                {/*  Results Over Time (Line Chart) */}
-                {/* {loading ? (
-                    <div className="animate-pulse bg-[#BFBFBF] h-[362px] w-full rounded-xl"></div>
-                ) : (
-                    <div className='bg-white rounded-[18px] mt-4 w-full p-4 shadow-sm'>
-                        <div className='flex justify-between items-start'>
-                            <p className='font-jost font-medium text-[20px] mb-4 text-[#4B5563]'>
-                                Results Over Time
-                            </p>
-                            {/* <select
-                            value={selectedTime}
-                            onChange={(e) => setSelectedTime(e.target.value)}
-                            className='font-jost text-[#252F3D]  text-xs cursor-pointer bg-transparent border-none outline-none'
-                        >
-                            {["This Week", "This Month"].map(year => (
-                                <option key={year} value={year}>{year}</option>
-                            ))}
-                        </select> 
-                        </div>
-                        <Chart
-                            options={lineChartData.options}
-                            series={lineChartData.series}
-                            type='line'
-                            height={300}
-                        />
-                    </div>
-                )} */}
 
                 {/* Results Over Time (Line Chart) */}
                 {loading ? (
@@ -954,146 +1041,217 @@ const Compare = ({ search, setSearchList }) => {
                 {/* Sentiment Demographics */}
                 <p className='font-jost text-[#101828] my-5 leading-[30px] text-[20px]'>Demographics</p>
                 <div className="flex items-center gap-4 mt-4">
+                    {loading ? (
+                        <div className="animate-pulse bg-[#BFBFBF] h-[362px] w-full rounded-xl"></div>
+                    ) : (
+                        <div className="h-auto w-full flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-2">
+                                    <p className="font-semibold font-jost text-[#6B7280] text-[20px]">Sentiment by Region</p>
+                                </div>
 
-                    {/* <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <p className="font-semibold font-jost text-[#6B7280] text-[20px]">Sentiment by Gender</p>
-                            </div>
-                        </div>
-                        <div className="w-full h-[250px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={[
-                                            { name: "Female - Negative", value: 10 }, // Example values, replace with actual data
-                                            { name: "Female - Neutral", value: 20 },
-                                            { name: "Female - Positive", value: 40 },
-                                            { name: "Male - Negative", value: 15 },
-                                            { name: "Male - Neutral", value: 10 },
-                                            { name: "Male - Positive", value: 25 },
-                                        ]}
-                                        dataKey="value"
-                                        nameKey="name"
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={40} // This makes it a donut chart
-                                        outerRadius={80}
-                                        label
+                                {/* Brand Toggle */}
+                                <div className="flex items-center gap-2 bg-GREY-_300 rounded-lg p-1">
+                                    <button
+                                        onClick={() => setActiveBrandView('primary')}
+                                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeBrandView === 'primary'
+                                            ? 'bg-white shadow-sm text-[#1F2937]'
+                                            : 'text-gray-500 hover:text-gray-700'
+                                            }`}
                                     >
-                                        {[
-                                            { name: "Female - Negative", fill: "#FF4E4C" },
-                                            { name: "Female - Neutral", fill: "#BFBFBF" },
-                                            { name: "Female - Positive", fill: "#1E5631" },
-                                            { name: "Male - Negative", fill: "#FF4E4C" },
-                                            { name: "Male - Neutral", fill: "#BFBFBF" },
-                                            { name: "Male - Positive", fill: "#1E5631" },
-                                        ].map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.fill} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </div>
+                                        {search}
+                                    </button>
+                                    {hasCompare && (
+                                        <button
+                                            onClick={() => setActiveBrandView('secondary')}
+                                            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeBrandView === 'secondary'
+                                                ? 'bg-white shadow-sm text-[#1F2937]'
+                                                : 'text-gray-500 hover:text-gray-700'
+                                                }`}
+                                        >
+                                            {compareBrand}
+                                        </button>
+                                    )}
+                                </div>
 
-                        <div className='flex flex-col gap-2'>
-                            <div className='flex items-center justify-center gap-3'>
-                                <div className='flex items-center gap-1'>
-                                    <div className='bg-[#FF4E4C] w-3 h-3 rounded' />
-                                    <p className='text-[#FF4E4C] font-jost text-base leading-6'>Female - Negative</p>
-                                </div>
-                                <div className='flex items-center gap-1'>
-                                    <div className='bg-[#BFBFBF] w-3 h-3 rounded' />
-                                    <p className='text-[#BFBFBF] font-jost text-base leading-6'>Female - Neutral</p>
-                                </div>
-                                <div className='flex items-center gap-1'>
-                                    <div className='bg-[#1E5631] w-3 h-3 rounded' />
-                                    <p className='text-[#1E5631] font-jost text-base leading-6'>Female - Positive</p>
-                                </div>
-                            </div>
-                            <div className='flex items-center justify-center gap-3'>
-                                <div className='flex items-center gap-1'>
-                                    <div className='bg-[#FF4E4C] w-3 h-3 rounded' />
-                                    <p className='text-[#FF4E4C] font-jost text-base leading-6'>Male - Negative</p>
-                                </div>
-                                <div className='flex items-center gap-1'>
-                                    <div className='bg-[#BFBFBF] w-3 h-3 rounded' />
-                                    <p className='text-[#BFBFBF] font-jost text-base leading-6'>Male - Neutral</p>
-                                </div>
-                                <div className='flex items-center gap-1'>
-                                    <div className='bg-[#1E5631] w-3 h-3 rounded' />
-                                    <p className='text-[#1E5631] font-jost text-base leading-6'>Male - Positive</p>
+                                <div className="flex items-center gap-3 text-sm">
+                                    <div className="flex items-center gap-1">
+                                        <div className="w-3 h-3 rounded-full bg-[#10B981]"></div>
+                                        <span className="font-jost text-[#6B7280]">Positive</span>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <div className="w-3 h-3 rounded-full bg-[#D1D5DB]"></div>
+                                        <span className="font-jost text-[#6B7280]">Neutral</span>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <div className="w-3 h-3 rounded-full bg-[#EF4444]"></div>
+                                        <span className="font-jost text-[#6B7280]">Negative</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div> */}
 
-                    <div className="h-[362px] w-full flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <p className="font-semibold font-jost text-[#6B7280] text-[20px]">Sentiment by Region</p>
+                            <div className="w-full h-[250px] flex items-center justify-center">
+                                {regionSentimentData?.length > 0 ? (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                        <Chart
+                                            options={donutChartOptions}
+                                            series={donutChartSeries}
+                                            type="donut"
+                                            height="100%"
+                                            width="100%"
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center h-full text-center">
+                                        <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <GoGlobe className="w-12 h-12 text-gray-400" />
+                                        </div>
+                                        <p className="font-jost text-[#6B7280] text-lg">
+                                            No regional data available for {activeBrandView === 'primary' ? search : compareBrand}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
+
+                            {/* Country names with mentions */}
+                            {regionSentimentData?.length > 0 && (
+                                <div className="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    {regionSentimentData.slice(0, 10).map((region, index) => (
+                                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                            <div className="flex items-center gap-3">
+                                                <div
+                                                    className="w-3 h-3 rounded-full"
+                                                    style={{ backgroundColor: region.color }}
+                                                ></div>
+                                                <span className="font-jost font-medium text-sm text-[#1F2937]">
+                                                    {region.name}
+                                                </span>
+                                            </div>
+                                            <span className="font-jost font-semibold text-sm text-[#6B7280]">
+                                                {region.mentions.toLocaleString()}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                        <div className="w-full h-[250px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={[
-                                    { name: "UK", negative: 20, neutral: 30, positive: 50 },
-                                    { name: "USA", negative: 25, neutral: 25, positive: 50 },
-                                    { name: "Europe", negative: 15, neutral: 35, positive: 50 },
-                                    { name: "Asia", negative: 10, neutral: 40, positive: 50 },
-                                    { name: "Africa", negative: 30, neutral: 20, positive: 50 },
-                                    { name: "Australia", negative: 20, neutral: 30, positive: 50 },
-                                ]}>
-                                    <XAxis dataKey="name" />
-                                    <YAxis />
-                                    <Tooltip className="text-white" />
-                                    <Bar dataKey="negative" stackId="a" fill="#FF4E4C">
-                                        <LabelList dataKey="negative" position="center" fill="#fff" formatter={(val) => `${val}%`} />
-                                    </Bar>
-                                    <Bar dataKey="neutral" stackId="a" fill="#BFBFBF">
-                                        <LabelList dataKey="neutral" position="center" fill="#fff" formatter={(val) => `${val}%`} />
-                                    </Bar>
-                                    <Bar dataKey="positive" stackId="a" fill="#1E5631">
-                                        <LabelList dataKey="positive" position="center" fill="#fff" formatter={(val) => `${val}%`} />
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
+                    )}
                 </div>
 
                 {/* Top Words */}
                 <p className='font-jost text-[#101828] my-5 leading-[30px] text-[20px]'>Top Words</p>
-                <div className="flex items-center gap-4 mt-4">
-                    <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <p className="font-semibold font-jost text-[#6B7280] text-[20px]">Positive Mentions</p>
+                {loading ? (
+                    <>
+                        <SkeletonCard />
+                        <SkeletonCard />
+                    </>
+                ) : (
+                    <div className="flex items-center gap-4 mt-4">
+                        <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-5 h-5 bg-[#10B981] rounded-full flex items-center justify-center text-white text-xs font-bold">↑</span>
+                                    <p className="font-semibold font-jost text-[#6B7280] text-[20px]">Positive Mentions</p>
+                                </div>
+                                {/* Brand Toggle */}
+                                {/* <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+                                    <button
+                                        onClick={() => setActiveBrandView('primary')}
+                                        className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${activeBrandView === 'primary'
+                                                ? 'bg-white shadow-sm text-[#1F2937]'
+                                                : 'text-gray-500 hover:text-gray-700'
+                                            }`}
+                                    >
+                                        {search}
+                                    </button>
+                                    {hasCompare && (
+                                        <button
+                                            onClick={() => setActiveBrandView('secondary')}
+                                            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${activeBrandView === 'secondary'
+                                                    ? 'bg-white shadow-sm text-[#1F2937]'
+                                                    : 'text-gray-500 hover:text-gray-700'
+                                                }`}
+                                        >
+                                            {compareBrand}
+                                        </button>
+                                    )}
+                                </div> */}
+                            </div>
+                            <div className="w-full h-[300px] overflow-auto flex flex-wrap justify-center items-center gap-4 p-6">
+                                {topWordsData.positive.length > 0 ? (
+                                    topWordsData.positive.slice(0, 15).map((word, index) => (
+                                        <span
+                                            key={word}
+                                            className="font-jost font-bold text-[#10B981] inline-block px-3 py-2 "
+                                            style={{
+                                                fontSize: `${Math.max(14, 28 - index * 1)}px`,
+                                                opacity: 1 - (index * 0.05)
+                                            }}
+                                        >
+                                            {word}
+                                        </span>
+                                    ))
+                                ) : (
+                                    <p className="font-jost text-[#6B7280] text-lg">
+                                        No positive words found for {activeBrandView === 'primary' ? search : compareBrand}
+                                    </p>
+                                )}
                             </div>
                         </div>
-                        <div className="w-full h-[250px] flex flex-wrap justify-center gap-3">
-                            <p className="text-[#1E5631] font-jost text-[42px] font-bold">excellentamazing</p>
-                            <p className="text-[#1E5631] font-jost text-[36px] font-bold">victory fantastic love</p>
-                            <p className="text-[#1E5631] font-jost opacity-80 text-[28px] font-bold">brilliant impressive exciting</p>
-                            <p className="text-[#1E5631] font-jost opacity-60 text-[22px] font-bold">superb wonderful outstanding great</p>
-                            <p className="text-[#1E5631] font-jost opacity-40 text-[18px] font-bold">beautiful proud quality</p>
-                        </div>
-                    </div>
-                    <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <p className="font-semibold font-jost text-[#6B7280] text-[20px]">Negative Mentions</p>
+
+                        <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-5 h-5 bg-[#EF4444] rounded-full flex items-center justify-center text-white text-xs font-bold">↓</span>
+                                    <p className="font-semibold font-jost text-[#6B7280] text-[20px]">Negative Mentions</p>
+                                </div>
+                                {/* Brand Toggle - same as above */}
+                                {/* <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+                                    <button
+                                        onClick={() => setActiveBrandView('primary')}
+                                        className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${activeBrandView === 'primary'
+                                                ? 'bg-white shadow-sm text-[#1F2937]'
+                                                : 'text-gray-500 hover:text-gray-700'
+                                            }`}
+                                    >
+                                        {search}
+                                    </button>
+                                    {hasCompare && (
+                                        <button
+                                            onClick={() => setActiveBrandView('secondary')}
+                                            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${activeBrandView === 'secondary'
+                                                    ? 'bg-white shadow-sm text-[#1F2937]'
+                                                    : 'text-gray-500 hover:text-gray-700'
+                                                }`}
+                                        >
+                                            {compareBrand}
+                                        </button>
+                                    )}
+                                </div> */}
+                            </div>
+                            <div className="w-full h-[300px] overflow-auto flex flex-wrap justify-center items-center gap-4 p-6">
+                                {topWordsData.negative?.length > 0 ? (
+                                    topWordsData.negative?.slice(0, 15)?.map((word, index) => (
+                                        <span
+                                            key={word}
+                                            className="font-jost font-bold text-[#EF4444] inline-block px-3 py-2"
+                                            style={{
+                                                fontSize: `${Math.max(14, 28 - index * 1)}px`,
+                                                opacity: 1 - (index * 0.05)
+                                            }}
+                                        >
+                                            {word}
+                                        </span>
+                                    ))
+                                ) : (
+                                    <p className="font-jost text-[#6B7280] text-lg">
+                                        No negative words found for {activeBrandView === 'primary' ? search : compareBrand}
+                                    </p>
+                                )}
                             </div>
                         </div>
-                        <div className="w-full h-[250px] flex flex-wrap justify-center gap-3">
-                            <p className="text-[#FF0000] font-jost text-[42px] font-bold">disappointedexpensive</p>
-                            <p className="text-[#FF0000] font-jost text-[36px] font-bold">poor frustratings low terrible</p>
-                            <p className="text-[#FF0000] font-jost opacity-80 text-[28px] font-bold">awful broken delayed unhappy lacking</p>
-                            <p className="text-[#FF0000] font-jost opacity-60 text-[22px] font-bold">overpriced confusing</p>
-                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Top Mentions */}
                 <div className='flex flex-col mt-10 gap-[11px]'>
@@ -1115,6 +1273,12 @@ const Compare = ({ search, setSearchList }) => {
                                 onClick={() => setMentionTab('Youtube')}
                             >
                                 Youtube
+                            </button>
+                            <button
+                                className={`px-4 py-2 rounded ${mentionTab === 'Twitter' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+                                onClick={() => setMentionTab('Twitter')}
+                            >
+                                Twitter
                             </button>
                             <button
                                 className={`px-4 py-2 rounded ${mentionTab === 'News' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
@@ -1141,7 +1305,10 @@ const Compare = ({ search, setSearchList }) => {
                                         {
                                             mention.type === 'Youtube' ?
                                                 <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt={mention.type} className='w-[32px] h-[32px]' />
-                                                :
+                                            :
+                                            mention.type === 'Twitter' ?
+                                                <img width="48" height="48" src="https://img.icons8.com/fluency/48/twitterx--v1.png" alt="twitterx--v1"/>
+                                            :
                                                 <div className='w-[32px] h-[32px] flex items-center justify-center rounded-full bg-[#10B981] p-2'>
                                                     <p className='text-white font-jost font-semibold'>N</p>
                                                 </div>
@@ -1153,21 +1320,21 @@ const Compare = ({ search, setSearchList }) => {
                                                 </div>
                                             </div>
                                             {mention.type === "Youtube" ? (
-                                                // <iframe
-                                                //     width="100%"
-                                                //     height="200"
-                                                //     src={`https://www.youtube.com/embed/${new URL(mention.url).searchParams.get("v")}`}
-                                                //     title="YouTube video"
-                                                //     frameBorder="0"
-                                                //     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                                //     allowFullScreen
-                                                // ></iframe>
                                                 <a href={mention.url} target="_blank" rel="noopener noreferrer">
                                                     <img
                                                         src={`https://img.youtube.com/vi/${new URL(mention.url).searchParams.get("v")}/hqdefault.jpg`}
                                                         alt="YouTube Thumbnail"
                                                         className="w-full h-[200px] object-cover rounded-md"
                                                     />
+                                                </a>
+                                            ) : mention.type === "Twitter" ? (
+                                               <a
+                                                    href={mention.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 underline break-words"
+                                                >
+                                                    {mention.url}
                                                 </a>
                                             ) : (
                                                 <a
