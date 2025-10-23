@@ -15,6 +15,7 @@ import jsPDF from 'jspdf';
 import { useLocation, useNavigate } from 'react-router-dom'
 
 import Logo from '../../../assets/png/logo.png';
+import { countryMap } from '../../../utils/CountryMap'
 
 
 
@@ -58,7 +59,7 @@ const BrandWatchReport = () => {
   }, [state])
 
   const summary1 = sentimentData ? Object.values(sentimentData)[0] || {} : {}
-  
+
   const formatter = new Intl.NumberFormat('en-US');
 
   console.log(summary1, "summarypopo")
@@ -119,116 +120,116 @@ const BrandWatchReport = () => {
     setDateChange(value)
   }
 
-   // Result Over time Chart
-      const generateEnhancedTimeSeriesData = (summary, brandName, days = 30) => {
-          const totalMentions = summary?.total_mentions || 0;
-          const youtubeMentions = summary?.youtube_sentiment?.mentions || 0;
-          const twitterMentions = summary?.twitter_sentiment?.mentions || 0;
-          const newsMentions = summary?.news_sentiment?.mentions || 0;
-          const totalReach = summary?.estimated_reach || 0;
-  
-          console.log(youtubeMentions, "youtubeMentions")
-          console.log(newsMentions, "newsMentions")
-  
-          const data = [];
-          const baseDate = new Date();
-  
-          // Distribute totals across the time period
-          const dailyBaseMentions = totalMentions / days;
-          const dailyYoutube = youtubeMentions / days;
-          const dailyTwitter = twitterMentions / days;
-          const dailyNews = newsMentions / days;
-          const dailyReach = totalReach / days;
-  
-          for (let i = days - 1; i >= 0; i--) {
-              const date = new Date(baseDate);
-              date.setDate(date.getDate() - i);
-  
-              // Realistic daily variations
-              const randomFactor = 0.4 + Math.random() * 0.6;
-  
-              data.push({
-                  date: date.toISOString().split('T')[0],
-                  mentions: Math.max(0, Math.round(dailyBaseMentions * randomFactor)),
-                  youtube: Math.max(0, Math.round(dailyYoutube * randomFactor)),
-                  twitter: Math.max(0, Math.round(dailyTwitter * randomFactor)),
-                  news: Math.max(0, Math.round(dailyNews * randomFactor)),
-                  reach: Math.max(0, Math.round(dailyReach * randomFactor)),
-                  brand: brandName
-              });
-          }
-  
-          return data;
-      };
-  
-  
-      // Line Chart Data - Updated with real time series data
-      const lineChartData = useMemo(() => {
-          const timeSeries1 = generateEnhancedTimeSeriesData(summary1.summary, state?.brand?.name || state?.keyword, 30);
+  // Result Over time Chart
+  const generateEnhancedTimeSeriesData = (summary, brandName, days = 30) => {
+    const totalMentions = summary?.total_mentions || 0;
+    const youtubeMentions = summary?.youtube_sentiment?.mentions || 0;
+    const twitterMentions = summary?.twitter_sentiment?.mentions || 0;
+    const newsMentions = summary?.news_sentiment?.mentions || 0;
+    const totalReach = summary?.estimated_reach || 0;
 
-  
-          const dates = timeSeries1.map(item => {
-              const date = new Date(item.date);
-              return `${date.getDate()}/${date.getMonth() + 1}`;
-          });
-  
-          const series = [];
-  
-          // Primary brand
-          series.push({
-              name: state?.brand !== null ? state?.brand?.name : state?.keyword,
-              data: timeSeries1.map(item => item[selectedMetric])
-          });
-  
-          const metricLabels = {
-              mentions: 'Total Mentions',
-              youtube: 'YouTube Mentions',
-              twitter: 'Twitter Mentions',
-              news: 'News Mentions',
-              reach: 'Potential Reach'
-          };
-  
-          return {
-              series,
-              options: {
-                  chart: {
-                      type: 'line',
-                      toolbar: { show: false },
-                  },
-                  stroke: {
-                      curve: 'smooth',
-                      width: 3
-                  },
-                  dataLabels: {
-                      enabled: false
-                  },
-                  legend: {
-                      show: true,
-                      position: 'top',
-                  },
-                  xaxis: {
-                      categories: dates,
-                      labels: {
-                          rotate: -45,
-                      }
-                  },
-                  yaxis: {
-                      title: {
-                          text: metricLabels[selectedMetric]
-                      },
-                      min: 0
-                  },
-                  colors: ['#1E5631'],
-                  tooltip: {
-                      y: {
-                          formatter: function (value) {
-                              return value.toLocaleString();
-                          }
-                      }
-                  }
-              }
-          };
-      }, [state, selectedMetric]);
+    console.log(youtubeMentions, "youtubeMentions")
+    console.log(newsMentions, "newsMentions")
+
+    const data = [];
+    const baseDate = new Date();
+
+    // Distribute totals across the time period
+    const dailyBaseMentions = totalMentions / days;
+    const dailyYoutube = youtubeMentions / days;
+    const dailyTwitter = twitterMentions / days;
+    const dailyNews = newsMentions / days;
+    const dailyReach = totalReach / days;
+
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(baseDate);
+      date.setDate(date.getDate() - i);
+
+      // Realistic daily variations
+      const randomFactor = 0.4 + Math.random() * 0.6;
+
+      data.push({
+        date: date.toISOString().split('T')[0],
+        mentions: Math.max(0, Math.round(dailyBaseMentions * randomFactor)),
+        youtube: Math.max(0, Math.round(dailyYoutube * randomFactor)),
+        twitter: Math.max(0, Math.round(dailyTwitter * randomFactor)),
+        news: Math.max(0, Math.round(dailyNews * randomFactor)),
+        reach: Math.max(0, Math.round(dailyReach * randomFactor)),
+        brand: brandName
+      });
+    }
+
+    return data;
+  };
+
+
+  // Line Chart Data - Updated with real time series data
+  const lineChartData = useMemo(() => {
+    const timeSeries1 = generateEnhancedTimeSeriesData(summary1.summary, state?.brand?.name || state?.keyword, 30);
+
+
+    const dates = timeSeries1.map(item => {
+      const date = new Date(item.date);
+      return `${date.getDate()}/${date.getMonth() + 1}`;
+    });
+
+    const series = [];
+
+    // Primary brand
+    series.push({
+      name: state?.brand !== null ? state?.brand?.name : state?.keyword,
+      data: timeSeries1.map(item => item[selectedMetric])
+    });
+
+    const metricLabels = {
+      mentions: 'Total Mentions',
+      youtube: 'YouTube Mentions',
+      twitter: 'Twitter Mentions',
+      news: 'News Mentions',
+      reach: 'Potential Reach'
+    };
+
+    return {
+      series,
+      options: {
+        chart: {
+          type: 'line',
+          toolbar: { show: false },
+        },
+        stroke: {
+          curve: 'smooth',
+          width: 3
+        },
+        dataLabels: {
+          enabled: false
+        },
+        legend: {
+          show: true,
+          position: 'top',
+        },
+        xaxis: {
+          categories: dates,
+          labels: {
+            rotate: -45,
+          }
+        },
+        yaxis: {
+          title: {
+            text: metricLabels[selectedMetric]
+          },
+          min: 0
+        },
+        colors: ['#1E5631'],
+        tooltip: {
+          y: {
+            formatter: function (value) {
+              return value.toLocaleString();
+            }
+          }
+        }
+      }
+    };
+  }, [state, selectedMetric]);
 
 
   // Line Chart Data
@@ -261,17 +262,78 @@ const BrandWatchReport = () => {
   //   }
   // }), [state]);
 
+     //Barchart    
+      // const barChartData = useMemo(() => {
+      //     const youTube1 = summary1.summary?.youtube_sentiment?.mentions || 0;
+      //     const twitter1 = summary1.summary?.twitter_sentiment?.mentions || 0;
+      //     const news1 = summary1.summary?.news_sentiment?.mentions || 0;
+  
+      //     let series =  [
+      //         {
+      //             name: 'YouTube',
+      //             data: [youTube1]
+      //         },
+      //         {
+      //             name: 'Twitter/X',
+      //             data: [twitter1]
+      //         },
+      //         {
+      //             name: 'News',
+      //             data: [news1]
+      //         }
+      //     ];
+  
+      //     series = series.filter(s => s.data.reduce((a, b) => a + b, 0) > 0);
+  
+      //     const channelColors = {
+      //         'YouTube': '#FF4E4C',
+      //         'Twitter/X': '#F48A1F',
+      //         'News': '#1E5631',
+      //     };
+  
+      //     return {
+      //         series,
+      //         options: {
+      //             chart: {
+      //                 type: 'bar',
+      //                 height: 350,
+      //                 stacked: false,
+      //                 toolbar: { show: false },
+      //             },
+      //             plotOptions: {
+      //                 bar: {
+      //                     horizontal: false,
+      //                     columnWidth: '55%',
+      //                     endingShape: 'rounded'
+      //                 },
+      //             },
+      //             dataLabels: {
+      //                 enabled: false
+      //             },
+      //             legend: {
+      //                 show: true,
+      //                 position: 'top',
+      //             },
+      //             xaxis: {
+      //                 categories: ["YouTube", "Twitter/X", "News"],
+      //             },
+      //             colors: series.map(s => channelColors[s.name]),
+      //         }
+      //     };
+      // }, [summary1, state]);
+
 
   //Barchart
   const barChartData = useMemo(() => {
-    const socialMedia1 = summary1.summary?.social_media_sentiment?.mentions || 0;
+    const youtube1 = summary1.summary?.youtube_sentiment?.mentions || 0;
+    const twitter1 = summary1.summary?.twitter_sentiment?.mentions || 0;
     const news1 = summary1.summary?.news_sentiment?.mentions || 0;
 
     return {
       series: [
         {
           name: state?.brand !== null ? state?.brand?.name : state?.keyword,
-          data: [socialMedia1, news1]
+          data: [youtube1, twitter1, news1]
         }
       ],
       options: {
@@ -296,9 +358,9 @@ const BrandWatchReport = () => {
           position: 'top',
         },
         xaxis: {
-          categories: ['Social Media', 'News'],
+          categories: ["YouTube", "Twitter/X", "News"],
         },
-        colors: ['#1E5631'],
+        colors: ['#1E5631', '#FF4E4C', '#1E5631'],
       }
     };
   }, [summary1, state]);
@@ -319,29 +381,16 @@ const BrandWatchReport = () => {
     "https://www.thisdaylive.com/2025/08/29/dangote-group-ethiopia-strike-deal-to-build-2-5-billion-fertiliser-plant/": { title: "Dangote Group, Ethiopia Strike Deal to Build $2.5 Billion Fertiliser Plant", snippet: "The Dangote Group and Ethiopia government yesterday signed an agreement to build a $2.5 billion fertiliser manufacturing plant in the North-eastern African country, part of Nigerian billionaire Aliko Dangote’s efforts to end the continent’s fertiliser imports.", sentiment: "positive" }
   }
 
-    const sources = summary1.sources || { youtube: [], twitter: [], news: [] }
-    const allUrls = [...sources.youtube, ...sources.twitter, ...sources.news];
-    const uniqueUrls = [...new Set(allUrls)];
+  const sources = summary1.sources || { youtube: [], twitter: [], news: [] }
+  const allUrls = [...sources.youtube, ...sources.twitter, ...sources.news];
+  const uniqueUrls = [...new Set(allUrls)];
 
-    const topMentions = uniqueUrls?.map(url => ({
-        url,
-        type: url.includes('youtube') ? 'Youtube' : url.includes('twitter') ? 'Twitter' : 'News',
-        ...(urlInfo[url] || { title: new URL(url).pathname, snippet: 'No description available', sentiment: 'neutral' })
-    }))
+  const topMentions = uniqueUrls?.map(url => ({
+    url,
+    type: url.includes('youtube') ? 'Youtube' : url.includes('twitter') ? 'Twitter' : 'News',
+    ...(urlInfo[url] || { title: new URL(url).pathname, snippet: 'No description available', sentiment: 'neutral' })
+  }))
 
-  // const topMentions = uniqueUrls.slice(0, 8).map(url => {
-  //   const isYoutube = url.includes('youtube.com');
-  //   const defaultInfo = {
-  //     title: new URL(url).pathname.split('/').pop() || url.split('/').pop() || 'Link',
-  //     snippet: 'No description available',
-  //     sentiment: 'neutral'
-  //   };
-  //   return {
-  //     url,
-  //     type: isYoutube ? 'Youtube' : 'News',
-  //     ...defaultInfo
-  //   };
-  // })
 
 
   const filteredMentions = topMentions?.filter(m => mentionTab === 'All' || m.type === mentionTab)
@@ -349,7 +398,7 @@ const BrandWatchReport = () => {
 
   const reportRef = useRef(null);
 
-    // const handleDownloadPDF = async () => {
+  // const handleDownloadPDF = async () => {
   //   const input = reportRef.current;
 
   //   const canvas = await html2canvas(input, { scale: 2, useCORS: true });
@@ -379,128 +428,128 @@ const BrandWatchReport = () => {
   //   pdf.save('report.pdf');
   // };
 
-  const handleDownloadPDF = async () => {
-    const input = reportRef.current;
+  // const handleDownloadPDF = async () => {
+  //   const input = reportRef.current;
 
-    // Capture the report content as a canvas
-    const canvas = await html2canvas(input, { scale: 2, useCORS: true });
-    const imgData = canvas.toDataURL('image/png');
+  //   // Capture the report content as a canvas
+  //   const canvas = await html2canvas(input, { scale: 2, useCORS: true });
+  //   const imgData = canvas.toDataURL('image/png');
 
-    // Create a new jsPDF instance
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
+  //   // Create a new jsPDF instance
+  //   const pdf = new jsPDF('p', 'mm', 'a4');
+  //   const pageWidth = pdf.internal.pageSize.getWidth();
+  //   const pageHeight = pdf.internal.pageSize.getHeight();
 
-    // Logo details (replace with your logo URL or base64 string)
-    const logoUrl = Logo; // Replace with your logo URL
-    const logoWidth = 50; // Width of the logo in mm
-    const logoHeight = 30; // Height of the logo in mm
-    const logoX = 10; // X-coordinate for top-left corner
-    const logoY = 10; // Y-coordinate for top-left corner
+  //   // Logo details (replace with your logo URL or base64 string)
+  //   const logoUrl = Logo; // Replace with your logo URL
+  //   const logoWidth = 50; // Width of the logo in mm
+  //   const logoHeight = 30; // Height of the logo in mm
+  //   const logoX = 10; // X-coordinate for top-left corner
+  //   const logoY = 10; // Y-coordinate for top-left corner
 
-    // Add the logo to the first page
-    pdf.addImage(logoUrl, 'PNG', logoX, logoY, logoWidth, logoHeight);
+  //   // Add the logo to the first page
+  //   pdf.addImage(logoUrl, 'PNG', logoX, logoY, logoWidth, logoHeight);
 
-    // Adjust the report content to avoid overlapping with the logo
-    const imgWidth = pageWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    const contentMarginTop = logoHeight + 20; // Adjust margin to account for logo height and some spacing
+  //   // Adjust the report content to avoid overlapping with the logo
+  //   const imgWidth = pageWidth;
+  //   const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  //   const contentMarginTop = logoHeight + 20; // Adjust margin to account for logo height and some spacing
 
-    let heightLeft = imgHeight;
-    let position = contentMarginTop;
+  //   let heightLeft = imgHeight;
+  //   let position = contentMarginTop;
 
-    // Add the captured report content
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-    heightLeft -= (pageHeight - contentMarginTop);
+  //   // Add the captured report content
+  //   pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+  //   heightLeft -= (pageHeight - contentMarginTop);
 
-    // Handle additional pages if the content exceeds one page
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight + contentMarginTop;
-      pdf.addPage();
-      // Add the logo to subsequent pages
-      pdf.addImage(logoUrl, 'PNG', logoX, logoY, logoWidth, logoHeight);
+  //   // Handle additional pages if the content exceeds one page
+  //   while (heightLeft > 0) {
+  //     position = heightLeft - imgHeight + contentMarginTop;
+  //     pdf.addPage();
+  //     // Add the logo to subsequent pages
+  //     pdf.addImage(logoUrl, 'PNG', logoX, logoY, logoWidth, logoHeight);
+  //     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+  //     heightLeft -= pageHeight;
+  //   }
+
+  //   // Save the PDF
+  //   pdf.save('report.pdf');
+  // };
+
+
+    const handleDownloadPDF = async () => {
+      const input = reportRef.current;
+
+      // Capture the report content as a canvas
+      const canvas = await html2canvas(input, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL('image/png');
+
+      // Create a new jsPDF instance
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      // Logo details (replace with your logo URL or base64 string)
+      const logoUrl = Logo; // Replace with your logo URL
+      const logoWidth = 40; // Width of the logo in mm
+      const logoHeight = 20; // Height of the logo in mm
+      const logoX = 10; // X-coordinate for top-left corner
+      const logoY = 10; // Y-coordinate for top-left corner
+
+      // Title and description details
+      const brandName = state?.brand !== null ? state?.brand?.name : state?.keyword || 'Unknown';
+      const titleText = `Brand Watch Report - ${brandName.charAt(0).toUpperCase() + brandName.slice(1)}`;
+      const descriptionText = 'This report provides a comprehensive overview of brand sentiment and engagement.';
+      const titleX = 10; // Align with logo X
+      const titleY = logoY + logoHeight + 5; // Below logo with 5mm spacing
+      const descriptionX = 10; // Align with title X
+      const descriptionY = titleY + 8; // Below title with 8mm spacing (approx. for 24px font + gap)
+
+      // Add content to each page
+      const addHeader = () => {
+        // Add logo
+        pdf.addImage(logoUrl, 'PNG', logoX, logoY, logoWidth, logoHeight);
+
+        // Set font for title (mimicking font-jost, bold, 24px)
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(18); // Approx. 24px (1px ≈ 0.75pt)
+        pdf.setTextColor(16, 25, 40); // #101928
+        pdf.text(titleText, titleX, titleY);
+
+        // Set font for description (mimicking font-jost, regular, 14px)
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10); // Approx. 14px
+        pdf.setTextColor(102, 113, 133); // #667185
+        pdf.text(descriptionText, descriptionX, descriptionY, { maxWidth: pageWidth - 20 }); // Wrap text within page width
+      };
+
+      // Add header to the first page
+      addHeader();
+
+      // Calculate content position to avoid overlap
+      const contentMarginTop = logoHeight + 30; // Adjust for logo, title, description, and spacing
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = contentMarginTop;
+
+      // Add the captured report content
       pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-    }
+      heightLeft -= (pageHeight - contentMarginTop);
 
-    // Save the PDF
-    pdf.save('report.pdf');
-  };
+      // Handle additional pages if the content exceeds one page
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight + contentMarginTop;
+        pdf.addPage();
+        // Add header (logo, title, description) to subsequent pages
+        addHeader();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
 
-
-  //   const handleDownloadPDF = async () => {
-//     const input = reportRef.current;
-
-//     // Capture the report content as a canvas
-//     const canvas = await html2canvas(input, { scale: 2, useCORS: true });
-//     const imgData = canvas.toDataURL('image/png');
-
-//     // Create a new jsPDF instance
-//     const pdf = new jsPDF('p', 'mm', 'a4');
-//     const pageWidth = pdf.internal.pageSize.getWidth();
-//     const pageHeight = pdf.internal.pageSize.getHeight();
-
-//     // Logo details (replace with your logo URL or base64 string)
-//     const logoUrl = Logo; // Replace with your logo URL
-//     const logoWidth = 50; // Width of the logo in mm
-//     const logoHeight = 30; // Height of the logo in mm
-//     const logoX = 10; // X-coordinate for top-left corner
-//     const logoY = 10; // Y-coordinate for top-left corner
-
-//     // Title and description details
-//     const brandName = state?.brand !== null ? state?.brand?.name : state?.keyword || 'Unknown';
-//     const titleText = `Brand Watch Report - ${brandName.charAt(0).toUpperCase() + brandName.slice(1)}`;
-//     const descriptionText = 'This report provides a comprehensive overview of brand sentiment and engagement.';
-//     const titleX = 10; // Align with logo X
-//     const titleY = logoY + logoHeight + 5; // Below logo with 5mm spacing
-//     const descriptionX = 10; // Align with title X
-//     const descriptionY = titleY + 8; // Below title with 8mm spacing (approx. for 24px font + gap)
-
-//     // Add content to each page
-//     const addHeader = () => {
-//       // Add logo
-//       pdf.addImage(logoUrl, 'PNG', logoX, logoY, logoWidth, logoHeight);
-
-//       // Set font for title (mimicking font-jost, bold, 24px)
-//       pdf.setFont('helvetica', 'bold');
-//       pdf.setFontSize(18); // Approx. 24px (1px ≈ 0.75pt)
-//       pdf.setTextColor(16, 25, 40); // #101928
-//       pdf.text(titleText, titleX, titleY);
-
-//       // Set font for description (mimicking font-jost, regular, 14px)
-//       pdf.setFont('helvetica', 'normal');
-//       pdf.setFontSize(10); // Approx. 14px
-//       pdf.setTextColor(102, 113, 133); // #667185
-//       pdf.text(descriptionText, descriptionX, descriptionY, { maxWidth: pageWidth - 20 }); // Wrap text within page width
-//     };
-
-//     // Add header to the first page
-//     addHeader();
-
-//     // Calculate content position to avoid overlap
-//     const contentMarginTop = logoHeight + 30; // Adjust for logo, title, description, and spacing
-//     const imgWidth = pageWidth;
-//     const imgHeight = (canvas.height * imgWidth) / canvas.width;
-//     let heightLeft = imgHeight;
-//     let position = contentMarginTop;
-
-//     // Add the captured report content
-//     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-//     heightLeft -= (pageHeight - contentMarginTop);
-
-//     // Handle additional pages if the content exceeds one page
-//     while (heightLeft > 0) {
-//       position = heightLeft - imgHeight + contentMarginTop;
-//       pdf.addPage();
-//       // Add header (logo, title, description) to subsequent pages
-//       addHeader();
-//       pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-//       heightLeft -= pageHeight;
-//     }
-
-//     // Save the PDF
-//     pdf.save('report.pdf');
-//   };
+      // Save the PDF
+      pdf.save('report.pdf');
+    };
 
 
   const SkeletonCard = () => (
@@ -512,90 +561,98 @@ const BrandWatchReport = () => {
 
   const labelFormatter = (val) => val > 0 ? `${val}%` : '';
 
-  //Engagement Donut Chart Data
-  const labels = engagementData.map(item => item.name);
-  const series = engagementData.map(item => item.value);
 
-  const options = {
+     const getCountryName = (code) => {
+         return countryMap[code] || code.toUpperCase();
+     };
+ 
+     const getSentimentColor = (score) => {
+         if (score > 0.1) return '#10B981'; // Positive - Green
+         if (score < -0.1) return '#EF4444'; // Negative - Red
+         return '#D1D5DB'; // Neutral - Gray
+     };
+
+  // Comparison-aware Top Words Data Processing
+  const topWordsData = useMemo(() => {
+    const data = summary1;
+
+    const twitterPos = data?.top_words?.twitter?.positive || [];
+    const twitterNeg = data?.top_words?.twitter?.negative || [];
+    const youtubePos = data?.top_words?.youtube?.positive || [];
+    const youtubeNeg = data?.top_words?.youtube?.negative || [];
+    const newsPos = data?.top_words?.news?.positive || [];
+    const newsNeg = data?.top_words?.news?.negative || [];
+
+    return {
+      positive: [...twitterPos, ...youtubePos, ...newsPos],
+      negative: [...twitterNeg, ...youtubeNeg, ...newsNeg]
+    };
+  }, [summary1, activeBrandView]);
+
+  // Comparison-aware Sentiment by Region Data
+  const regionSentimentData = useMemo(() => {
+    const data = summary1;
+    const regions = data?.country_sentiments?.news || {};
+
+    return Object.entries(regions).map(([code, regionData]) => ({
+      name: getCountryName(code),
+      mentions: regionData.mentions,
+      score: regionData.average_score,
+      color: getSentimentColor(regionData.average_score)
+    })).sort((a, b) => b.mentions - a.mentions);
+  }, [summary1, activeBrandView]);
+
+  // Update donut chart options to use dynamic data
+  const donutChartOptions = useMemo(() => ({
     chart: {
       type: 'donut',
+      fontFamily: 'Jost, sans-serif'
     },
-    labels: labels,
-    colors: ['#F97316', '#FF4E4C', '#4D9EFF', '#1A88FF'],
-    legend: {
-      position: 'bottom',
-    },
-    dataLabels: {
-      enabled: true,
-      formatter: (val, opts) => {
-        const value = series[opts.seriesIndex];
-        return `${labels[opts.seriesIndex]}: ${formatNumber(value)}`;
-      },
-    },
-    tooltip: {
-      y: {
-        formatter: (value) => formatNumber(value),
-      },
-    },
+    labels: regionSentimentData.map(item => item.name),
+    colors: regionSentimentData.map(item => item.color),
+    legend: { show: false },
+    dataLabels: { enabled: false },
     plotOptions: {
       pie: {
         donut: {
-          size: '65%', // Adjusts the thickness of the donut (lower value = thicker ring)
-        },
-      },
+          size: '75%',
+          labels: {
+            show: true,
+            name: { show: false },
+            value: {
+              show: true,
+              fontSize: '16px',
+              fontWeight: 600,
+              color: '#1F2937',
+              formatter: function (val) {
+                return val.toLocaleString();
+              }
+            },
+            total: {
+              show: true,
+              label: 'Total',
+              fontSize: '14px',
+              fontWeight: 600,
+              color: '#6B7280',
+              formatter: function (w) {
+                return w.globals.seriesTotals.reduce((a, b) => a + b, 0).toLocaleString();
+              }
+            }
+          }
+        }
+      }
     },
     responsive: [{
-      breakpoint: undefined,
+      breakpoint: 480,
       options: {
-        chart: {
-          width: '100%',
-        },
-      },
-    }],
-  };
+        chart: { width: 200 },
+        legend: { position: 'bottom' }
+      }
+    }]
+  }), [regionSentimentData]);
 
+  const donutChartSeries = regionSentimentData.map(item => item.mentions);
 
-  // Potential Reach Donut Chart Data
-  const reachLabels = reachData.map(item => item.name);
-  const reachSeries = reachData.map(item => item.value);
-
-  const reachOptions = {
-    chart: {
-      type: 'donut',
-    },
-    labels: labels,
-    colors: ['#22C55E', '#FF4E4C', '#4D9EFF', '#1A88FF'], // Adjusted shades to match #2D84FF theme
-    legend: {
-      position: 'bottom',
-    },
-    dataLabels: {
-      enabled: true,
-      formatter: (val, opts) => {
-        const value = reachSeries[opts.seriesIndex];
-        return `${reachLabels[opts.seriesIndex]}: ${formatNumber(value)}`;
-      },
-    },
-    tooltip: {
-      y: {
-        formatter: (value) => formatNumber(value),
-      },
-    },
-    plotOptions: {
-      pie: {
-        donut: {
-          size: '65%', // Adjusts the thickness of the donut
-        },
-      },
-    },
-    responsive: [{
-      breakpoint: undefined,
-      options: {
-        chart: {
-          width: '100%',
-        },
-      },
-    }],
-  };
 
 
   return (
@@ -707,24 +764,24 @@ const BrandWatchReport = () => {
                       <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Engagement</p>
                     </div>
                   </div>
-                    <div className="w-full h-[250px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={engagementData}
-                          margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
-                        >
-                          <XAxis type="category" dataKey="name" />
-                          <YAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
-                          <Tooltip formatter={formatNumber} />
-                          <Bar dataKey="value">
-                            {engagementData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill="#F97316" />
-                            ))}
-                            <LabelList dataKey="value" position="top" formatter={formatNumber} />
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
+                  <div className="w-full h-[250px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={engagementData}
+                        margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
+                      >
+                        <XAxis type="category" dataKey="name" />
+                        <YAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
+                        <Tooltip formatter={formatNumber} />
+                        <Bar dataKey="value">
+                          {engagementData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill="#F97316" />
+                          ))}
+                          <LabelList dataKey="value" position="top" formatter={formatNumber} />
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
               </>
             )}
@@ -845,34 +902,6 @@ const BrandWatchReport = () => {
           )}
         </div>
 
-        {/*  Results Over Time (Line Chart) */}
-        {/* {loading ? (
-          <div className="animate-pulse bg-[#E5E7EB] h-[362px] w-full rounded-xl"></div>
-        ) : (
-          <div className='bg-white rounded-[18px] mt-4 w-full p-4 shadow-sm'>
-            <div className='flex justify-between items-start'>
-              <p className='font-jost font-medium text-[20px] mb-4 text-[#4B5563]'>
-                Results Over Time
-              </p>
-              {/* <select
-                                    value={selectedTime}
-                                    onChange={(e) => setSelectedTime(e.target.value)}
-                                    className='font-jost text-[#252F3D]  text-xs cursor-pointer bg-transparent border-none outline-none'
-                                >
-                                    {["This Week", "This Month"].map(year => (
-                                        <option key={year} value={year}>{year}</option>
-                                    ))}
-                                </select> 
-            </div>
-            <Chart
-              options={lineChartData.options}
-              series={lineChartData.series}
-              type='line'
-              height={300}
-            />
-          </div>
-        )} */}
-
         {loading ? (
           <div className="animate-pulse bg-[#BFBFBF] h-[362px] w-full rounded-xl"></div>
         ) : (
@@ -890,7 +919,7 @@ const BrandWatchReport = () => {
                 {/* <option value="youtube">YouTube Mentions</option>
                                         <option value="twitter">Twitter Mentions</option>
                                         <option value="news">News Mentions</option> */}
-                <option value="reach">Potential Reach</option>
+                {/* <option value="reach">Potential Reach</option> */}
               </select>
             </div>
             <Chart
@@ -901,119 +930,325 @@ const BrandWatchReport = () => {
             />
           </div>
         )}
-      </div>
 
-      {/* Top Mentions */}
-      <div className='flex flex-col gap-[11px]'>
-        <div className='flex items-center gap-5'>
-          <p className='font-jost font-semibold text-[18px]  text-[#6B7280]'>
-            Top Conversations
-          </p>
+        {/* Sentiment Demographics */}
+        <p className='font-jost text-[#101828] my-5 leading-[30px] text-[20px]'>Demographics</p>
+        <div className="flex items-center gap-4 mt-4">
+          {loading ? (
+            <div className="animate-pulse bg-[#BFBFBF] h-[362px] w-full rounded-xl"></div>
+          ) : (
+            <div className="h-auto w-full flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold font-jost text-[#6B7280] text-[20px]">Sentiment by Region</p>
+                </div>
 
-          {/* Toggle for all, youtube and news */}
-          <div className='flex gap-2'>
-            <button
-              className={`px-4 py-2 rounded ${mentionTab === 'All' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
-              onClick={() => setMentionTab('All')}
-            >
-              All
-            </button>
-            <button
-              className={`px-4 py-2 rounded ${mentionTab === 'Youtube' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
-              onClick={() => setMentionTab('Youtube')}
-            >
-              Youtube
-            </button>
-            <button
-                className={`px-4 py-2 rounded ${mentionTab === 'Twitter' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
-                onClick={() => setMentionTab('Twitter')}
-            >
-                Twitter
-            </button>
-            <button
-              className={`px-4 py-2 rounded ${mentionTab === 'News' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
-              onClick={() => setMentionTab('News')}
-            >
-              News
-            </button>
-          </div>
+                {/* Brand Toggle */}
+                <div className="flex items-center gap-2 bg-GREY-_300 rounded-lg p-1">
+                  <button
+                    onClick={() => setActiveBrandView('primary')}
+                    className={
+                      `px-4 py-2 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-[#1F2937]`
+                      }
+                  >
+                    {state?.brand !== null ? state?.brand?.name : state?.keyword}
+                  </button>
+                
+                </div>
 
-        </div>
-
-        {loading ? (
-          <div className="grid grid-cols-2 gap-4">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="animate-pulse bg-[#BFBFBF] h-[300px] rounded-lg"></div>
-            ))}
-          </div>
-        ) : (
-
-          filteredMentions?.length > 0 ? (
-            <div className='grid grid-cols-2 gap-4'>
-              {filteredMentions?.map((mention, index) => (
-                <div key={index} className='bg-[#fff] h-auto flex items-start gap-2 px-[22px] pt-[22px] pb-[45px] rounded-lg'>
-                  {
-                    mention.type === 'Youtube' ?
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt={mention.type} className='w-[32px] h-[32px]' />
-                      :
-                      mention.type === 'Twitter' ?
-                        <img width="48" height="48" src="https://img.icons8.com/fluency/48/twitterx--v1.png" alt="twitterx--v1" />
-                        :
-                        <div className='w-[32px] h-[32px] flex items-center justify-center rounded-full bg-[#10B981] p-2'>
-                          <p className='text-white font-jost font-semibold'>N</p>
-                        </div>
-                  }
-                  <div className='flex gap-5 flex-col w-full'>
-                    <div className='flex flex-col mt-1 gap-1'>
-                      <div className='flex items-center gap-1'>
-                        <p className='font-jost text-sm text-[#000000]'>{mention.type}</p>
-                      </div>
-                    </div>
-                    {mention.type === "Youtube" ? (
-                      <a href={mention.url} target="_blank" rel="noopener noreferrer">
-                        <img
-                          src={`https://img.youtube.com/vi/${new URL(mention.url).searchParams.get("v")}/hqdefault.jpg`}
-                          alt="YouTube Thumbnail"
-                          className="w-full h-[200px] object-cover rounded-md"
-                        />
-                      </a>
-                    ) : mention.type === "Twitter" ? (
-                      <a
-                        href={mention.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 underline break-words"
-                      >
-                        {mention.url}
-                      </a>
-                    ) : (
-                      <a
-                        href={mention.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 underline break-words"
-                      >
-                        {mention.url}
-                      </a>
-                    )}
-                    <div className='flex gap-5'>
-                      <div className={`w-[57px] h-[24px] rounded-full p-1 ${mention.sentiment === 'positive' ? 'bg-[#DCFCE7]' : mention.sentiment === 'negative' ? 'bg-[#FFA8A8]' : 'bg-[#D3D3D3]'}`}>
-                        <p className={`text-xs text-center font-inter ${mention.sentiment === 'positive' ? 'text-[#1E5631]' : mention.sentiment === 'negative' ? 'text-[#FF0000]' : 'text-[#808080]'}`}>{mention.sentiment}</p>
-                      </div>
-                      <a href={mention.url} target="_blank" rel="noopener noreferrer" className='font-jost text-[#F48A1F] text-sm'>Details</a>
-                    </div>
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded-full bg-[#10B981]"></div>
+                    <span className="font-jost text-[#6B7280]">Positive</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded-full bg-[#D1D5DB]"></div>
+                    <span className="font-jost text-[#6B7280]">Neutral</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded-full bg-[#EF4444]"></div>
+                    <span className="font-jost text-[#6B7280]">Negative</span>
                   </div>
                 </div>
+              </div>
+
+              <div className="w-full h-[250px] flex items-center justify-center">
+                {regionSentimentData?.length > 0 ? (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Chart
+                      options={donutChartOptions}
+                      series={donutChartSeries}
+                      type="donut"
+                      height="100%"
+                      width="100%"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-center">
+                    <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <GoGlobe className="w-12 h-12 text-gray-400" />
+                    </div>
+                    <p className="font-jost text-[#6B7280] text-lg">
+                      No regional data available for {state?.brand !== null ? state?.brand?.name : state?.keyword}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Country names with mentions */}
+              {regionSentimentData?.length > 0 && (
+                <div className="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {regionSentimentData.slice(0, 10).map((region, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: region.color }}
+                        ></div>
+                        <span className="font-jost font-medium text-sm text-[#1F2937]">
+                          {region.name}
+                        </span>
+                      </div>
+                      <span className="font-jost font-semibold text-sm text-[#6B7280]">
+                        {region.mentions.toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Top Words */}
+        <p className='font-jost text-[#101828] my-5 leading-[30px] text-[20px]'>Top Words</p>
+        {loading ? (
+          <>
+            <SkeletonCard />
+            <SkeletonCard />
+          </>
+        ) : (
+          <div className="flex items-center gap-4 mt-4">
+            <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 bg-[#10B981] rounded-full flex items-center justify-center text-white text-xs font-bold">↑</span>
+                  <p className="font-semibold font-jost text-[#6B7280] text-[20px]">Positive Mentions</p>
+                </div>
+                {/* Brand Toggle */}
+                  {/* <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+                        <button
+                            onClick={() => setActiveBrandView('primary')}
+                            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${activeBrandView === 'primary'
+                                    ? 'bg-white shadow-sm text-[#1F2937]'
+                                    : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            {search}
+                        </button>
+                        {hasCompare && (
+                            <button
+                                onClick={() => setActiveBrandView('secondary')}
+                                className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${activeBrandView === 'secondary'
+                                        ? 'bg-white shadow-sm text-[#1F2937]'
+                                        : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                            >
+                                {compareBrand}
+                            </button>
+                        )}
+                    </div> */}
+              </div>
+              <div className="w-full h-[300px] overflow-auto flex flex-wrap justify-center items-center gap-4 p-6">
+                {topWordsData.positive.length > 0 ? (
+                  topWordsData.positive.slice(0, 15).map((word, index) => (
+                    <span
+                      key={word}
+                      className="font-jost font-bold text-[#10B981] inline-block px-3 py-2 "
+                      style={{
+                        fontSize: `${Math.max(14, 28 - index * 1)}px`,
+                        opacity: 1 - (index * 0.05)
+                      }}
+                    >
+                      {word}
+                    </span>
+                  ))
+                ) : (
+                  <p className="font-jost text-[#6B7280] text-lg">
+                    No positive words found for  {state?.brand !== null ? state?.brand?.name : state?.keyword}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 bg-[#EF4444] rounded-full flex items-center justify-center text-white text-xs font-bold">↓</span>
+                  <p className="font-semibold font-jost text-[#6B7280] text-[20px]">Negative Mentions</p>
+                </div>
+                {/* Brand Toggle - same as above */}
+                {/* <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+                                            <button
+                                                onClick={() => setActiveBrandView('primary')}
+                                                className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${activeBrandView === 'primary'
+                                                        ? 'bg-white shadow-sm text-[#1F2937]'
+                                                        : 'text-gray-500 hover:text-gray-700'
+                                                    }`}
+                                            >
+                                                {search}
+                                            </button>
+                                            {hasCompare && (
+                                                <button
+                                                    onClick={() => setActiveBrandView('secondary')}
+                                                    className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${activeBrandView === 'secondary'
+                                                            ? 'bg-white shadow-sm text-[#1F2937]'
+                                                            : 'text-gray-500 hover:text-gray-700'
+                                                        }`}
+                                                >
+                                                    {compareBrand}
+                                                </button>
+                                            )}
+                                        </div> */}
+              </div>
+              <div className="w-full h-[300px] overflow-auto flex flex-wrap justify-center items-center gap-4 p-6">
+                {topWordsData.negative?.length > 0 ? (
+                  topWordsData.negative?.slice(0, 15)?.map((word, index) => (
+                    <span
+                      key={word}
+                      className="font-jost font-bold text-[#EF4444] inline-block px-3 py-2"
+                      style={{
+                        fontSize: `${Math.max(14, 28 - index * 1)}px`,
+                        opacity: 1 - (index * 0.05)
+                      }}
+                    >
+                      {word}
+                    </span>
+                  ))
+                ) : (
+                  <p className="font-jost text-[#6B7280] text-lg">
+                    No negative words found for {state?.brand !== null ? state?.brand?.name : state?.keyword}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Top Mentions */}
+        <div className='flex flex-col mt-10 gap-[11px]'>
+          <div className='flex items-center gap-5'>
+            <p className='font-jost font-semibold text-[18px]  text-[#6B7280]'>
+              Top Conversations
+            </p>
+
+            {/* Toggle for all, youtube and news */}
+            <div className='flex gap-2'>
+              <button
+                className={`px-4 py-2 rounded ${mentionTab === 'All' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+                onClick={() => setMentionTab('All')}
+              >
+                All
+              </button>
+              <button
+                className={`px-4 py-2 rounded ${mentionTab === 'Youtube' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+                onClick={() => setMentionTab('Youtube')}
+              >
+                Youtube
+              </button>
+              <button
+                className={`px-4 py-2 rounded ${mentionTab === 'Twitter' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+                onClick={() => setMentionTab('Twitter')}
+              >
+                Twitter
+              </button>
+              <button
+                className={`px-4 py-2 rounded ${mentionTab === 'News' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+                onClick={() => setMentionTab('News')}
+              >
+                News
+              </button>
+            </div>
+
+          </div>
+
+          {loading ? (
+            <div className="grid grid-cols-2 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="animate-pulse bg-[#BFBFBF] h-[300px] rounded-lg"></div>
               ))}
             </div>
           ) : (
-            <div className='flex items-center mt-5 justify-center'>
-              <p className='font-jost text-2xl text-[#6B7280] font-medium'>No Conversation Available</p>
-            </div>
-          )
 
-        )}
+            filteredMentions?.length > 0 ? (
+              <div className='grid grid-cols-2 gap-4'>
+                {filteredMentions?.map((mention, index) => (
+                  <div key={index} className='bg-[#fff] h-auto flex items-start gap-2 px-[22px] pt-[22px] pb-[45px] rounded-lg'>
+                    {
+                      mention.type === 'Youtube' ?
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt={mention.type} className='w-[32px] h-[32px]' />
+                        :
+                        mention.type === 'Twitter' ?
+                          <img width="48" height="48" src="https://img.icons8.com/fluency/48/twitterx--v1.png" alt="twitterx--v1" />
+                          :
+                          <div className='w-[32px] h-[32px] flex items-center justify-center rounded-full bg-[#10B981] p-2'>
+                            <p className='text-white font-jost font-semibold'>N</p>
+                          </div>
+                    }
+                    <div className='flex gap-5 flex-col w-full'>
+                      <div className='flex flex-col mt-1 gap-1'>
+                        <div className='flex items-center gap-1'>
+                          <p className='font-jost text-sm text-[#000000]'>{mention.type}</p>
+                        </div>
+                      </div>
+                      {mention.type === "Youtube" ? (
+                        <a href={mention.url} target="_blank" rel="noopener noreferrer">
+                          <img
+                            src={`https://img.youtube.com/vi/${new URL(mention.url).searchParams.get("v")}/hqdefault.jpg`}
+                            alt="YouTube Thumbnail"
+                            className="w-full h-[200px] object-cover rounded-md"
+                          />
+                        </a>
+                      ) : mention.type === "Twitter" ? (
+                        <a
+                          href={mention.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline break-words"
+                        >
+                          {mention.url}
+                        </a>
+                      ) : (
+                        <a
+                          href={mention.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline break-words"
+                        >
+                          {mention.url}
+                        </a>
+                      )}
+                      <div className='flex gap-5'>
+                        <div className={`w-[57px] h-[24px] rounded-full p-1 ${mention.sentiment === 'positive' ? 'bg-[#DCFCE7]' : mention.sentiment === 'negative' ? 'bg-[#FFA8A8]' : 'bg-[#D3D3D3]'}`}>
+                          <p className={`text-xs text-center font-inter ${mention.sentiment === 'positive' ? 'text-[#1E5631]' : mention.sentiment === 'negative' ? 'text-[#FF0000]' : 'text-[#808080]'}`}>{mention.sentiment}</p>
+                        </div>
+                        <a href={mention.url} target="_blank" rel="noopener noreferrer" className='font-jost text-[#F48A1F] text-sm'>Details</a>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className='flex items-center mt-5 justify-center'>
+                <p className='font-jost text-2xl text-[#6B7280] font-medium'>No Conversation Available</p>
+              </div>
+            )
+
+          )}
+        </div>
+
       </div>
+
 
     </div>
   )

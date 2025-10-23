@@ -635,7 +635,7 @@ const Compare = ({ search, setSearchList }) => {
         const data = activeBrandView === 'primary' ? summary1 : summary2;
         const regions = data?.country_sentiments?.news || {};
 
-        return Object.entries(regions).map(([code, regionData]) => ({
+        return Object.entries(regions)?.map(([code, regionData]) => ({
             name: getCountryName(code),
             mentions: regionData.mentions,
             score: regionData.average_score,
