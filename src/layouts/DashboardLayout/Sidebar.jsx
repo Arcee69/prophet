@@ -91,11 +91,11 @@ const Sidebar = ({ closeSidebar }) => {
             </div>
 
             <div 
-                className={`${location.pathname === "/brandwatch" ? "bg-[#F48A1F]" : ""} flex items-center gap-3 group hover:bg-[#F48A1F] p-2  cursor-pointer rounded-lg h-auto`} 
+                className={`${location.pathname === "/brandwatch" || location.pathname === "/brandwatch/report" ? "bg-[#F48A1F]" : ""} flex items-center gap-3 group hover:bg-[#F48A1F] p-2  cursor-pointer rounded-lg h-auto`} 
                 onClick={() => {if (user?.data?.is_subscribed) navigate("/brandwatch"); closeSidebar()}}
             >
-                <PiUsersThree  className={`${location.pathname === "/brandwatch" ? "text-[#fff]" : ""} w-4 h-4 text-[#E4E7EC] group-hover:text-[#fff]`} />
-                <p className={`${location.pathname === "/brandwatch" ? "text-[#fff]" : ""} font-inter text-[#E4E7EC] group-hover:text-[#fff] font-medium text-sm`}>Brand Watch</p>
+                <PiUsersThree  className={`${location.pathname === "/brandwatch" || location.pathname === "/brandwatch/report"  ? "text-[#fff]" : ""} w-4 h-4 text-[#E4E7EC] group-hover:text-[#fff]`} />
+                <p className={`${location.pathname === "/brandwatch" || location.pathname === "/brandwatch/report"  ? "text-[#fff]" : ""} font-inter text-[#E4E7EC] group-hover:text-[#fff] font-medium text-sm`}>Brand Watch</p>
             </div>
 
             
