@@ -182,7 +182,7 @@ const Reports = () => {
     <div className='flex flex-col gap-6 px-3 w-full'>
       <div className='flex flex-col gap-1'>
         <p className='font-jost text-[#101928] font-semibold leading-[145%] text-[24px]'>Report</p>
-        <p className='text-[#667185] text-sm font-jost'></p>
+        <p className='text-[#667185] text-sm font-jost'>Request Custom deepdive reports</p>
       </div>
 
       <div className='border border-[#E0E0E0] rounded-xl  w-full p-5 flex flex-col gap-5'>

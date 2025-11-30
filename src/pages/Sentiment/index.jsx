@@ -16,11 +16,17 @@ const Sentiment = () => {
 
   return (
     <>
+        <div className='flex items-start px-3 justify-between'>
+            <div className='flex flex-col gap-1 mb-5'>
+                <p className='font-jost text-[#101928] font-semibold leading-[145%] text-[24px]'>Sentiment Analysis</p>
+                <p className='text-[#667185] text-sm font-jost'>Generate instant brand engagement and sentiment reports.</p>
+            </div>
+        </div>
         {
             searchList.length > 0 ? 
             <Compare search={search} setSearchList={setSearchList} />
             :
-            <div className='w-full flex items-start flex-col px-[35px] pt-[35px] gap-8'>
+            <div className='w-full flex items-start flex-col px-3 pt-[35px] gap-8'>
                 <div className='w-[991px]  bg-[#FFFFFF] h-[64px] shadow flex  py-[18px] px-[13px] items-center justify-between rounded-[16px]'>
                     <div className='flex items-center gap-[8px]'>
                         <IoMdSearch className='w-6 h-6 text-[#B0BEC5]' />

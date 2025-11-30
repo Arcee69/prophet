@@ -509,29 +509,33 @@ const BrandWatchReport = () => {
             <span>{new Date(state.start_date).toDateString()}</span> - <span>{new Date(state.end_date).toDateString()}</span></p>
         </div>
       </div>
-      <div className='flex justify-end'>
-        <div 
-          className={`${activeTab === 'Feeds' ? "hidden" : "flex bg-black p-2 rounded-lg items-center gap-1.5 cursor-pointer w-[150px] h-[40px]'"}`}
-          onClick={handleDownloadPDF}
-        >
-          <AiOutlineDownload className='w-5 h-5 text-[#fff]' />
-          <p className='text-[#fff] text-base font-lato'>Export Report</p>
-        </div>
-      </div>
 
-      <div className='flex gap-2'>
-        <button
-            className={`px-4 py-2 border border-[#E2E8F0] text-xl rounded-[10px] ${activeTab === 'Feeds' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
-            onClick={() => handleTabChange('Feeds')}
-        >
-            Feeds
-        </button>
-        <button
-            className={`px-4 py-2 border border-[#E2E8F0] text-xl rounded-[10px] ${activeTab === 'Overview' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
-            onClick={() => handleTabChange('Overview')}
-        >
-            Metrics
-        </button>
+      <div className='flex items-center justify-between'>
+        <div className='flex gap-2'>
+          <button
+              className={`px-4 py-2 border border-[#E2E8F0] text-xl rounded-[10px] ${activeTab === 'Feeds' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+              onClick={() => handleTabChange('Feeds')}
+          >
+              Feeds
+          </button>
+          <button
+              className={`px-4 py-2 border border-[#E2E8F0] text-xl rounded-[10px] ${activeTab === 'Overview' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+              onClick={() => handleTabChange('Overview')}
+          >
+              Metrics
+          </button>
+        </div>
+
+        <div className='flex justify-end'>
+          <div 
+            className={`${activeTab === 'Feeds' ? "hidden" : "flex bg-black p-2 rounded-lg items-center gap-1.5 cursor-pointer w-[150px] h-[40px]'"}`}
+            onClick={handleDownloadPDF}
+          >
+            <AiOutlineDownload className='w-5 h-5 text-[#fff]' />
+            <p className='text-[#fff] text-base font-lato'>Export Report</p>
+          </div>
+        </div>
+
       </div>
 
       {activeTab ===  "Feeds" && (
