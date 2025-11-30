@@ -16,20 +16,23 @@ import Jane from "../../assets/png/jane.png"
 import { logout } from '../../features/auth/loginSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { FaRegCircleUser } from 'react-icons/fa6'
+import ModalPop from '../../components/modalPop'
+import Submodal from '../../components/Submodal'
 
 // import { logout } from '../../features/auth/loginSlice'
 
 const Sidebar = ({ closeSidebar }) => {
     const [showLogout, setShowLogout] = useState(false)
+    const [openModal, setOpenModal] = useState(false)
     const logoutRef = useRef(null)
 
 
-  const location = useLocation()
-  const navigate = useNavigate()
-  const dispatch = useDispatch();
+    const location = useLocation()
+    const navigate = useNavigate()
+    const dispatch = useDispatch();
 
-  const { user } = useSelector((state) => state.userLogin);
-  console.log(user, "user in sidebar")
+    const { user } = useSelector((state) => state.userLogin);
+    console.log(user, "user in sidebar")
 
 
     useEffect(() => {
@@ -66,7 +69,7 @@ const Sidebar = ({ closeSidebar }) => {
         <div className={`mt-[80px] lg:mt-[49px] flex flex-col gap-2 h-screen relative`}>
             <div 
                 className={`${location.pathname === "/ara" ? "bg-[#F48A1F]" : ""} flex items-center gap-3 group hover:bg-[#F48A1F] p-2  cursor-pointer rounded-lg h-auto`} 
-                onClick={() => { if (user?.data?.is_subscribed) { navigate("/ara"); closeSidebar(); } }} 
+                onClick={() => {(user?.data?.is_subscribed) ? navigate("/ara") : setOpenModal(true); closeSidebar();  }} 
             >
                 <img src={Voice} className={`${location.pathname === "/ara" ? "text-[#fff]" : ""} w-4 h-4 text-[#E4E7EC] group-hover:text-[#fff]`}/>
                 <p className={`${location.pathname === "/ara" ? "text-[#fff]" : ""} font-inter text-[#E4E7EC] group-hover:text-[#fff] font-medium text-sm`}>Ara-PR Bot</p>
@@ -76,7 +79,7 @@ const Sidebar = ({ closeSidebar }) => {
 
             <div 
                 className={`${location.pathname === "/dashboard"  ? "bg-[#F48A1F]" : ""} flex items-center gap-3 group hover:bg-[#F48A1F] p-2  cursor-pointer rounded-lg h-auto`} 
-                onClick={() => {if (user?.data?.is_subscribed) navigate("/dashboard"); closeSidebar()}}
+                onClick={() => {(user?.data?.is_subscribed) ? navigate("/dashboard") : setOpenModal(true); closeSidebar()}}
             >
                 <img src={Home} className={`${location.pathname === "/dashboard" ? "text-[#fff]" : ""} w-4 h-4 text-[#E4E7EC] group-hover:text-[#fff]`}  />
                 <p className={`${location.pathname === "/dashboard" ? "text-[#fff]" : ""} font-inter text-[#E4E7EC] group-hover:text-[#fff] font-medium text-sm`}>Dashboard</p>
@@ -84,7 +87,7 @@ const Sidebar = ({ closeSidebar }) => {
 
             <div 
                 className={`${location.pathname === "/sentiment-analysis" ? "bg-[#F48A1F]" : ""} flex items-center gap-3 group hover:bg-[#F48A1F] p-2  cursor-pointer rounded-lg h-auto`} 
-                onClick={() => {if (user?.data?.is_subscribed) navigate("/sentiment-analysis"); closeSidebar()}}
+                onClick={() => {(user?.data?.is_subscribed) ? navigate("/sentiment-analysis") : setOpenModal(true); closeSidebar()}}
             >
                 <img src={Speaker} className={`${location.pathname === "/sentiment-analysis" ? "text-[#fff]" : ""} w-4 h-4 text-[#E4E7EC] group-hover:text-[#fff]`} />
                 <p className={`${location.pathname === "/sentiment-analysis" ? "text-[#fff]" : ""} font-inter text-[#E4E7EC] group-hover:text-[#fff] font-medium text-sm`}>Sentiment Analysis</p>
@@ -92,7 +95,7 @@ const Sidebar = ({ closeSidebar }) => {
 
             <div 
                 className={`${location.pathname === "/brandwatch" || location.pathname === "/brandwatch/report" ? "bg-[#F48A1F]" : ""} flex items-center gap-3 group hover:bg-[#F48A1F] p-2  cursor-pointer rounded-lg h-auto`} 
-                onClick={() => {if (user?.data?.is_subscribed) navigate("/brandwatch"); closeSidebar()}}
+                onClick={() => {(user?.data?.is_subscribed) ? navigate("/brandwatch") : setOpenModal(true); closeSidebar()}}
             >
                 <PiUsersThree  className={`${location.pathname === "/brandwatch" || location.pathname === "/brandwatch/report"  ? "text-[#fff]" : ""} w-4 h-4 text-[#E4E7EC] group-hover:text-[#fff]`} />
                 <p className={`${location.pathname === "/brandwatch" || location.pathname === "/brandwatch/report"  ? "text-[#fff]" : ""} font-inter text-[#E4E7EC] group-hover:text-[#fff] font-medium text-sm`}>Brand Watch</p>
@@ -151,6 +154,10 @@ const Sidebar = ({ closeSidebar }) => {
             </div>
 
         </div>
+
+        <ModalPop isOpen={openModal}>
+            <Submodal handleClose={() => setOpenModal(false)} />
+        </ModalPop>
 
     </div>
   )

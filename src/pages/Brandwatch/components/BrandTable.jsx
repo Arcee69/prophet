@@ -1,211 +1,241 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AiOutlineDownload } from 'react-icons/ai';
 
-const BrandTable = ({ summary1 }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
+const BrandTable = ({
+    mentionTab,
+    filteredMentions = [],
+    loading,
+    setMentionTab
+}) => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(50);
 
-  const sources = summary1?.sources || { twitter: [], youtube: [], news: [] };
+    // Reset to page 1 whenever the tab changes (different filtered data)
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [mentionTab]);
 
-  // Flatten data in the order: Twitter → YouTube → News
-  const flatData = [
-    ...(sources.twitter || []).map(url => ({ type: 'Twitter/X', url })),
-    ...(sources.youtube || []).map(url => ({ type: 'YouTube', url })),
-    ...(sources.news || []).map(url => ({ type: 'News', url })),
-  ];
+    const totalItems = filteredMentions.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
 
+    const currentData = filteredMentions.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
 
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+        }
+    };
 
-  const totalItems = flatData?.length;
-  const totalPages = Math?.ceil(totalItems / itemsPerPage);
+    const handleExportCSV = () => {
+        if (filteredMentions?.length === 0) return;
 
-  const currentData = flatData?.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+        const header = 'Type,URL,Title,Snippet,Sentiment\n';
+        const rows = filteredMentions
+            .map(item => {
+                const title = (item.title || '').replace(/"/g, '""');
+                const snippet = (item.snippet || '').replace(/"/g, '""');
+                return `"${item.type}","${item.url}","${title}","${snippet}","${item.sentiment}"`;
+            })
+            .join('\n');
 
-  const getDisplayAndHrefUrl = (type, originalUrl) => {
-    let displayUrl = originalUrl;
-    let hrefUrl = originalUrl;
+        const csvContent = header + rows;
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
 
-    if (type === 'Twitter/X') {
-      const postId = originalUrl.split('/').pop();
-      hrefUrl = `https://x.com/i/status/${postId}`;
-      displayUrl = hrefUrl;
-    } else if (type === 'YouTube') {
-      const videoId = originalUrl.includes('v=')
-        ? originalUrl.split('v=')[1].split('&')[0]
-        : originalUrl.split('/').pop();
-      if (videoId) {
-        hrefUrl = `https://youtu.be/${videoId}`;
-        displayUrl = hrefUrl;
-      }
-    }
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'brand_mentions.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
-    return { displayUrl, hrefUrl };
-  };
+    return (
+        <div className="w-full flex flex-col gap-6">
+            {/* Top Mentions */}
+            <div className='flex flex-col  overflow-x-hidden gap-[11px]'>
+                <div className='flex items-center justify-between gap-5'>
 
-  const handleExportCSV = () => {
-    if (flatData?.length === 0) return;
-
-    const header = 'Source,URL\n';
-    const rows = flatData
-      .map(item => {
-        const { hrefUrl } = getDisplayAndHrefUrl(item.type, item.url);
-        return `"${item.type}","${hrefUrl.replace(/"/g, '""')}"`;
-      })
-      .join('\n');
-
-    const csvContent = header + rows;
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'brand_sources.csv');
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-    }
-  };
-
-  return (
-    <div className="w-full flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-2xl font-semibold text-[#101928]">
-          Sources ({totalItems})
-        </h2>
-
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <select
-            value={itemsPerPage}
-            onChange={(e) => {
-              setItemsPerPage(Number(e.target.value));
-              setCurrentPage(1);
-            }}
-            className="border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none"
-          >
-            <option value={10}>10 per page</option>
-            <option value={20}>20 per page</option>
-            <option value={50}>50 per page</option>
-            <option value={100}>100 per page</option>
-          </select>
-
-          <button
-            onClick={handleExportCSV}
-            disabled={totalItems === 0}
-            className="flex items-center gap-2 bg-black hover:bg-gray-800 disabled:bg-gray-400 text-white px-5 py-2 rounded-lg transition-colors"
-          >
-            <AiOutlineDownload className="w-5 h-5" />
-            <span className="text-base font-medium">Export CSV</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Table */}
-      {totalItems === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          No sources found for this period.
-        </div>
-      ) : (
-        <>
-          <div className="overflow-x-auto rounded-t-lg border-b border-gray-200">
-            <table className="w-full min-w-[800px] table-auto">
-              <thead className="bg-[#F1F3F9] border-b">
-                <tr>
-                  <th className="px-6 py-4 text-left font-jost text-sm font-semibold text-[#667185] uppercase tracking-wider">
-                    #
-                  </th>
-                  <th className="px-6 py-4 text-left font-jost text-sm font-semibold text-[#667185] uppercase tracking-wider">
-                    Source
-                  </th>
-                  <th className="px-6 py-4 text-left font-jost text-sm font-semibold text-[#667185] uppercase tracking-wider">
-                    Link
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {currentData?.map((item, index) => {
-                  const { displayUrl, hrefUrl } = getDisplayAndHrefUrl(item.type, item.url);
-                  const globalIndex = (currentPage - 1) * itemsPerPage + index + 1;
-
-                  return (
-                    <tr key={globalIndex} className="hover:bg-[#F1F3F9] transition-colors">
-                      <td className="px-6 py-4 text-sm text-gray-900">{globalIndex}</td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                        {item.type}
-                      </td>
-                      <td className="px-6 py-4 text-sm">
-                        <a
-                          href={hrefUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline hover:text-[#FF4E4C] break-all"
+                    {/* Toggle for all, youtube and news */}
+                    <div className='flex gap-2'>
+                        <button
+                            className={`px-4 py-2 border border-[#E2E8F0]  rounded-[10px] ${mentionTab === 'All' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+                            onClick={() => setMentionTab('All')}
                         >
-                          {displayUrl}
-                        </a>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                            All
+                        </button>
+                        <button
+                            className={`px-4 py-2 border border-[#E2E8F0] rounded-[10px] ${mentionTab === 'Youtube' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+                            onClick={() => setMentionTab('Youtube')}
+                        >
+                            Youtube
+                        </button>
+                        <button
+                            className={`px-4 py-2 border border-[#E2E8F0]  rounded-[10px] ${mentionTab === 'Twitter' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+                            onClick={() => setMentionTab('Twitter')}
+                        >
+                            Twitter
+                        </button>
+                        <button
+                            className={`px-4 py-2 border border-[#E2E8F0] rounded-[10px] ${mentionTab === 'News' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+                            onClick={() => setMentionTab('News')}
+                        >
+                            News
+                        </button>
+                    </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6">
-              <p className="text-sm text-gray-600">
-                Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
-                {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} sources
-              </p>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-                >
-                  Previous
-                </button>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                        <select
+                            value={itemsPerPage}
+                            onChange={(e) => {
+                                setItemsPerPage(Number(e.target.value));
+                                setCurrentPage(1);
+                            }}
+                            className="border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none"
+                        >
+                            <option value={10}>10 per page</option>
+                            <option value={20}>20 per page</option>
+                            <option value={50}>50 per page</option>
+                            <option value={100}>100 per page</option>
+                        </select>
 
-                <div className="flex items-center gap-1">
-                  {[...Array(totalPages)]?.map((_, i) => (
-                    <button
-                      key={i + 1}
-                      onClick={() => handlePageChange(i + 1)}
-                      className={`w-10 h-10 rounded-lg transition-colors ${
-                        currentPage === i + 1
-                          ? 'bg-[#F48A1F] text-white'
-                          : 'hover:bg-gray-100'
-                      }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
+                        <button
+                            onClick={handleExportCSV}
+                            disabled={totalItems === 0}
+                            className="flex items-center gap-2 bg-black hover:bg-gray-800 disabled:bg-gray-400 text-white px-5 py-2 rounded-lg transition-colors"
+                        >
+                            <AiOutlineDownload className="w-5 h-5" />
+                            <span className="text-base font-medium">Export CSV</span>
+                        </button>
+                    </div>
+
                 </div>
 
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-                >
-                  Next
-                </button>
-              </div>
+                {loading ? (
+                    <div className="grid grid-cols-2 gap-4">
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="animate-pulse bg-[#BFBFBF] h-[300px] rounded-lg"></div>
+                        ))}
+                    </div>
+                ) : (
+
+                    currentData?.length > 0 ? (
+                        <div className='grid grid-cols-2 gap-4'>
+                            {currentData?.map((mention, index) => (
+                                <div key={index} className='bg-[#fff] h-auto flex items-start gap-2 px-[22px] pt-[22px] pb-[45px] rounded-lg'>
+                                    {
+                                        mention.type === 'Youtube' ?
+                                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt={mention.type} className='w-[32px] h-[32px]' />
+                                            :
+                                            mention.type === 'Twitter' ?
+                                                <img width="48" height="48" src="https://img.icons8.com/fluency/48/twitterx--v1.png" alt="twitterx--v1" />
+                                                :
+                                                <div className='w-[32px] h-[32px] flex items-center justify-center rounded-full bg-[#10B981] p-2'>
+                                                    <p className='text-white font-jost font-semibold'>N</p>
+                                                </div>
+                                    }
+                                    <div className='flex gap-5 flex-col w-full'>
+                                        <div className='flex flex-col mt-1 gap-1'>
+                                            <div className='flex items-center gap-1'>
+                                                <p className='font-jost text-sm text-[#000000]'>{mention.type}</p>
+                                            </div>
+                                        </div>
+                                        {mention.type === "Youtube" ? (
+                                            <a href={mention.url} target="_blank" rel="noopener noreferrer">
+                                                <img
+                                                    src={`https://img.youtube.com/vi/${new URL(mention.url).searchParams.get("v")}/hqdefault.jpg`}
+                                                    alt="YouTube Thumbnail"
+                                                    className="w-full h-[200px] object-cover rounded-md"
+                                                />
+                                            </a>
+                                        ) : mention.type === "Twitter" ? (
+                                            <a
+                                                href={mention.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 underline break-words"
+                                            >
+                                                {mention.url}
+                                            </a>
+                                        ) : (
+                                            <a
+                                                href={mention.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 underline break-words"
+                                            >
+                                                {mention.url}
+                                            </a>
+                                        )}
+                                        <div className='flex gap-5'>
+                                            <div className={`w-[57px] h-[24px] rounded-full p-1 ${mention.sentiment === 'positive' ? 'bg-[#DCFCE7]' : mention.sentiment === 'negative' ? 'bg-[#FFA8A8]' : 'bg-[#D3D3D3]'}`}>
+                                                <p className={`text-xs text-center font-inter ${mention.sentiment === 'positive' ? 'text-[#1E5631]' : mention.sentiment === 'negative' ? 'text-[#FF0000]' : 'text-[#808080]'}`}>{mention.sentiment}</p>
+                                            </div>
+                                            <a href={mention.url} target="_blank" rel="noopener noreferrer" className='font-jost text-[#F48A1F] text-sm'>Details</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className='flex items-center mt-5 justify-center'>
+                            <p className='font-jost text-2xl text-[#6B7280] font-medium'>No Conversation Available</p>
+                        </div>
+                    )
+                )}
+
+                {/* Pagination - only show when needed */}
+                {totalPages > 1 && (
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8">
+                        <p className="text-sm text-gray-600">
+                            Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
+                            {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} items
+                        </p>
+
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                            >
+                                Previous
+                            </button>
+
+                            <div className="flex items-center gap-1">
+                                {[...Array(totalPages)].map((_, i) => (
+                                    <button
+                                        key={i + 1}
+                                        onClick={() => handlePageChange(i + 1)}
+                                        className={`w-10 h-10 rounded-lg transition-colors ${
+                                            currentPage === i + 1
+                                                ? 'bg-[#F48A1F] text-white'
+                                                : 'hover:bg-gray-100 border border-gray-300'
+                                        }`}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <button
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
-          )}
-        </>
-      )}
-    </div>
-  );
+
+        </div>
+    );
 };
 
 export default BrandTable;

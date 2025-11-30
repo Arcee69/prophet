@@ -780,13 +780,15 @@ const Brandwatch = () => {
                                 {brandWatchData.map((item, index) => (
                                     <div key={item.id || index} className='border w-[200px] h-auto border-[#E4E7EC] rounded-xl flex flex-col gap-1 p-[13px]'>
                                         <div
-                                            className='flex items-center cursor-pointer justify-end'
-                                            onClick={() => {
-                                                setEndBrandWatchData(item);
-                                                setOpenEndBrandWatchModal(true);
-                                            }}
+                                            className='flex items-center justify-end'
                                         >
-                                            <IoCloseSharp className='w-5 h-5 text-[#9CA3AF]' />
+                                            <IoCloseSharp 
+                                                className='w-5 h-5  cursor-pointer text-[#9CA3AF]' 
+                                                onClick={() => {
+                                                    setEndBrandWatchData(item);
+                                                    setOpenEndBrandWatchModal(true);
+                                                }}
+                                            />
                                         </div>
                                         <div 
                                             className='flex cursor-pointer flex-col gap-6' 

@@ -29,6 +29,8 @@ import { useSelector } from 'react-redux'
 import { MdCalendarToday, MdOutlineFileDownload } from 'react-icons/md'
 import DatePicker from 'react-datepicker'
 import { AiOutlinePlus, AiOutlineWarning } from 'react-icons/ai'
+import ModalPop from '../../components/modalPop'
+import Submodal from '../../components/Submodal'
 
 
 
@@ -39,6 +41,7 @@ const Dashboard = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState('Brands');
+  const [openModal, setOpenModal] = useState(false);
   
   const handleDateChange = (value) => {
       setDateChange(value)
@@ -228,7 +231,10 @@ const Dashboard = () => {
 
       {/* Top Four Colored Boxes */}
       <div className='flex items-center gap-4'>
-        <div className='bg-[#FB6B63] rounded-[18px] w-3/12 h-[220px] p-3 overflow-hidden cursor-pointer relative' onClick={() => navigate("/ara")}>
+        <div 
+          className='bg-[#FB6B63] rounded-[18px] w-3/12 h-[220px] p-3 overflow-hidden cursor-pointer relative' 
+          onClick={() => {(user?.data?.is_subscribed) ? navigate("/ara") : setOpenModal(true);}}
+        >
           <img src={Line} alt='Line' className='absolute w-[155px] h-[255px] -top-16 -left-1' />
           <div className='absolute bottom-2 right-2 gap-[3px] flex flex-col'>
             <img src={Voice} alt='Voice' className='w-[84px] h-[84px]' />
@@ -238,7 +244,10 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className='bg-[#34B6FE] rounded-[18px] w-3/12 h-[220px] p-3 overflow-hidden cursor-pointer relative'  onClick={() => navigate("/brandwatch")}>
+        <div 
+          className='bg-[#34B6FE] rounded-[18px] w-3/12 h-[220px] p-3 overflow-hidden cursor-pointer relative'  
+          onClick={() => {(user?.data?.is_subscribed) ? navigate("/brandwatch") : setOpenModal(true) }}
+        >
           <img src={GlobeBig} alt='GlobeBig' className='absolute w-[155px] h-[155px] -top-14 -left-3' />
           <div className='absolute bottom-2 right-2 gap-[3px] flex flex-col items-end'>
             <img src={GlobeSmall} alt='GlobeSmall' className='w-[84px] h-[84px]' />
@@ -248,7 +257,10 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className='bg-[#EA8B29] rounded-[18px] w-3/12 h-[220px] p-3 overflow-hidden cursor-pointer relative' onClick={() => navigate("/sentiment-analysis")}>
+        <div 
+          className='bg-[#EA8B29] rounded-[18px] w-3/12 h-[220px] p-3 overflow-hidden cursor-pointer relative' 
+          onClick={() => {(user?.data?.is_subscribed) ? navigate("/sentiment-analysis") : setOpenModal(true) }}
+        >
           <img src={AnalysisBig} alt='AnalysisBig' className='absolute w-[155px] h-[155px] -top-14 -left-3' />
           <div className='absolute bottom-2 right-2 gap-[3px] flex flex-col items-end'>
             <img src={AnalysisSmall} alt='AnalysisSmall' className='w-[84px] h-[84px]' />
@@ -258,7 +270,10 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className='bg-[#5BDC93] rounded-[18px] w-3/12 h-[220px] p-3 overflow-hidden cursor-pointer relative' onClick={() => navigate("/reports")}>
+        <div 
+          className='bg-[#5BDC93] rounded-[18px] w-3/12 h-[220px] p-3 overflow-hidden cursor-pointer relative' 
+          onClick={() => navigate("/reports")}
+        >
           <img src={ReportBig} alt='ReportBig' className='absolute w-[155px] h-[155px] -top-14 -left-3' />
           <div className='absolute bottom-2 right-2 gap-[3px] flex flex-col items-end'>
             <img src={ReportSmall} alt='ReportSmall' className='w-[84px] h-[84px]' />
@@ -808,6 +823,10 @@ const Dashboard = () => {
         </div>
 
       </div> */}
+
+      <ModalPop isOpen={openModal}>
+        <Submodal handleClose={() => setOpenModal(false)} />
+      </ModalPop>
 
     </div>
   )
