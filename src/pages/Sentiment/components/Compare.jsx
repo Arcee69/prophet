@@ -639,17 +639,7 @@ const Compare = ({ search, setSearchList }) => {
 
     const filteredMentions = topMentions?.filter(m => mentionTab === 'All' || m.type === mentionTab)
 
-    const formatter = new Intl.NumberFormat('en-US');
 
-    const formatNumber = (num) => {
-        if (num >= 1000000) {
-            return (num / 1000000).toFixed(1) + 'M';
-        } else if (num >= 1000) {
-            return (num / 1000).toFixed(1) + 'k';
-        } else {
-            return num;
-        }
-    };
 
 
     console.log(compareBrand, "compareBrandcompareBrand")
@@ -824,6 +814,7 @@ const Compare = ({ search, setSearchList }) => {
                     topWordsData={topWordsData}
                     search={search}
                     summary2={summary2}
+                    filteredMentions={filteredMentions}
                     mentionTab={mentionTab}
                     setMentionTab={setMentionTab}
                 />
