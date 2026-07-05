@@ -523,13 +523,13 @@ const SentimentBrand = ({
                 )}
 
                 {/* Top Mentions */}
-                <div className='flex flex-col mt-10 gap-[11px]'>
+                {/* <div className='flex flex-col mt-10 gap-[11px]'>
                     <div className='flex items-center gap-5'>
                         <p className='font-jost font-semibold text-[18px]  text-[#6B7280]'>
                             Top Mentions
                         </p>
 
-                        {/* Toggle for all, youtube and news */}
+                        {/* Toggle for all, youtube and news *
                         <div className='flex gap-2'>
                             <button
                                 className={`px-4 py-2 rounded ${mentionTab === 'All' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
@@ -632,7 +632,7 @@ const SentimentBrand = ({
                         )
 
                     )}
-                </div>
+                </div> */}
 
             </div>
         </>
