@@ -55,11 +55,11 @@ const SentimentBrand = ({
         <>
             <div ref={reportRef}>
 
-                <div className='grid grid-cols-3 gap-4'>
+                <div className='grid grid-cols-2 gap-4'>
                     {loading ? (
                         <>
                             <SkeletonCard />
-                            <SkeletonCard />
+                            {/* <SkeletonCard /> */}
                             <SkeletonCard />
                         </>
                     ) : (
@@ -76,7 +76,7 @@ const SentimentBrand = ({
                                 </div>
                             </div>
 
-                            <div className='flex flex-col justify-between p-4 bg-white rounded-lg h-[200px] shadow-md'>
+                            {/* <div className='flex flex-col justify-between p-4 bg-white rounded-lg h-[200px] shadow-md'>
                                 <p className='font-jost text-2xl font-semibold text-[#252F3D]'>Total Engagement</p>
                                 <div className='flex items-center justify-between'>
                                     {engagementData?.map((item, index) => (
@@ -86,7 +86,7 @@ const SentimentBrand = ({
                                         </div>
                                     ))}
                                 </div>
-                            </div>
+                            </div> */}
 
                             <div className='flex flex-col justify-between p-4 bg-white rounded-lg h-[200px] shadow-md'>
                                 <p className='font-jost text-2xl font-semibold text-[#252F3D]'>Estimated  Reach</p>
