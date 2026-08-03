@@ -69,10 +69,10 @@ const SentimentTable = ({
                             All
                         </button>
                         <button
-                            className={`px-4 py-2 border border-[#E2E8F0] rounded-[10px] ${mentionTab === 'Youtube' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
-                            onClick={() => setMentionTab('Youtube')}
+                            className={`px-4 py-2 border border-[#E2E8F0] rounded-[10px] ${mentionTab === 'News' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+                            onClick={() => setMentionTab('News')}
                         >
-                            Youtube
+                            News
                         </button>
                         <button
                             className={`px-4 py-2 border border-[#E2E8F0]  rounded-[10px] ${mentionTab === 'Twitter' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
@@ -81,10 +81,10 @@ const SentimentTable = ({
                             Twitter
                         </button>
                         <button
-                            className={`px-4 py-2 border border-[#E2E8F0] rounded-[10px] ${mentionTab === 'News' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
-                            onClick={() => setMentionTab('News')}
+                            className={`px-4 py-2 border border-[#E2E8F0] rounded-[10px] ${mentionTab === 'Youtube' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+                            onClick={() => setMentionTab('Youtube')}
                         >
-                            News
+                            Youtube
                         </button>
                     </div>
 
