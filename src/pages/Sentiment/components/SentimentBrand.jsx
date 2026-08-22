@@ -141,20 +141,20 @@ const SentimentBrand = ({
                                 <div className="h-[362px] w-6/12 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
                                     <div className='flex items-center justify-between'>
                                         <div className='flex items-center gap-2'>
-                                            <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Engagement</p>
+                                            <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Estimated Reach</p>
                                         </div>
                                     </div>
                                     <div className="w-full h-[250px]">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart
-                                                data={engagementData}
+                                                data={reachData}
                                                 margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
                                             >
                                                 <XAxis type="category" dataKey="name" />
                                                 <YAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
                                                 <Tooltip formatter={formatNumber} />
                                                 <Bar dataKey="value">
-                                                    {engagementData.map((entry, index) => (
+                                                    {reachData.map((entry, index) => (
                                                         <Cell key={`cell-${index}`} fill={entry.color} />
                                                     ))}
                                                     <LabelList dataKey="value" position="top" formatter={formatNumber} />

@@ -263,36 +263,6 @@ const BrandWatchReport = () => {
 
   const reportRef = useRef(null);
 
-  // const handleDownloadPDF = async () => {
-  //   const input = reportRef.current;
-
-  //   const canvas = await html2canvas(input, { scale: 2, useCORS: true });
-  //   const imgData = canvas.toDataURL('image/png');
-
-  //   const pdf = new jsPDF('p', 'mm', 'a4');
-  //   const pageHeight = pdf.internal.pageSize.getHeight();
-  //   const pageWidth = pdf.internal.pageSize.getWidth();
-
-  //   const imgWidth = pageWidth;
-  //   const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-  //   let heightLeft = imgHeight;
-  //   let position = 0;
-
-  //   // First page
-  //   pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-  //   heightLeft -= pageHeight;
-
-  //   while (heightLeft > 0) {
-  //     position = heightLeft - imgHeight;
-  //     pdf.addPage();
-  //     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-  //     heightLeft -= pageHeight;
-  //   }
-
-  //   pdf.save('report.pdf');
-  // };
-
 
 
     const handleDownloadPDF = async () => {
