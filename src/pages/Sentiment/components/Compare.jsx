@@ -637,7 +637,11 @@ const Compare = ({ search, setSearchList }) => {
     }))
 
 
-    const filteredMentions = topMentions?.filter(m => mentionTab === 'All' || m.type === mentionTab)
+    const typeOrder = { News: 0, Twitter: 1, Youtube: 2 }
+
+    const filteredMentions = topMentions
+        ?.filter(m => mentionTab === 'All' || m.type === mentionTab)
+        ?.sort((a, b) => (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99))
 
 
 
