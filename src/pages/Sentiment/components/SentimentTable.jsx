@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { AiOutlineDownload } from 'react-icons/ai';
+
+// Pages either side of the current one kept visible in the pager.
+const PAGE_WINDOW = 1;
 
 const SentimentTable = ({
     mentionTab,
@@ -8,7 +11,8 @@ const SentimentTable = ({
     setMentionTab
 }) => {
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(50);
+    const [itemsPerPage, setItemsPerPage] = useState(20);
+    const listTopRef = useRef(null);
 
     // Reset to page 1 whenever the tab changes (different filtered data)
     useEffect(() => {
@@ -16,28 +20,78 @@ const SentimentTable = ({
     }, [mentionTab]);
 
     const totalItems = filteredMentions.length;
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
 
-    const currentData = filteredMentions.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
+    // A new search can return fewer results than the page we were sitting on, which
+    // used to leave the list rendering an empty slice with no way back.
+    useEffect(() => {
+        if (currentPage > totalPages) setCurrentPage(totalPages);
+    }, [currentPage, totalPages]);
+
+    const safePage = Math.min(currentPage, totalPages);
+    const firstItemIndex = (safePage - 1) * itemsPerPage;
+
+    const currentData = filteredMentions.slice(firstItemIndex, firstItemIndex + itemsPerPage);
 
     const handlePageChange = (newPage) => {
-        if (newPage >= 1 && newPage <= totalPages) {
-            setCurrentPage(newPage);
+        if (newPage < 1 || newPage > totalPages || newPage === safePage) return;
+        setCurrentPage(newPage);
+        // Cards are tall, so a page change from the bottom would otherwise land the
+        // user in the middle of the new page.
+        listTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    // Condensed page list: first, last, and a window around the current page, with
+    // gaps collapsed. Rendering one button per page overflowed the row entirely once
+    // a search returned a few hundred mentions.
+    const pageItems = useMemo(() => {
+        const items = [];
+        for (let page = 1; page <= totalPages; page += 1) {
+            const isEdge = page === 1 || page === totalPages;
+            const isNearCurrent = page >= safePage - PAGE_WINDOW && page <= safePage + PAGE_WINDOW;
+            if (isEdge || isNearCurrent) {
+                items.push(page);
+            } else if (items[items.length - 1] !== 'gap') {
+                items.push('gap');
+            }
         }
+        return items;
+    }, [safePage, totalPages]);
+
+    const formatNumber = (num) => {
+        const value = Number(num) || 0;
+        if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+        if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
+        return `${Math.round(value)}`;
+    };
+
+    const formatDate = (value) => {
+        if (!value) return null;
+        const date = new Date(value);
+        return Number.isNaN(date.getTime())
+            ? null
+            : date.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
     };
 
     const handleExportCSV = () => {
         if (filteredMentions?.length === 0) return;
 
-        const header = 'Type,URL,Title,Snippet,Sentiment\n';
+        const header = 'Type,Published,URL,Title,Description,Sentiment,Score,Views,Likes,Comments\n';
         const rows = filteredMentions
             .map(item => {
-                const title = (item.title || '').replace(/"/g, '""');
-                const snippet = (item.snippet || '').replace(/"/g, '""');
-                return `"${item.type}","${item.url}","${title}","${snippet}","${item.sentiment}"`;
+                const clean = (value) => String(value ?? '').replace(/"/g, '""');
+                return [
+                    item.type,
+                    item.publishedAt || '',
+                    item.url,
+                    clean(item.title),
+                    clean(item.description),
+                    item.tone,
+                    item.sentiment ?? '',
+                    item.views,
+                    item.likes,
+                    item.comments
+                ].map(value => `"${clean(value)}"`).join(',');
             })
             .join('\n');
 
@@ -102,6 +156,7 @@ const SentimentTable = ({
                             <option value={20}>20 per page</option>
                             <option value={50}>50 per page</option>
                             <option value={100}>100 per page</option>
+                            <option value={200}>200 per page</option>
                         </select>
 
                         <button
@@ -116,6 +171,8 @@ const SentimentTable = ({
 
                 </div>
 
+                <div ref={listTopRef} className="scroll-mt-6"></div>
+
                 {loading ? (
                     <div className="grid grid-cols-2 gap-4">
                         {[...Array(4)].map((_, i) => (
@@ -127,7 +184,7 @@ const SentimentTable = ({
                     currentData?.length > 0 ? (
                         <div className='grid grid-cols-2 gap-4'>
                             {currentData?.map((mention, index) => (
-                                <div key={index} className='bg-[#fff] h-auto flex items-start gap-2 px-[22px] pt-[22px] pb-[45px] rounded-lg'>
+                                <div key={index} className='bg-[#fff] h-auto flex items-start gap-3 px-[22px] py-[22px] rounded-lg'>
                                     {
                                         mention.type === 'Youtube' ?
                                             <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt={mention.type} className='w-[32px] h-[32px]' />
@@ -139,43 +196,64 @@ const SentimentTable = ({
                                                     <p className='text-white font-jost font-semibold'>N</p>
                                                 </div>
                                     }
-                                    <div className='flex gap-5 flex-col w-full'>
+                                    <div className='flex gap-3 flex-col w-full'>
                                         <div className='flex flex-col mt-1 gap-1'>
-                                            <div className='flex items-center gap-1'>
+                                            <div className='flex items-center justify-between gap-2'>
                                                 <p className='font-jost text-sm text-[#000000]'>{mention.type}</p>
+                                                {formatDate(mention.publishedAt) && (
+                                                    <p className='font-jost text-xs text-[#9CA3AF]'>
+                                                        {formatDate(mention.publishedAt)}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
-                                        {mention.type === "Youtube" ? (
+
+                                        {mention.type === "Youtube" && (
                                             <a href={mention.url} target="_blank" rel="noopener noreferrer">
                                                 <img
-                                                    src={`https://img.youtube.com/vi/${new URL(mention.url).searchParams.get("v")}/hqdefault.jpg`}
-                                                    alt="YouTube Thumbnail"
+                                                    src={`https://img.youtube.com/vi/${mention.id || new URL(mention.url).searchParams.get("v")}/hqdefault.jpg`}
+                                                    alt={mention.title || "YouTube Thumbnail"}
                                                     className="w-full h-[200px] object-cover rounded-md"
                                                 />
                                             </a>
-                                        ) : mention.type === "Twitter" ? (
-                                            <a
-                                                href={mention.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-600 underline break-words"
-                                            >
-                                                {mention.url}
-                                            </a>
-                                        ) : (
-                                            <a
-                                                href={mention.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-600 underline break-words"
-                                            >
-                                                {mention.url}
-                                            </a>
                                         )}
-                                        <div className='flex gap-5'>
-                                            {/* <div className={`w-[57px] h-[24px] rounded-full p-1 ${mention.sentiment === 'positive' ? 'bg-[#DCFCE7]' : mention.sentiment === 'negative' ? 'bg-[#FFA8A8]' : 'bg-[#D3D3D3]'}`}>
-                                                <p className={`text-xs text-center font-inter ${mention.sentiment === 'positive' ? 'text-[#1E5631]' : mention.sentiment === 'negative' ? 'text-[#FF0000]' : 'text-[#808080]'}`}>{mention.sentiment}</p>
-                                            </div> */}
+
+                                        <a
+                                            href={mention.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className='font-jost font-semibold text-base text-[#1F2937] hover:text-[#F48A1F] leading-snug'
+                                        >
+                                            {mention.title || mention.url}
+                                        </a>
+
+                                        {mention.description && (
+                                            <p className='font-jost text-sm text-[#6B7280] leading-relaxed'>
+                                                {mention.description}
+                                            </p>
+                                        )}
+
+                                        {(mention.views > 0 || mention.likes > 0 || mention.comments > 0) && (
+                                            <div className='flex items-center gap-4 font-jost text-xs text-[#9CA3AF]'>
+                                                {mention.views > 0 && <span>{formatNumber(mention.views)} views</span>}
+                                                {mention.likes > 0 && <span>{formatNumber(mention.likes)} likes</span>}
+                                                {mention.comments > 0 && <span>{formatNumber(mention.comments)} comments</span>}
+                                            </div>
+                                        )}
+
+                                        <div className='flex items-center gap-3 flex-wrap'>
+                                            {mention.sentiment !== null && mention.sentiment !== undefined && (
+                                                <div className={`rounded-full px-3 py-1 ${mention.tone === 'positive' ? 'bg-[#DCFCE7]' : mention.tone === 'negative' ? 'bg-[#FFA8A8]' : 'bg-[#E5E7EB]'}`}>
+                                                    <p className={`text-xs text-center font-inter capitalize ${mention.tone === 'positive' ? 'text-[#1E5631]' : mention.tone === 'negative' ? 'text-[#B91C1C]' : 'text-[#4B5563]'}`}>
+                                                        {mention.tone} ({mention.sentiment.toFixed(2)})
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {mention.brands?.length > 1 && (
+                                                <span className='font-jost text-xs text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-full px-3 py-1'>
+                                                    {mention.brands.join(' & ')}
+                                                </span>
+                                            )}
                                             <a href={mention.url} target="_blank" rel="noopener noreferrer" className='font-jost text-[#F48A1F] text-sm'>Details</a>
                                         </div>
                                     </div>
@@ -190,46 +268,76 @@ const SentimentTable = ({
                 )}
 
                 {/* Pagination - only show when needed */}
-                {totalPages > 1 && (
-                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8">
-                        <p className="text-sm text-gray-600">
-                            Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
-                            {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} items
+                {totalItems > 0 && (
+                    <div className="flex flex-col lg:flex-row justify-between items-center gap-4 mt-8">
+                        <p className="text-sm text-gray-600 whitespace-nowrap">
+                            Showing {(firstItemIndex + 1).toLocaleString()} to{' '}
+                            {Math.min(firstItemIndex + itemsPerPage, totalItems).toLocaleString()} of{' '}
+                            {totalItems.toLocaleString()} mentions
                         </p>
 
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-                            >
-                                Previous
-                            </button>
+                        {totalPages > 1 && (
+                            <div className="flex items-center gap-2 flex-wrap justify-center">
+                                <button
+                                    onClick={() => handlePageChange(safePage - 1)}
+                                    disabled={safePage === 1}
+                                    className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                                >
+                                    Previous
+                                </button>
 
-                            <div className="flex items-center gap-1">
-                                {[...Array(totalPages)].map((_, i) => (
-                                    <button
-                                        key={i + 1}
-                                        onClick={() => handlePageChange(i + 1)}
-                                        className={`w-10 h-10 rounded-lg transition-colors ${
-                                            currentPage === i + 1
-                                                ? 'bg-[#F48A1F] text-white'
-                                                : 'hover:bg-gray-100 border border-gray-300'
-                                        }`}
-                                    >
-                                        {i + 1}
-                                    </button>
-                                ))}
+                                <div className="flex items-center gap-1">
+                                    {pageItems.map((item, index) => (
+                                        item === 'gap' ? (
+                                            <span
+                                                key={`gap-${index}`}
+                                                className="w-8 h-10 flex items-end justify-center text-gray-400 select-none"
+                                            >
+                                                …
+                                            </span>
+                                        ) : (
+                                            <button
+                                                key={item}
+                                                onClick={() => handlePageChange(item)}
+                                                aria-current={safePage === item ? 'page' : undefined}
+                                                className={`min-w-10 h-10 px-2 rounded-lg transition-colors ${
+                                                    safePage === item
+                                                        ? 'bg-[#F48A1F] text-white'
+                                                        : 'hover:bg-gray-100 border border-gray-300'
+                                                }`}
+                                            >
+                                                {item}
+                                            </button>
+                                        )
+                                    ))}
+                                </div>
+
+                                <button
+                                    onClick={() => handlePageChange(safePage + 1)}
+                                    disabled={safePage === totalPages}
+                                    className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                                >
+                                    Next
+                                </button>
+
+                                {/* Direct jump: with hundreds of pages, stepping through the
+                                    window one click at a time is not practical. */}
+                                {totalPages > 10 && (
+                                    <div className="flex items-center gap-2 ml-2">
+                                        <span className="text-sm text-gray-600 whitespace-nowrap">Go to</span>
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            max={totalPages}
+                                            value={safePage}
+                                            onChange={(e) => handlePageChange(Number(e.target.value))}
+                                            className="w-20 border border-gray-300 rounded-lg px-2 py-2 text-sm outline-none"
+                                        />
+                                        <span className="text-sm text-gray-600 whitespace-nowrap">of {totalPages}</span>
+                                    </div>
+                                )}
                             </div>
-
-                            <button
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-                            >
-                                Next
-                            </button>
-                        </div>
+                        )}
                     </div>
                 )}
             </div>

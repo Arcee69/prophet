@@ -11,15 +11,37 @@ export default {
       xl: "1536px",
     },
 
-    keyframes: {
-      scroll: {
+    // NOTE: keyframes/animation live under `extend` so Tailwind's built-ins
+    // (animate-pulse, animate-spin, animate-bounce) survive. Declaring them at
+    // theme level replaced the defaults, which silently disabled every
+    // `animate-pulse` skeleton in the app.
+    extend: {
+      keyframes: {
+        scroll: {
           '0%': { transform: 'translateX(0)' },
           '100%': { transform: 'translateX(-50%)' },
-      }
-    },
-
-    animation: {
-      scroll: 'scroll 20s linear infinite',
+        },
+        // Expanding ring behind the analysis loader's orb.
+        pulseRing: {
+          '0%': { transform: 'scale(0.85)', opacity: '0.5' },
+          '80%, 100%': { transform: 'scale(1.6)', opacity: '0' },
+        },
+        // Light sweep across the progress bar and placeholder blocks.
+        shimmer: {
+          '100%': { transform: 'translateX(100%)' },
+        },
+        // Staggered dots in the active stage label.
+        dot: {
+          '0%, 60%, 100%': { transform: 'translateY(0)', opacity: '0.35' },
+          '30%': { transform: 'translateY(-4px)', opacity: '1' },
+        },
+      },
+      animation: {
+        scroll: 'scroll 20s linear infinite',
+        pulseRing: 'pulseRing 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        shimmer: 'shimmer 1.8s infinite',
+        dot: 'dot 1.4s ease-in-out infinite',
+      },
     },
 
     fontFamily: {

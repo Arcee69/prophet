@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { AiOutlineDownload } from 'react-icons/ai'
+import { IoIosArrowDown } from 'react-icons/io'
 import { api } from '../../../services/api'
 import { appUrls } from '../../../services/urls'
 import "react-datepicker/dist/react-datepicker.css";
@@ -16,81 +17,240 @@ import Logo from '../../../assets/png/logo.png';
 import { countryMap } from '../../../utils/CountryMap'
 import SentimentBrand from './SentimentBrand'
 import SentimentTable from './SentimentTable'
+import AnalysisLoader from '../../../components/AnalysisLoader'
 
 
+
+// The board holds the searched brand plus this many competitors.
+const MAX_COMPARE_BRANDS = 3;
+
+// dateChange holds the 1-based preset index, or this when the range was typed by hand.
+const CUSTOM_RANGE = 0;
+
+// The reports offered by the Generate Report dropdown.
+const REPORT_TYPES = ['Sentiment Intelligence', 'Competitive Intelligence', 'Reputation Intelligence'];
+
+const BRAND_COLORS = ['#1E5631', '#FF4E4C', '#F48A1F', '#3B82F6'];
+const colorAt = (index) => BRAND_COLORS[index % BRAND_COLORS.length];
+
+// Channels shared by the volume chart and the per-channel sentiment breakdown.
+const CHANNELS = [
+    { key: 'youtube_sentiment', label: 'YouTube', color: '#FF4E4C' },
+    { key: 'twitter_sentiment', label: 'Twitter/X', color: '#1DA1F2' },
+    { key: 'news_sentiment', label: 'News', color: '#F48A1F' },
+];
+
+// Sentiment score thresholds, shared by every per-item classification below.
+const POSITIVE_THRESHOLD = 0.1;
+const NEGATIVE_THRESHOLD = -0.1;
+
+const toneOf = (score) => {
+    if (typeof score !== 'number') return 'neutral';
+    if (score > POSITIVE_THRESHOLD) return 'positive';
+    if (score < NEGATIVE_THRESHOLD) return 'negative';
+    return 'neutral';
+};
+
+// The API sends counts as strings on YouTube and numbers on news.
+const toNumber = (value) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+};
+
+// News items arrive as a wall of article text with no title, so derive a headline
+// from the opening sentence rather than showing a bare URL.
+const deriveTitle = (text, url) => {
+    const clean = (text || '').replace(/\s+/g, ' ').trim();
+    if (clean) {
+        const firstSentence = clean.split(/(?<=[.!?])\s/)[0] || clean;
+        return firstSentence.length > 110 ? `${firstSentence.slice(0, 110).trim()}…` : firstSentence;
+    }
+    try {
+        return decodeURIComponent(new URL(url).pathname.split('/').filter(Boolean).pop() || url)
+            .replace(/[-_]+/g, ' ');
+    } catch {
+        return url;
+    }
+};
+
+const summarise = (text, limit = 260) => {
+    const clean = (text || '').replace(/\s+/g, ' ').trim();
+    if (!clean) return '';
+    return clean.length > limit ? `${clean.slice(0, limit).trim()}…` : clean;
+};
+
+// A source is either the old bare URL string or the new object payload.
+const normaliseSource = (item, type) => {
+    if (typeof item === 'string') {
+        return {
+            id: null,
+            url: item,
+            type,
+            title: deriveTitle('', item),
+            description: '',
+            publishedAt: null,
+            sentiment: null,
+            tone: 'neutral',
+            views: 0,
+            likes: 0,
+            comments: 0,
+            engagement: 0
+        };
+    }
+
+    const stats = item?.statistics || {};
+    const sentiment = typeof stats.sentiment === 'number' ? stats.sentiment : null;
+    const likes = toNumber(stats.likeCount);
+    const comments = toNumber(stats.commentCount);
+
+    return {
+        id: item?.id || null,
+        url: item?.url,
+        type,
+        title: item?.title || deriveTitle(item?.text, item?.url),
+        description: summarise(item?.description || item?.text),
+        publishedAt: item?.published_at || null,
+        sentiment,
+        tone: toneOf(sentiment),
+        views: toNumber(stats.viewCount),
+        likes,
+        comments,
+        // News carries no likes or comments, so interactions are YouTube-driven.
+        engagement: likes + comments
+    };
+};
+
+// Channel order on the Feeds "All" tab: News, then Twitter/X, then YouTube.
+const typeOrder = { News: 0, Twitter: 1, Youtube: 2 };
+
+const CHANNEL_TYPES = [
+    { key: 'news', type: 'News' },
+    { key: 'twitter', type: 'Twitter' },
+    { key: 'youtube', type: 'Youtube' },
+];
 
 const Compare = ({ search, setSearchList }) => {
-    const [compareBrand, setCompareBrand] = useState("")
+    const [compareBrands, setCompareBrands] = useState([])
     const [compareBrandInput, setCompareBrandInput] = useState("");
     const [dateChange, setDateChange] = useState(1)
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
-    const [sentimentData, setSentimentData] = useState(null)
-    const [sentimentData2, setSentimentData2] = useState(null)
+    const [summaries, setSummaries] = useState([])
     const [loading, setLoading] = useState(false)
     const [selectedMetric, setSelectedMetric] = useState('mentions');
-    const [activeBrandView, setActiveBrandView] = useState('primary');
+    const [activeBrandIndex, setActiveBrandIndex] = useState(0);
     const [selectedSources, setSelectedSources] = useState(["youtube", "news", "twitter"]);
     const [activeTab, setActiveTab] = useState('Feeds');
     const [mentionTab, setMentionTab] = useState('All')
+    const [showReportMenu, setShowReportMenu] = useState(false)
 
-    console.log(sentimentData, "sentimentData")
-    console.log(sentimentData2, "sentimentData2")
+    // The main brand plus up to MAX_COMPARE_BRANDS competitors on the board.
+    const brands = useMemo(
+        () => [search, ...compareBrands].filter(Boolean),
+        [search, compareBrands]
+    );
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
+        setShowReportMenu(false);
     };
 
 
     const navigate = useNavigate()
 
-    useEffect(() => {
-        const fetchSentiment = async (keyword, isSecond = false) => {
-            if (!keyword) return;
+    // A sentiment call takes ~20s, so results are cached per brand + filter combination.
+    // Without this, adding a fourth brand would re-run the three already on the board.
+    const resultCache = useRef(new Map());
 
-            const formatDate = (date) => date.toISOString().split('T')[0];
-            const data = {
-                "keyword1": keyword,
-                "sources": selectedSources ? selectedSources : "",
-                "start_date": formatDate(startDate),
-                "end_date": formatDate(endDate)
+    const reportMenuRef = useRef(null);
+
+    useEffect(() => {
+        if (!showReportMenu) return;
+
+        const handleClickOutside = (event) => {
+            if (reportMenuRef.current && !reportMenuRef.current.contains(event.target)) {
+                setShowReportMenu(false);
             }
-            setLoading(true)
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showReportMenu]);
+
+    const handleGenerateReport = (reportType) => {
+        setShowReportMenu(false);
+        console.log(reportType, 'report requested for', brands);
+    };
+
+    useEffect(() => {
+        if (brands.length === 0) return;
+
+        // One request per brand: the API takes a single keyword1 per call, so the
+        // board fans out and waits for the whole set before dropping the skeletons.
+        let cancelled = false;
+        const formatDate = (date) => date.toISOString().split('T')[0];
+        const filterKey = `${[...selectedSources].sort().join(',')}|${formatDate(startDate)}|${formatDate(endDate)}`;
+
+        const fetchSentiment = async (keyword) => {
+            const cacheKey = `${keyword.toLowerCase()}|${filterKey}`;
+            if (resultCache.current.has(cacheKey)) {
+                return resultCache.current.get(cacheKey);
+            }
+
             try {
-                const res = await api.post(appUrls?.SENTIMENT_URL, data)
-                console.log(res, "pick")
-                if (isSecond) {
-                    setSentimentData2(res?.data)
-                } else {
-                    setSentimentData(res?.data)
-                }
+                const res = await api.post(appUrls?.SENTIMENT_URL, {
+                    "keyword1": keyword,
+                    "sources": selectedSources ? selectedSources : "",
+                    "start_date": formatDate(startDate),
+                    "end_date": formatDate(endDate)
+                })
+                const summary = Object.values(res?.data || {})[0] || {}
+                resultCache.current.set(cacheKey, summary)
+                return summary
             } catch (err) {
                 console.log(err)
-            } finally {
-                setLoading(false)
+                // Not cached: a failed brand should be retried, not stuck empty.
+                return {}
             }
         }
 
-        if (search) {
-            fetchSentiment(search)
+        const run = async () => {
+            setLoading(true)
+            const results = await Promise.all(brands.map(fetchSentiment))
+            if (cancelled) return;
+            setSummaries(results)
+            setLoading(false)
         }
-        if (compareBrand) {
-            fetchSentiment(compareBrand, true)
-        } else {
-            setSentimentData2(null);
+
+        run()
+
+        return () => { cancelled = true }
+    }, [brands, selectedSources, startDate, endDate])
+
+    // Keep the brand toggles pointing at a brand that still exists.
+    useEffect(() => {
+        if (activeBrandIndex > brands.length - 1) setActiveBrandIndex(0)
+    }, [brands, activeBrandIndex])
+
+    const summaryAt = useCallback((index) => summaries[index] || {}, [summaries])
+    const summary1 = summaryAt(0)
+    const hasCompare = brands.length > 1
+
+    const addCompareBrand = () => {
+        const value = compareBrandInput.trim();
+        if (!value) return;
+        if (compareBrands.length >= MAX_COMPARE_BRANDS) return;
+        // Ignore a brand already on the board (case-insensitive).
+        if (brands.some(b => b.toLowerCase() === value.toLowerCase())) {
+            setCompareBrandInput("");
+            return;
         }
-    }, [search, compareBrand, selectedSources, startDate, endDate])
+        setCompareBrands(prev => [...prev, value]);
+        setCompareBrandInput("");
+    };
 
-    const summary1 = sentimentData ? Object.values(sentimentData)[0] || {} : {}
-    const summary2 = sentimentData2 ? Object.values(sentimentData2)[0] || {} : {}
-    const hasCompare = !!compareBrand && !!sentimentData2
-
-    console.log(summary1, "summarypopo")
-
-    const brandColors = {
-        primary: '#BDDAFF', // Green for main brand
-        secondary: '#FF4E4C', // Red for comparison brand
-        default: '#BDDAFF' // Default color
+    const removeCompareBrand = (name) => {
+        setCompareBrands(prev => prev.filter(b => b !== name));
     };
 
     const getSentimentPercentages = (summary) => {
@@ -115,36 +275,22 @@ const Compare = ({ search, setSearchList }) => {
 
 
 
-    const sent1 = getSentimentPercentages(summary1.summary || {})
-    const sent2 = getSentimentPercentages(summary2.summary || {})
+    const mentionsData = brands.map((name, index) => ({
+        name,
+        value: summaryAt(index).summary?.total_mentions || 0,
+        color: colorAt(index)
+    }));
 
-    const mentionsData = hasCompare ? [
-        { name: search, value: summary1.summary?.total_mentions || 0, color: brandColors.primary },
-        { name: compareBrand, value: summary2.summary?.total_mentions || 0, color: brandColors.secondary }
-    ] : [
-        { name: search, value: summary1.summary?.total_mentions || 0, color: brandColors.primary }
-    ];
+    const reachData = brands.map((name, index) => ({
+        name,
+        value: summaryAt(index).summary?.total_reach ?? summaryAt(index).summary?.estimated_reach ?? 0,
+        color: colorAt(index)
+    }));
 
-    const engagementData = hasCompare ? [
-        { name: search, value: summary1.summary?.total_mentions || 0, color: "#F97316" },
-        { name: compareBrand, value: summary2.summary?.total_mentions || 0, color: "#3B82F6" }
-    ] : [
-        { name: search, value: summary1.summary?.total_mentions || 0, color: "#F97316" }
-    ];
-
-    const reachData = hasCompare ? [
-        { name: search, value: summary1.summary?.estimated_reach || 0, color: "#A855F7" },
-        { name: compareBrand, value: summary2.summary?.estimated_reach || 0, color: "#22C55E" }
-    ] : [
-        { name: search, value: summary1.summary?.estimated_reach || 0, color: "#A855F7" }
-    ];
-
-    const sentimentChartData = hasCompare ? [
-        { name: search, positive: sent1.positive, negative: sent1.negative, neutral: sent1.neutral },
-        { name: compareBrand, positive: sent2.positive, negative: sent2.negative, neutral: sent2.neutral }
-    ] : [
-        { name: search, positive: sent1.positive, negative: sent1.negative, neutral: sent1.neutral }
-    ];
+    const sentimentChartData = brands.map((name, index) => {
+        const sent = getSentimentPercentages(summaryAt(index).summary || {});
+        return { name, positive: sent.positive, negative: sent.negative, neutral: sent.neutral };
+    });
 
     const hasPositive = sentimentChartData.some(d => d.positive > 0);
     const hasNeutral = sentimentChartData.some(d => d.neutral > 0);
@@ -195,6 +341,20 @@ const Compare = ({ search, setSearchList }) => {
         setDateChange(presetIndex);
     };
 
+    // Picking a date by hand drops out of the presets, so the highlight moves
+    // off the D/M pills and onto the custom range itself.
+    const handleCustomStartDate = (date) => {
+        setStartDate(date);
+        setDateChange(CUSTOM_RANGE);
+    };
+
+    const handleCustomEndDate = (date) => {
+        setEndDate(date);
+        setDateChange(CUSTOM_RANGE);
+    };
+
+    const isCustomRange = dateChange === CUSTOM_RANGE;
+
     // Initialize dates to last 30 days
     useEffect(() => {
         const today = new Date();
@@ -203,6 +363,7 @@ const Compare = ({ search, setSearchList }) => {
 
         setStartDate(thirtyDaysAgo);
         setEndDate(today);
+        setDateChange(3);
     }, []);
 
     // const handleDateChange = (value) => {
@@ -210,81 +371,72 @@ const Compare = ({ search, setSearchList }) => {
     // }
 
 
-    // Result Over time Chart
-    const generateEnhancedTimeSeriesData = (summary, brandName, days = 30) => {
-        const totalMentions = summary?.total_mentions || 0;
-        const youtubeMentions = summary?.youtube_sentiment?.mentions || 0;
-        const twitterMentions = summary?.twitter_sentiment?.mentions || 0;
-        const newsMentions = summary?.news_sentiment?.mentions || 0;
-        const totalReach = summary?.estimated_reach || 0;
+    const metricOptions = [
+        { value: 'mentions', label: 'Total Mentions' },
+        { value: 'engagement', label: 'Engagement' },
+        { value: 'reach', label: 'Potential Reach' },
+        { value: 'news', label: 'News Mentions' },
+        { value: 'youtube', label: 'YouTube Mentions' },
+        { value: 'twitter', label: 'Twitter Mentions' },
+    ];
 
-        console.log(youtubeMentions, "youtubeMentions")
-        console.log(newsMentions, "newsMentions")
+    // Every source the API returned, per brand, in one normalised shape.
+    const mentionsByBrand = useMemo(
+        () => brands.map((_, index) => {
+            const sources = summaryAt(index).sources || {};
+            return CHANNEL_TYPES.flatMap(({ key, type }) =>
+                (sources[key] || []).map(item => normaliseSource(item, type))
+            ).filter(mention => mention.url);
+        }),
+        [brands, summaryAt]
+    );
 
-        const data = [];
-        const baseDate = new Date();
-
-        // Distribute totals across the time period
-        const dailyBaseMentions = totalMentions / days;
-        const dailyYoutube = youtubeMentions / days;
-        const dailyTwitter = twitterMentions / days;
-        const dailyNews = newsMentions / days;
-        const dailyReach = totalReach / days;
-
-        for (let i = days - 1; i >= 0; i--) {
-            const date = new Date(baseDate);
-            date.setDate(date.getDate() - i);
-
-            // Realistic daily variations
-            const randomFactor = 0.4 + Math.random() * 0.6;
-
-            data.push({
-                date: date.toISOString().split('T')[0],
-                mentions: Math.max(0, Math.round(dailyBaseMentions * randomFactor)),
-                youtube: Math.max(0, Math.round(dailyYoutube * randomFactor)),
-                twitter: Math.max(0, Math.round(dailyTwitter * randomFactor)),
-                news: Math.max(0, Math.round(dailyNews * randomFactor)),
-                reach: Math.max(0, Math.round(dailyReach * randomFactor)),
-                brand: brandName
-            });
-        }
-
-        return data;
-    };
-
-
-    // Line Chart Data - Updated with real time series data
+    // Line Chart Data - built from each mention's published_at date. This used to be
+    // fabricated by spreading the totals across 30 days with a random factor; the API
+    // now returns real per-item dates, so the curve reflects actual activity.
     const lineChartData = useMemo(() => {
-        const timeSeries1 = generateEnhancedTimeSeriesData(summary1.summary, search, 30);
-        const timeSeries2 = hasCompare ? generateEnhancedTimeSeriesData(summary2.summary, compareBrand, 30) : [];
+        const dayKey = (value) => {
+            if (!value) return null;
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? null : date.toISOString().split('T')[0];
+        };
 
-        const dates = timeSeries1.map(item => {
-            const date = new Date(item.date);
+        // Union of every day any brand was mentioned, ascending.
+        const allDays = [...new Set(
+            mentionsByBrand.flat().map(mention => dayKey(mention.publishedAt)).filter(Boolean)
+        )].sort();
+
+        const metricValue = (mention) => {
+            if (selectedMetric === 'reach') return mention.views;
+            if (selectedMetric === 'engagement') return mention.engagement;
+            if (selectedMetric === 'mentions') return 1;
+            // Per-channel metrics: count only that channel's mentions.
+            const channel = { youtube: 'Youtube', twitter: 'Twitter', news: 'News' }[selectedMetric];
+            return mention.type === channel ? 1 : 0;
+        };
+
+        const series = brands.map((name, index) => {
+            const totals = new Map(allDays.map(day => [day, 0]));
+            (mentionsByBrand[index] || []).forEach(mention => {
+                const day = dayKey(mention.publishedAt);
+                if (day === null || !totals.has(day)) return;
+                totals.set(day, totals.get(day) + metricValue(mention));
+            });
+            return { name, data: allDays.map(day => Math.round(totals.get(day))) };
+        });
+
+        const dates = allDays.map(day => {
+            const date = new Date(day);
             return `${date.getDate()}/${date.getMonth() + 1}`;
         });
-
-        const series = [];
-
-        // Primary brand
-        series.push({
-            name: search,
-            data: timeSeries1.map(item => item[selectedMetric])
-        });
-
-        // Comparison brand
-        if (hasCompare && timeSeries2.length > 0) {
-            series.push({
-                name: compareBrand,
-                data: timeSeries2.map(item => item[selectedMetric])
-            });
-        }
 
         const metricLabels = {
             mentions: 'Total Mentions',
             youtube: 'YouTube Mentions',
             twitter: 'Twitter Mentions',
             news: 'News Mentions',
-            reach: 'Potential Reach'
+            reach: 'Potential Reach',
+            engagement: 'Engagement'
         };
 
         return {
@@ -317,7 +469,7 @@ const Compare = ({ search, setSearchList }) => {
                     },
                     min: 0
                 },
-                colors: hasCompare ? ['#1E5631', '#FF4E4C'] : ['#1E5631'],
+                colors: brands.map((_, index) => colorAt(index)),
                 tooltip: {
                     y: {
                         formatter: function (value) {
@@ -327,54 +479,20 @@ const Compare = ({ search, setSearchList }) => {
                 }
             }
         };
-    }, [summary1, summary2, hasCompare, search, compareBrand, selectedMetric]);
+    }, [mentionsByBrand, brands, selectedMetric]);
 
 
 
-    //Barchart    
+    //Barchart - mention volume per channel, one bar group per brand
     const barChartData = useMemo(() => {
-        const youTube1 = summary1.summary?.youtube_sentiment?.mentions || 0;
-        const twitter1 = summary1.summary?.twitter_sentiment?.mentions || 0;
-        const news1 = summary1.summary?.news_sentiment?.mentions || 0;
-        const youTube2 = summary2.summary?.youtube_sentiment?.mentions || 0;
-        const twitter2 = summary2.summary?.twitter_sentiment?.mentions || 0;
-        const news2 = summary2.summary?.news_sentiment?.mentions || 0;
-
-        let series = hasCompare ? [
-            {
-                name: 'YouTube',
-                data: [youTube1, youTube2]
-            },
-            {
-                name: 'Twitter/X',
-                data: [twitter1, twitter2]
-            },
-            {
-                name: 'News',
-                data: [news1, news2]
-            },
-        ] : [
-            {
-                name: 'YouTube',
-                data: [youTube1]
-            },
-            {
-                name: 'Twitter/X',
-                data: [twitter1]
-            },
-            {
-                name: 'News',
-                data: [news1]
-            }
-        ];
+        let series = CHANNELS.map(channel => ({
+            name: channel.label,
+            data: brands.map((_, index) => summaryAt(index).summary?.[channel.key]?.mentions || 0)
+        }));
 
         series = series.filter(s => s.data.reduce((a, b) => a + b, 0) > 0);
 
-        const channelColors = {
-            'YouTube': '#FF4E4C',
-            'Twitter/X': '#F48A1F',
-            'News': '#1E5631',
-        };
+        const channelColors = CHANNELS.reduce((acc, c) => ({ ...acc, [c.label]: c.color }), {});
 
         return {
             series,
@@ -400,13 +518,151 @@ const Compare = ({ search, setSearchList }) => {
                     position: 'top',
                 },
                 xaxis: {
-                    categories: hasCompare ? [search, compareBrand] : [search],
+                    categories: brands,
                 },
                 colors: series.map(s => channelColors[s.name]),
             }
         };
-    }, [summary1, summary2, hasCompare, search, compareBrand]);
+    }, [summaryAt, brands]);
 
+
+    // Sentiment breakdown per channel for the brand currently selected in the toggle.
+    // The API returns an average score per channel (not raw positive/negative counts),
+    // so the split is derived with the same formula used for the overall sentiment bar.
+    const channelSentimentData = useMemo(() => {
+        const summary = summaryAt(activeBrandIndex).summary || {};
+        const mentions = mentionsByBrand[activeBrandIndex] || [];
+
+        const channels = CHANNELS
+            .map(channel => {
+                const total = summary?.[channel.key]?.mentions || 0;
+                if (total === 0) return null;
+
+                // Per-item scores are exact but not always present (news is fully
+                // scored, YouTube only partly). Use them when they cover enough of the
+                // channel, otherwise fall back to the channel's average score.
+                const items = mentions.filter(m => m.type === channel.type);
+                const scored = items.filter(m => m.sentiment !== null);
+                const coverage = items.length > 0 ? scored.length / items.length : 0;
+
+                if (scored.length > 0 && coverage >= 0.5) {
+                    const counts = { positive: 0, neutral: 0, negative: 0 };
+                    scored.forEach(m => { counts[m.tone] += 1 });
+                    const toPct = (n) => Math.round((n / scored.length) * 100);
+                    return {
+                        label: channel.label,
+                        mentions: total,
+                        basis: `${scored.length.toLocaleString()} scored mentions`,
+                        positive: toPct(counts.positive),
+                        neutral: toPct(counts.neutral),
+                        negative: toPct(counts.negative)
+                    };
+                }
+
+                return {
+                    label: channel.label,
+                    mentions: total,
+                    basis: 'channel average score',
+                    ...getSentimentPercentages(summary?.[channel.key] || {})
+                };
+            })
+            .filter(Boolean);
+
+        return {
+            channels,
+            series: [
+                { name: 'Positive', data: channels.map(c => c.positive) },
+                { name: 'Neutral', data: channels.map(c => c.neutral) },
+                { name: 'Negative', data: channels.map(c => c.negative) },
+            ],
+            options: {
+                chart: {
+                    type: 'bar',
+                    height: 300,
+                    stacked: true,
+                    stackType: '100%',
+                    toolbar: { show: false },
+                    fontFamily: 'Jost, sans-serif'
+                },
+                plotOptions: {
+                    bar: { horizontal: true, barHeight: '55%' },
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: (val) => (val > 8 ? `${Math.round(val)}%` : ''),
+                    style: { fontSize: '12px', colors: ['#fff'] }
+                },
+                legend: { show: true, position: 'top' },
+                xaxis: {
+                    categories: channels.map(c => c.label),
+                    labels: { formatter: (val) => `${Math.round(val)}%` },
+                    max: 100
+                },
+                colors: ['#1E5631', '#BFBFBF', '#FF4E4C'],
+                tooltip: {
+                    y: {
+                        formatter: (val, { dataPointIndex }) =>
+                            `${Math.round(val)}%  (${(channels[dataPointIndex]?.mentions || 0).toLocaleString()} mentions)`
+                    }
+                }
+            }
+        };
+    }, [summaryAt, mentionsByBrand, activeBrandIndex]);
+
+
+    // Engagement totals per brand, from the per-item statistics the API now returns.
+    const engagementTotals = useMemo(
+        () => brands.map((name, index) => {
+            const mentions = mentionsByBrand[index] || [];
+            return {
+                name,
+                color: colorAt(index),
+                views: mentions.reduce((sum, m) => sum + m.views, 0),
+                likes: mentions.reduce((sum, m) => sum + m.likes, 0),
+                comments: mentions.reduce((sum, m) => sum + m.comments, 0),
+                value: mentions.reduce((sum, m) => sum + m.engagement, 0)
+            };
+        }),
+        [brands, mentionsByBrand]
+    );
+
+    // Engagement tonality: how the audience's likes and comments split across
+    // positive, neutral and negative coverage. Volume alone says a brand was talked
+    // about; this says what tone the interaction actually landed on.
+    const engagementTonality = useMemo(() => {
+        const mentions = mentionsByBrand[activeBrandIndex] || [];
+        const scored = mentions.filter(m => m.sentiment !== null);
+
+        const buckets = { positive: 0, neutral: 0, negative: 0 };
+        const mentionBuckets = { positive: 0, neutral: 0, negative: 0 };
+        scored.forEach(m => {
+            buckets[m.tone] += m.engagement;
+            mentionBuckets[m.tone] += 1;
+        });
+
+        const totalEngagement = buckets.positive + buckets.neutral + buckets.negative;
+        const tones = ['positive', 'neutral', 'negative'].map(tone => ({
+            tone,
+            engagement: buckets[tone],
+            mentions: mentionBuckets[tone],
+            share: totalEngagement > 0 ? Math.round((buckets[tone] / totalEngagement) * 100) : 0
+        }));
+
+        // Average interactions per mention, by tone - shows which tone actually pulls
+        // a reaction rather than which one simply appears most often.
+        const perMention = tones.map(t => ({
+            ...t,
+            intensity: t.mentions > 0 ? t.engagement / t.mentions : 0
+        }));
+
+        return {
+            tones: perMention,
+            totalEngagement,
+            scoredCount: scored.length,
+            totalCount: mentions.length,
+            hasEngagement: totalEngagement > 0
+        };
+    }, [mentionsByBrand, activeBrandIndex]);
 
 
     const reportRef = useRef(null);
@@ -432,7 +688,7 @@ const Compare = ({ search, setSearchList }) => {
         const logoY = 10; // Y-coordinate for top-left corner
 
         // Title and description details
-        const titleText = `Sentiment Analysis Report - ${search}${compareBrand ? ` vs ${compareBrand}` : ''}`;
+        const titleText = `Sentiment Analysis Report - ${brands.join(' vs ')}`;
         const descriptionText = 'This report provides a comprehensive overview of brand sentiment and engagement.';
         const titleX = 10; // Align with logo X
         const titleY = logoY + logoHeight + 5; // Below logo with 5mm spacing
@@ -517,8 +773,12 @@ const Compare = ({ search, setSearchList }) => {
 
 
     // Add these functions after your existing state
-    const getCountryName = (code) => {
-        return countryMap[code] || code.toUpperCase();
+    // Locations now arrive as names; fall back to the ISO map for older payloads.
+    const getLocationName = (value) => {
+        if (!value) return 'Unknown';
+        if (countryMap[value]) return countryMap[value];
+        if (value.length <= 3) return value.toUpperCase();
+        return value.replace(/\b\w/g, (char) => char.toUpperCase());
     };
 
     const getSentimentColor = (score) => {
@@ -527,9 +787,11 @@ const Compare = ({ search, setSearchList }) => {
         return '#D1D5DB'; // Neutral - Gray
     };
 
-    // Comparison-aware Top Words Data Processing
+    // Word cloud is always the main brand. It used to follow activeBrandView, which is
+    // owned by the Sentiment-by-Region toggle, so switching regions silently swapped the
+    // cloud to a competitor's words with no visible control.
     const topWordsData = useMemo(() => {
-        const data = activeBrandView === 'primary' ? summary1 : summary2;
+        const data = summaryAt(0);
 
         const twitterPos = data?.top_words?.twitter?.positive || [];
         const twitterNeg = data?.top_words?.twitter?.negative || [];
@@ -538,24 +800,48 @@ const Compare = ({ search, setSearchList }) => {
         const newsPos = data?.top_words?.news?.positive || [];
         const newsNeg = data?.top_words?.news?.negative || [];
 
+        // De-duplicate: the same word often tops more than one channel.
+        const unique = (words) => [...new Set(words)];
+
         return {
-            positive: [...twitterPos, ...youtubePos, ...newsPos],
-            negative: [...twitterNeg, ...youtubeNeg, ...newsNeg]
+            positive: unique([...twitterPos, ...youtubePos, ...newsPos]),
+            negative: unique([...twitterNeg, ...youtubeNeg, ...newsNeg])
         };
-    }, [summary1, summary2, activeBrandView]);
+    }, [summaryAt]);
 
-    // Comparison-aware Sentiment by Region Data
+    // Keywords driving the conversation, split by channel, for the main brand.
+    const keywordsData = useMemo(() => {
+        const topWords = summaryAt(0)?.top_words || {};
+
+        return [
+            { key: 'twitter', label: 'Twitter/X' },
+            { key: 'youtube', label: 'YouTube' },
+            { key: 'news', label: 'News' },
+        ]
+            .map(channel => ({
+                label: channel.label,
+                positive: topWords?.[channel.key]?.positive || [],
+                negative: topWords?.[channel.key]?.negative || []
+            }))
+            .filter(channel => channel.positive.length > 0 || channel.negative.length > 0);
+    }, [summaryAt]);
+
+    // Sentiment by Region for the brand currently selected in the toggle
     const regionSentimentData = useMemo(() => {
-        const data = activeBrandView === 'primary' ? summary1 : summary2;
-        const regions = data?.country_sentiments?.news || {};
+        const data = summaryAt(activeBrandIndex);
+        // Renamed from country_sentiments, and now keyed by readable place names
+        // ("nigeria", "abu dhabi") instead of ISO codes. Comes back as an empty array
+        // rather than an empty object when there is nothing to report.
+        const regions = data?.location_sentiments?.news || data?.country_sentiments?.news || {};
+        const entries = Array.isArray(regions) ? [] : Object.entries(regions);
 
-        return Object.entries(regions)?.map(([code, regionData]) => ({
-            name: getCountryName(code),
+        return entries.map(([name, regionData]) => ({
+            name: getLocationName(name),
             mentions: regionData.mentions,
             score: regionData.average_score,
             color: getSentimentColor(regionData.average_score)
         })).sort((a, b) => b.mentions - a.mentions);
-    }, [summary1, summary2, activeBrandView]);
+    }, [summaryAt, activeBrandIndex]);
 
     // Update donut chart options to use dynamic data
     const donutChartOptions = useMemo(() => ({
@@ -609,44 +895,44 @@ const Compare = ({ search, setSearchList }) => {
     const donutChartSeries = regionSentimentData.map(item => item.mentions);
 
 
-    const urlInfo = {
-        "https://www.youtube.com/watch?v=ZYgkg-GYvp0": { title: "Ethiopia, Dangote Industries sign $2.5 billion deal for mega fertilizer plant", snippet: "The deal paves the way for a $2.5 billion fertilizer plant in Ethiopia's Somali region, powered by natural gas, with an annual production capacity of 3 million tons of urea, aiming to boost food security and position Ethiopia as a regional fertilizer powerhouse.", sentiment: "positive" },
-        "https://www.youtube.com/watch?v=ygVvdTb9eis": { title: "Rewane Speaks On Dangote Refinery's First Gasoline Export To U.S.", snippet: "The video discusses Dangote Refinery's achievement of exporting its first gasoline cargo of 300,000 barrels to the United States, as reported by S&P Global, amidst Nigeria's challenges with fuel import dependence and foreign exchange shortages.", sentiment: "positive" },
-        "https://www.youtube.com/watch?v=krYLjJMcEzU": { title: "US & Europe vs Dangote, Oil War: They Fear Africa's Big Win", snippet: "Lynient Akotonou reports on the growing clash between the U.S. and Europe and Aliko Dangote’s oil ambitions, unpacking why Western powers fear what could become Africa’s biggest win in the global energy market.", sentiment: "negative" },
-        "https://tribuneonlineng.com/fuel-scarcity-imminent-as-nupeng-dangote-face-off-festers/": { title: "Fuel scarcity imminent as NUPENG, Dangote face-off festers", snippet: "Fuel scarcity imminent as the face-off between NUPENG and Dangote festers.", sentiment: "negative" },
-        "https://www.jeuneafrique.com/1718701/economie-entreprises/qui-est-huaxin-cement-le-chinois-qui-veut-se-faire-une-place-parmi-les-rois-nigerians-du-ciment/": { title: "Qui est Huaxin Cement, le chinois qui veut se faire une place parmi les rois nigérians du ciment ?", snippet: "Huaxin Cement frappe un grand coup au Nigeria en reprenant la participation du Suisse Holcim in Lafarge Africa. L’opération, budgétée à 1 milliard de dollars, marque l’arrivée en force du cimentier chinois sur le premier marché du continent, terrain privilégié des rois de l’or gris, les deux milliardaires nigérians Aliko Dangote et Abdul Samad Rabiu.", sentiment: "neutral" },
-        "https://businessday.ng/companies/article/whos-mairawani-business-tycoon-planning-600m-cement-plant-to-rival-dangote-bua/": { title: "Who’s Mairawani? Business tycoon planning $600m cement plant to rival Dangote, BUA", snippet: "Nigeria’s cement industry is set to have a new force with the announcement of a $600 million plant in Kebbi State by business tycoon Muazzam Mairawani, chairman of MSM Group, a move that’s considered to challenge market leaders such as Dangote and BUA Cement.", sentiment: "neutral" },
-        "https://www.informationng.com/2025/09/phynas-late-sisters-remains-evacuated-by-dangote-group.html": { title: "Phyna’s Late Sister’s Remains Evacuated By Dangote Group", snippet: "The Dangote Group on Sunday sent representatives to collect the remains of Ruth Otabor, the younger sister of Big Brother Naija Season 7 winner Phyna, from the hospital where she passed on, as reported by PUNCH Metro.", sentiment: "negative" },
-        "https://www.informationng.com/2025/09/dangote-tinubu-social-media-influencers-failed-ruth-otabor-verydarkman.html": { title: "Dangote, Tinubu, Social Media Influencers Failed Ruth Otabor – VeryDarkMan", snippet: "Nigerian social media commentator VeryDarkMan, has criticised key figures and institutions he believes failed Ruth Otabor, sister of former Big Brother Naija winner Phyna, who tragically died on Sunday after a road accident involving a Dangote truck.", sentiment: "negative" },
-        "https://www.informationng.com/2025/09/dangote-group-mourns-death-of-phynas-sister-says-she-was-to-be-flown-to-india-for-treatment.html": { title: "Dangote Group Mourns Death Of Phyna's Sister, Says She Was To Be Flown To India For Treatment", snippet: "The Dangote Group has expressed grief over the death of Ruth Otabor, sister of Big Brother Naija Season 7 winner Phyna. Ruth died on Sunday after being involved in an accident with a Dangote truck in Auchi, Edo State.", sentiment: "negative" },
-        "https://www.informationng.com/2025/08/phyna-loses-sister-ruth-otabor-weeks-after-dangotes-truck-accident.html": { title: "Phyna Loses Sister Ruth Otabor Weeks After Dangote’s Truck Accident", snippet: "Ruth Otabor, sister of Big Brother Naija Season 7 winner Phyna, has passed away. The family confirmed her passing on Sunday in a statement released by Eko Solicitors & Advocates, stating that Ruth departed for glory around 6:30 a.m.", sentiment: "negative" },
-        "https://www.informationng.com/2025/08/were-ready-to-consider-all-options-dangote-group-assures-phyna-over-sisters-treatment.html": { title: "“We're Ready To Consider All Options” – Dangote Group Assures Phyna Over Sister’s Treatment", snippet: "Big Brother Naija season 7 winner, Phyna, has given a fresh update on her ongoing issue with the Dangote Group regarding her sister’s medical treatment. The reality TV star has been in the spotlight after her younger sister was struck by a truck belonging to the company on August 13, 2025, an accident that sadly led to the amputation of her left leg.", sentiment: "neutral" },
-        "http://www.hiiraan.com/news4/2025/Aug/202705/ethiopia_dangote_group_ink_2_5_billion_deal_to_build_fertilizer_complex_in_gode_somali_region.aspx": { title: "Ethiopia, Dangote Group ink $2.5 billion deal to build fertilizer complex in Gode, Somali region", snippet: "Ethiopian Investment Holdings (EIH), the government’s strategic investment arm, and Dangote Group have signed a landmark shareholders’ agreement to develop and operate a $2.5 billion urea fertilizer production complex in Gode, Somali Regional State.", sentiment: "positive" },
-        "https://www.thisdaylive.com/2025/08/29/dangote-group-ethiopia-strike-deal-to-build-2-5-billion-fertiliser-plant/": { title: "Dangote Group, Ethiopia Strike Deal to Build $2.5 Billion Fertiliser Plant", snippet: "The Dangote Group and Ethiopia government yesterday signed an agreement to build a $2.5 billion fertiliser manufacturing plant in the North-eastern African country, part of Nigerian billionaire Aliko Dangote’s efforts to end the continent’s fertiliser imports.", sentiment: "positive" }
-    }
+    // Mentions across every brand on the board, de-duplicated by URL. The hardcoded
+    // title/snippet lookup that used to live here is gone: the API now returns the
+    // title, body text, publish date, statistics and per-item sentiment directly.
+    const topMentions = useMemo(() => {
+        const seen = new Map();
 
-    const sources1 = summary1.sources || { youtube: [], twitter: [], news: [] }
-    const sources2 = summary2.sources || { youtube: [], twitter: [], news: [] }
-    const allUrls = [...sources1.youtube, ...sources1.twitter, ...sources1.news, ...sources2.youtube, ...sources2.twitter, ...sources2.news];
-    const uniqueUrls = [...new Set(allUrls)];
+        mentionsByBrand.forEach((mentions, index) => {
+            mentions.forEach(mention => {
+                const existing = seen.get(mention.url);
+                if (existing) {
+                    // Same URL surfaced for more than one brand - record both.
+                    if (!existing.brands.includes(brands[index])) existing.brands.push(brands[index]);
+                    return;
+                }
+                seen.set(mention.url, { ...mention, brands: [brands[index]] });
+            });
+        });
 
-    const topMentions = uniqueUrls?.map(url => ({
-        url,
-        type: url.includes('youtube') ? 'Youtube' : url.includes('twitter') ? 'Twitter' : 'News',
-        ...(urlInfo[url] || { title: new URL(url).pathname, snippet: 'No description available', sentiment: 'neutral' })
-    }))
+        return [...seen.values()];
+    }, [mentionsByBrand, brands]);
+
+    const filteredMentions = useMemo(() => {
+        const timeOf = (mention) => (mention.publishedAt ? new Date(mention.publishedAt).getTime() : 0);
+
+        return topMentions
+            ?.filter(m => mentionTab === 'All' || m.type === mentionTab)
+            ?.slice()
+            ?.sort((a, b) => {
+                // Group by channel first so All reads News -> Twitter/X -> YouTube,
+                // then newest first inside each group.
+                const byChannel = (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
+                if (byChannel !== 0) return byChannel;
+                return timeOf(b) - timeOf(a);
+            });
+    }, [topMentions, mentionTab]);
 
 
-    const typeOrder = { News: 0, Twitter: 1, Youtube: 2 }
 
-    const filteredMentions = topMentions
-        ?.filter(m => mentionTab === 'All' || m.type === mentionTab)
-        ?.sort((a, b) => (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99))
-
-
-
-
-    console.log(compareBrand, "compareBrandcompareBrand")
 
     return (
         <div className='w-full flex flex-col gap-[32px]'>
@@ -657,7 +943,7 @@ const Compare = ({ search, setSearchList }) => {
 
             </div>
             <div className='bg-[#fff] h-[88px] rounded-[8px] flex justify-between p-[25px]'>
-                <p className='font-jost font-semibold text-[#1F2937] leading-[32px] text-[24px]'>{search} : {compareBrand || null}</p>
+                <p className='font-jost font-semibold text-[#1F2937] leading-[32px] text-[24px]'>{brands.join('  vs  ')}</p>
                 <div className='flex gap-2 items-center'>
                     <div 
                         className={`${activeTab === 'Feeds' ? "hidden" : "flex bg-black p-2 rounded-lg items-center gap-1.5 cursor-pointer w-[160px] h-[40px]"}`} 
@@ -666,37 +952,100 @@ const Compare = ({ search, setSearchList }) => {
                         <AiOutlineDownload className='w-5 h-5 text-[#fff]' />
                         <p className='text-[#fff] text-base font-lato'>Export Analysis</p>
                     </div>
+
+                    <div className={`${activeTab === 'Feeds' ? 'hidden' : 'relative'}`} ref={reportMenuRef}>
+                        <button
+                            type='button'
+                            className='flex bg-[#F48A1F] hover:bg-[#DB7A15] p-2 rounded-lg items-center justify-center gap-1.5 cursor-pointer w-[180px] h-[40px]'
+                            onClick={() => setShowReportMenu(prev => !prev)}
+                        >
+                            <p className='text-[#fff] text-base font-lato'>Generate Report</p>
+                            <IoIosArrowDown className={`w-5 h-5 text-[#fff] transition-transform ${showReportMenu ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {showReportMenu && (
+                            <div className='absolute right-0 top-[46px] z-20 w-[220px] bg-[#fff] rounded-lg border border-[#E5E7EB] shadow-lg py-1'>
+                                {REPORT_TYPES.map((reportType) => (
+                                    <button
+                                        key={reportType}
+                                        type='button'
+                                        className='w-full text-left px-4 py-2.5 font-lato text-sm text-[#263238] hover:bg-[#FDF3E7] hover:text-[#F48A1F]'
+                                        onClick={() => handleGenerateReport(reportType)}
+                                    >
+                                        {reportType}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
-            <div className='flex items-center w-full gap-[15px]'>
-                <div className='bg-[#fff] w-6/12 rounded-[8px] py-[14px] px-[17px] flex items-center justify-between'>
-                    <p className='text-[18px] font-lato text-[#263238]'>{search}</p>
+            <div className='flex items-start w-full gap-[15px]'>
+                <div className='bg-[#fff] w-6/12 rounded-[8px] py-[14px] px-[17px] flex flex-col gap-3'>
+                    <div className='flex items-center justify-between'>
+                        <p className='text-[18px] font-lato text-[#263238]'>{search}</p>
+                        <span className='font-lato text-xs text-[#6B7280] bg-[#F9FAFB] rounded-full px-2 py-1'>Main brand</span>
+                    </div>
+                    {compareBrands.length > 0 && (
+                        <div className='flex flex-wrap items-center gap-2'>
+                            {compareBrands.map((brand, index) => (
+                                <div
+                                    key={brand}
+                                    className='flex items-center gap-2 rounded-full pl-3 pr-2 py-1 bg-[#F9FAFB] border border-[#E5E7EB]'
+                                >
+                                    <span
+                                        className='w-2 h-2 rounded-full'
+                                        style={{ backgroundColor: colorAt(index + 1) }}
+                                    ></span>
+                                    <p className='font-lato text-sm text-[#263238]'>{brand}</p>
+                                    <button
+                                        type='button'
+                                        aria-label={`Remove ${brand}`}
+                                        className='font-lato text-base text-[#9CA3AF] hover:text-[#EF4444] leading-none px-1'
+                                        onClick={() => removeCompareBrand(brand)}
+                                    >
+                                        &times;
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
-                <div
-                    className='bg-[#fff] w-6/12 rounded-[8px] py-[14px] px-[17px] flex items-center'
-                >
-                    <input
-                        type='text'
-                        placeholder='Compare with another brand'
-                        className='w-full  outline-none font-lato text-[#F48A1F] text-[18px]'
-                        value={compareBrandInput}
-                        onChange={(e) => setCompareBrandInput(e.target.value)}
-                    />
-                    <button
-                        type='button'
-                        className='bg-[#F48A1F] w-[116px] h-[41px] rounded-[5px] flex items-center justify-center py-2.5'
-                        onClick={() => setCompareBrand(compareBrandInput)}
-                    >
-                        <p className='font-lato text-[18px] text-[#FFFFFF]'>Compare</p>
-                    </button>
+                <div className='bg-[#fff] w-6/12 rounded-[8px] py-[14px] px-[17px] flex flex-col gap-2'>
+                    <div className='flex items-center'>
+                        <input
+                            type='text'
+                            placeholder={
+                                compareBrands.length >= MAX_COMPARE_BRANDS
+                                    ? `Limit of ${MAX_COMPARE_BRANDS} comparison brands reached`
+                                    : 'Compare with another brand'
+                            }
+                            disabled={compareBrands.length >= MAX_COMPARE_BRANDS}
+                            className='w-full outline-none font-lato text-[#F48A1F] text-[18px] disabled:text-[#9CA3AF] disabled:cursor-not-allowed'
+                            value={compareBrandInput}
+                            onChange={(e) => setCompareBrandInput(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && addCompareBrand()}
+                        />
+                        <button
+                            type='button'
+                            disabled={compareBrands.length >= MAX_COMPARE_BRANDS || !compareBrandInput.trim()}
+                            className='bg-[#F48A1F] disabled:bg-[#E5E7EB] w-[116px] h-[41px] rounded-[5px] flex items-center justify-center py-2.5'
+                            onClick={addCompareBrand}
+                        >
+                            <p className='font-lato text-[18px] text-[#FFFFFF]'>Compare</p>
+                        </button>
+                    </div>
+                    <p className='font-lato text-xs text-[#6B7280]'>
+                        {compareBrands.length} of {MAX_COMPARE_BRANDS} comparison brands added
+                    </p>
                 </div>
             </div>
 
             <div className='bg-[#fff] rounded-[8px] flex flex-col p-6 gap-2 w-full'>
                 <div className='flex items-center justify-between'>
                     <p className='font-lato text-base font-semibold text-[#1F2937]'>Filters</p>
-                    <p className='font-lato text-[#E57E46] text-sm'>Clear All</p>
+                    <p className='font-lato invisible text-[#E57E46] text-sm'>Clear All</p>
                 </div>
                 <div className='flex gap-4 justify-between items-center'>
                     <div className='bg-[#F9FAFB] w-[181px] h-[36px] rounded-[8px] p-2 flex items-center gap-2'>
@@ -723,7 +1072,7 @@ const Compare = ({ search, setSearchList }) => {
                     <div className="bg-[#F9FAFB] w-[472px] h-[36px] rounded-[8px] px-[26px] py-2 flex items-center gap-1">
                         {/* Date Range Options */}
                         <div className="flex items-center w-5/12 gap-[5px]">
-                            {["1D", "7D", "30D", "3M", "6M", "13M"].map((label, index) => (
+                            {["1D", "7D", "30D", "3M", "6M", "12M"].map((label, index) => (
                                 <div
                                     key={index}
                                     className={`cursor-pointer rounded-full p-1 flex items-center justify-center ${dateChange === index + 1 ? "bg-[#F48A1F]" : ""
@@ -741,27 +1090,32 @@ const Compare = ({ search, setSearchList }) => {
                         </div>
 
                         {/* Date Picker */}
-                        <div className="w-6/12 flex items-center ml-10 justify-end gap-2">
-                            <FaRegCalendarAlt className="text-[#546E7A]" />
+                        <div
+                            className={`w-6/12 flex items-center ml-10 justify-end gap-2 rounded-full px-2 py-1 ${isCustomRange ? "bg-[#F48A1F]" : ""
+                                }`}
+                        >
+                            <FaRegCalendarAlt className={isCustomRange ? "text-[#FFFFFF]" : "text-[#546E7A]"} />
                             <DatePicker
                                 selected={startDate}
-                                onChange={(date) => setStartDate(date)}
+                                onChange={handleCustomStartDate}
                                 selectsStart
                                 startDate={startDate}
                                 endDate={endDate}
                                 dateFormat="dd/MM/yy"
-                                className="bg-transparent text-[#546E7A] w-[80px] text-sm text-center outline-none"
+                                className={`bg-transparent w-[80px] text-sm text-center outline-none ${isCustomRange ? "text-[#000]" : "text-[#546E7A]"
+                                    }`}
                             />
-                            <span className="text-[#546E7A]">-</span>
+                            <span className={isCustomRange ? "text-[#FFFFFF]" : "text-[#546E7A]"}>-</span>
                             <DatePicker
                                 selected={endDate}
-                                onChange={(date) => setEndDate(date)}
+                                onChange={handleCustomEndDate}
                                 selectsEnd
                                 startDate={startDate}
                                 endDate={endDate}
                                 minDate={startDate}
                                 dateFormat="dd/MM/yy"
-                                className="bg-transparent text-[#546E7A] w-[80px] text-sm text-center outline-none"
+                                className={`bg-transparent w-[80px] text-sm text-center outline-none ${isCustomRange ? "text-[#000]" : "text-[#546E7A]"
+                                    }`}
                             />
                         </div>
                     </div>
@@ -785,7 +1139,11 @@ const Compare = ({ search, setSearchList }) => {
                 </button>
             </div>
 
-            {activeTab === 'Feeds' && (
+            {/* One coherent progress view while the request is in flight, rather than
+                per-card placeholders - a run can take a couple of minutes. */}
+            {loading && <AnalysisLoader brands={brands} context={activeTab === 'Feeds' ? 'the feed' : 'the metrics'} />}
+
+            {!loading && activeTab === 'Feeds' && (
                 <SentimentTable 
                     summary1={summary1}
                     mentionTab={mentionTab}
@@ -795,12 +1153,13 @@ const Compare = ({ search, setSearchList }) => {
                 />
             )}
 
-            {activeTab === 'Overview' && (
+            {!loading && activeTab === 'Overview' && (
                 <SentimentBrand
                     reportRef={reportRef}
                     loading={loading}
                     mentionsData={mentionsData}
-                    engagementData={engagementData}
+                    engagementData={engagementTotals}
+                    engagementTonality={engagementTonality}
                     reachData={reachData}
                     sentimentChartData={sentimentChartData}
                     barChartData={barChartData}
@@ -811,13 +1170,16 @@ const Compare = ({ search, setSearchList }) => {
                     donutChartOptions={donutChartOptions}
                     donutChartSeries={donutChartSeries}
                     regionSentimentData={regionSentimentData}
-                    activeBrandView={activeBrandView}
-                    setActiveBrandView={setActiveBrandView}
+                    activeBrandIndex={activeBrandIndex}
+                    setActiveBrandIndex={setActiveBrandIndex}
                     hasCompare={hasCompare}
-                    compareBrand={compareBrand}
+                    brands={brands}
+                    colorAt={colorAt}
+                    channelSentimentData={channelSentimentData}
+                    selectedMetricOptions={metricOptions}
+                    keywordsData={keywordsData}
                     topWordsData={topWordsData}
                     search={search}
-                    summary2={summary2}
                     filteredMentions={filteredMentions}
                     mentionTab={mentionTab}
                     setMentionTab={setMentionTab}

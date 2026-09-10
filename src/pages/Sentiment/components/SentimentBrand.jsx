@@ -19,16 +19,59 @@ const SentimentBrand = ({
     donutChartOptions,
     donutChartSeries,
     regionSentimentData,
-    activeBrandView,
-    setActiveBrandView,
+    activeBrandIndex,
+    setActiveBrandIndex,
     hasCompare,
-    compareBrand,
+    brands = [],
+    colorAt = () => '#1E5631',
+    channelSentimentData,
+    engagementTonality,
+    selectedMetricOptions = [],
+    keywordsData = [],
     topWordsData,
     mentionTab, 
     setMentionTab,
     search,
     filteredMentions
 }) => {
+
+    const TONE_COLORS = { positive: '#1E5631', neutral: '#BFBFBF', negative: '#FF4E4C' };
+
+    const mainBrand = brands[0] || search;
+    const activeBrand = brands[activeBrandIndex] || mainBrand;
+
+    // Toggle shared by the per-channel sentiment breakdown and the regional donut.
+    const BrandToggle = () => (
+        <div className="flex items-center gap-2 bg-[#F9FAFB] rounded-lg p-1">
+            {brands.map((brand, index) => (
+                <button
+                    key={brand}
+                    onClick={() => setActiveBrandIndex(index)}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeBrandIndex === index
+                        ? 'bg-white shadow-sm text-[#1F2937]'
+                        : 'text-gray-500 hover:text-gray-700'
+                        }`}
+                >
+                    <span className="flex items-center gap-2">
+                        <span
+                            className="w-2 h-2 rounded-full"
+                            style={{ backgroundColor: colorAt(index) }}
+                        ></span>
+                        {brand}
+                    </span>
+                </button>
+            ))}
+        </div>
+    );
+
+    const [keywordChannel, setKeywordChannel] = useState('All');
+    const [showAllKeywords, setShowAllKeywords] = useState(false);
+
+    const KEYWORD_PREVIEW_COUNT = 12;
+
+    const visibleKeywordChannels = keywordsData.filter(
+        (channel) => keywordChannel === 'All' || channel.label === keywordChannel
+    );
 
     const SkeletonCard = () => (
         <div className="animate-pulse flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl h-[362px] w-full">
@@ -55,11 +98,11 @@ const SentimentBrand = ({
         <>
             <div ref={reportRef}>
 
-                <div className='grid grid-cols-2 gap-4'>
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
                     {loading ? (
                         <>
                             <SkeletonCard />
-                            {/* <SkeletonCard /> */}
+                            <SkeletonCard />
                             <SkeletonCard />
                         </>
                     ) : (
@@ -76,17 +119,23 @@ const SentimentBrand = ({
                                 </div>
                             </div>
 
-                            {/* <div className='flex flex-col justify-between p-4 bg-white rounded-lg h-[200px] shadow-md'>
-                                <p className='font-jost text-2xl font-semibold text-[#252F3D]'>Total Engagement</p>
-                                <div className='flex items-center justify-between'>
+                            <div className='flex flex-col justify-between p-4 bg-white rounded-lg h-[200px] shadow-md'>
+                                <div className='flex items-baseline justify-between'>
+                                    <p className='font-jost text-2xl font-semibold text-[#252F3D]'>Total Engagement</p>
+                                    <span className='font-jost text-xs text-[#9CA3AF]'>likes + comments</span>
+                                </div>
+                                <div className='flex items-center justify-between gap-3 overflow-x-auto'>
                                     {engagementData?.map((item, index) => (
-                                        <div key={index} className='flex flex-col gap-1.5'>
-                                            <p className={`font-jost font-medium text-xl`} style={{ color: item.color }}>{item.name}</p>
-                                            <p className={`font-jost font-medium text-xl`} style={{ color: item.color }}>{formatter.format(item.value)}</p>
+                                        <div key={index} className='flex flex-col gap-1.5 shrink-0'>
+                                            <p className='font-jost font-medium text-xl' style={{ color: item.color }}>{item.name}</p>
+                                            <p className='font-jost font-medium text-xl' style={{ color: item.color }}>{formatter.format(item.value)}</p>
+                                            <p className='font-jost text-xs text-[#6B7280]'>
+                                                {formatNumber(item.views)} views · {formatNumber(item.likes)} likes · {formatNumber(item.comments)} comments
+                                            </p>
                                         </div>
                                     ))}
                                 </div>
-                            </div> */}
+                            </div>
 
                             <div className='flex flex-col justify-between p-4 bg-white rounded-lg h-[200px] shadow-md'>
                                 <p className='font-jost text-2xl font-semibold text-[#252F3D]'>Estimated  Reach</p>
@@ -257,13 +306,13 @@ const SentimentBrand = ({
                                 </div>
                             </div>
 
-                            {/* Channel Sentiment Distribution (Bar Chart) */}
+                            {/* Mention volume per channel (counts, not sentiment) */}
                             <div className='bg-white rounded-[18px] w-1/2 p-4 shadow-sm'>
                                 <div className='flex items-start justify-between'>
                                     <p className='font-jost font-medium text-[20px] mb-4 text-[#4B5563]'>
-                                        Channel Sentiment Distribution
+                                        Channel Mention Volume
                                     </p>
-                                    <p className='text-[#6B7280] font-jost text-sm'>Total Mentions: {summary1.summary?.total_mentions || 0}</p>
+                                    <p className='text-[#6B7280] font-jost text-sm'>Total Mentions: {formatter.format(summary1.summary?.total_mentions || 0)}</p>
                                 </div>
                                 <Chart
                                     options={barChartData.options}
@@ -276,6 +325,137 @@ const SentimentBrand = ({
                     )}
                 </div>
 
+                {/* Sentiment breakdown per channel */}
+                {loading ? (
+                    <div className="animate-pulse bg-[#BFBFBF] h-[362px] w-full rounded-xl mt-4"></div>
+                ) : (
+                    <div className='bg-white rounded-[18px] mt-4 w-full p-4 shadow-sm'>
+                        <div className='flex items-start justify-between flex-wrap gap-3 mb-2'>
+                            <div className='flex flex-col gap-1'>
+                                <p className='font-jost font-medium text-[20px] text-[#4B5563]'>
+                                    Sentiment Breakdown by Channel
+                                </p>
+                                <p className='font-jost text-xs text-[#9CA3AF]'>
+                                    Per-mention sentiment scores for {activeBrand}, falling back to the
+                                    channel average where scores are sparse
+                                </p>
+                            </div>
+                            {hasCompare && <BrandToggle />}
+                        </div>
+
+                        {channelSentimentData?.channels?.length > 0 ? (
+                            <>
+                                <Chart
+                                    options={channelSentimentData.options}
+                                    series={channelSentimentData.series}
+                                    type='bar'
+                                    height={300}
+                                />
+                                <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mt-2'>
+                                    {channelSentimentData.channels.map((channel) => (
+                                        <div key={channel.label} className='flex flex-col gap-1 p-3 bg-gray-50 rounded-lg'>
+                                            <div className='flex items-center justify-between'>
+                                                <span className='font-jost font-medium text-sm text-[#1F2937]'>{channel.label}</span>
+                                                <span className='font-jost text-sm text-[#6B7280]'>
+                                                    {formatter.format(channel.mentions)} mentions
+                                                </span>
+                                            </div>
+                                            <span className='font-jost text-xs text-[#9CA3AF]'>from {channel.basis}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        ) : (
+                            <div className='flex items-center justify-center h-[250px]'>
+                                <p className='font-jost text-[#6B7280] text-lg'>
+                                    No channel data available for {activeBrand}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+
+                {/* Engagement tonality: which tone the audience actually reacts to */}
+                {loading ? (
+                    <div className="animate-pulse bg-[#BFBFBF] h-[260px] w-full rounded-xl mt-4"></div>
+                ) : (
+                    <div className='bg-white rounded-[18px] mt-4 w-full p-4 shadow-sm'>
+                        <div className='flex items-start justify-between flex-wrap gap-3 mb-4'>
+                            <div className='flex flex-col gap-1'>
+                                <p className='font-jost font-medium text-[20px] text-[#4B5563]'>
+                                    Engagement Tonality
+                                </p>
+                                <p className='font-jost text-xs text-[#9CA3AF]'>
+                                    How likes and comments on {activeBrand} split across positive, neutral
+                                    and negative coverage
+                                </p>
+                            </div>
+                            {hasCompare && <BrandToggle />}
+                        </div>
+
+                        {engagementTonality?.hasEngagement ? (
+                            <>
+                                <div className='flex w-full h-4 rounded-full overflow-hidden mb-5'>
+                                    {engagementTonality.tones.map((tone) => (
+                                        tone.share > 0 && (
+                                            <div
+                                                key={tone.tone}
+                                                className='h-full'
+                                                style={{
+                                                    width: `${tone.share}%`,
+                                                    backgroundColor: TONE_COLORS[tone.tone]
+                                                }}
+                                                title={`${tone.tone}: ${tone.share}%`}
+                                            ></div>
+                                        )
+                                    ))}
+                                </div>
+
+                                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                                    {engagementTonality.tones.map((tone) => (
+                                        <div key={tone.tone} className='flex flex-col gap-2 p-4 bg-gray-50 rounded-lg'>
+                                            <div className='flex items-center gap-2'>
+                                                <span
+                                                    className='w-3 h-3 rounded-full'
+                                                    style={{ backgroundColor: TONE_COLORS[tone.tone] }}
+                                                ></span>
+                                                <span className='font-jost font-medium text-sm text-[#1F2937] capitalize'>
+                                                    {tone.tone}
+                                                </span>
+                                            </div>
+                                            <p className='font-jost font-semibold text-2xl text-[#1F2937]'>
+                                                {tone.share}%
+                                            </p>
+                                            <p className='font-jost text-xs text-[#6B7280]'>
+                                                {formatter.format(tone.engagement)} interactions across{' '}
+                                                {formatter.format(tone.mentions)} mentions
+                                            </p>
+                                            <p className='font-jost text-xs text-[#9CA3AF]'>
+                                                {tone.intensity.toFixed(1)} per mention
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <p className='font-jost text-xs text-[#9CA3AF] mt-4'>
+                                    Based on {formatter.format(engagementTonality.scoredCount)} of{' '}
+                                    {formatter.format(engagementTonality.totalCount)} mentions carrying a sentiment score.
+                                </p>
+                            </>
+                        ) : (
+                            <div className='flex flex-col items-center justify-center h-[160px] text-center gap-2'>
+                                <p className='font-jost text-[#6B7280] text-lg'>
+                                    No engagement recorded for {activeBrand}
+                                </p>
+                                <p className='font-jost text-sm text-[#9CA3AF]'>
+                                    News articles carry no likes or comments, so this fills in once YouTube
+                                    or social mentions are returned.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Results Over Time (Line Chart) */}
                 {loading ? (
@@ -283,19 +463,22 @@ const SentimentBrand = ({
                 ) : (
                     <div className='bg-white rounded-[18px] mt-4 w-full p-4 shadow-sm'>
                         <div className='flex justify-between items-start mb-4'>
-                            <p className='font-jost font-medium text-[20px] text-[#4B5563]'>
-                                Results Over Time
-                            </p>
+                            <div className='flex flex-col gap-1'>
+                                <p className='font-jost font-medium text-[20px] text-[#4B5563]'>
+                                    Results Over Time
+                                </p>
+                                <p className='font-jost text-xs text-[#9CA3AF]'>
+                                    Grouped by each mention&apos;s publish date
+                                </p>
+                            </div>
                             <select
                                 value={selectedMetric}
                                 onChange={(e) => setSelectedMetric(e.target.value)}
                                 className='font-jost text-[#252F3D] text-sm cursor-pointer bg-transparent border border-gray-300 rounded px-3 py-1 outline-none'
                             >
-                                <option value="mentions">Total Mentions</option>
-                                {/* <option value="youtube">YouTube Mentions</option>
-                                <option value="twitter">Twitter Mentions</option>
-                                <option value="news">News Mentions</option> */}
-                                {/* <option value="reach">Potential Reach</option> */}
+                                {selectedMetricOptions.map((option) => (
+                                    <option key={option.value} value={option.value}>{option.label}</option>
+                                ))}
                             </select>
                         </div>
                         <Chart
@@ -320,28 +503,7 @@ const SentimentBrand = ({
                                 </div>
 
                                 {/* Brand Toggle */}
-                                <div className="flex items-center gap-2 bg-GREY-_300 rounded-lg p-1">
-                                    <button
-                                        onClick={() => setActiveBrandView('primary')}
-                                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeBrandView === 'primary'
-                                            ? 'bg-white shadow-sm text-[#1F2937]'
-                                            : 'text-gray-500 hover:text-gray-700'
-                                            }`}
-                                    >
-                                        {search}
-                                    </button>
-                                    {hasCompare && (
-                                        <button
-                                            onClick={() => setActiveBrandView('secondary')}
-                                            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeBrandView === 'secondary'
-                                                ? 'bg-white shadow-sm text-[#1F2937]'
-                                                : 'text-gray-500 hover:text-gray-700'
-                                                }`}
-                                        >
-                                            {compareBrand}
-                                        </button>
-                                    )}
-                                </div>
+                                {hasCompare && <BrandToggle />}
 
                                 <div className="flex items-center gap-3 text-sm">
                                     <div className="flex items-center gap-1">
@@ -376,7 +538,7 @@ const SentimentBrand = ({
                                             <GoGlobe className="w-12 h-12 text-gray-400" />
                                         </div>
                                         <p className="font-jost text-[#6B7280] text-lg">
-                                            No regional data available for {activeBrandView === 'primary' ? search : compareBrand}
+                                            No regional data available for {activeBrand}
                                         </p>
                                     </div>
                                 )}
@@ -407,8 +569,15 @@ const SentimentBrand = ({
                     )}
                 </div>
 
-                {/* Top Words */}
-                <p className='font-jost text-[#101828] my-5 leading-[30px] text-[20px]'>Top Words</p>
+                {/* Top Words - always the main brand, never a comparison brand */}
+                <div className='flex items-center gap-3 my-5'>
+                    <p className='font-jost text-[#101828] leading-[30px] text-[20px]'>Top Words</p>
+                    {hasCompare && (
+                        <span className='font-jost text-xs text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-full px-3 py-1'>
+                            {mainBrand} only
+                        </span>
+                    )}
+                </div>
                 {loading ? (
                     <>
                         <SkeletonCard />
@@ -422,29 +591,6 @@ const SentimentBrand = ({
                                     <span className="w-5 h-5 bg-[#10B981] rounded-full flex items-center justify-center text-white text-xs font-bold">↑</span>
                                     <p className="font-semibold font-jost text-[#6B7280] text-[20px]">Positive Mentions</p>
                                 </div>
-                                {/* Brand Toggle */}
-                                {/* <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
-                                    <button
-                                        onClick={() => setActiveBrandView('primary')}
-                                        className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${activeBrandView === 'primary'
-                                                ? 'bg-white shadow-sm text-[#1F2937]'
-                                                : 'text-gray-500 hover:text-gray-700'
-                                            }`}
-                                    >
-                                        {search}
-                                    </button>
-                                    {hasCompare && (
-                                        <button
-                                            onClick={() => setActiveBrandView('secondary')}
-                                            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${activeBrandView === 'secondary'
-                                                    ? 'bg-white shadow-sm text-[#1F2937]'
-                                                    : 'text-gray-500 hover:text-gray-700'
-                                                }`}
-                                        >
-                                            {compareBrand}
-                                        </button>
-                                    )}
-                                </div> */}
                             </div>
                             <div className="w-full h-[300px] overflow-auto flex flex-wrap justify-center items-center gap-4 p-6">
                                 {topWordsData.positive.length > 0 ? (
@@ -462,7 +608,7 @@ const SentimentBrand = ({
                                     ))
                                 ) : (
                                     <p className="font-jost text-[#6B7280] text-lg">
-                                        No positive words found for {activeBrandView === 'primary' ? search : compareBrand}
+                                        No positive words found for {mainBrand}
                                     </p>
                                 )}
                             </div>
@@ -474,29 +620,6 @@ const SentimentBrand = ({
                                     <span className="w-5 h-5 bg-[#EF4444] rounded-full flex items-center justify-center text-white text-xs font-bold">↓</span>
                                     <p className="font-semibold font-jost text-[#6B7280] text-[20px]">Negative Mentions</p>
                                 </div>
-                                {/* Brand Toggle - same as above */}
-                                {/* <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
-                                    <button
-                                        onClick={() => setActiveBrandView('primary')}
-                                        className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${activeBrandView === 'primary'
-                                                ? 'bg-white shadow-sm text-[#1F2937]'
-                                                : 'text-gray-500 hover:text-gray-700'
-                                            }`}
-                                    >
-                                        {search}
-                                    </button>
-                                    {hasCompare && (
-                                        <button
-                                            onClick={() => setActiveBrandView('secondary')}
-                                            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${activeBrandView === 'secondary'
-                                                    ? 'bg-white shadow-sm text-[#1F2937]'
-                                                    : 'text-gray-500 hover:text-gray-700'
-                                                }`}
-                                        >
-                                            {compareBrand}
-                                        </button>
-                                    )}
-                                </div> */}
                             </div>
                             <div className="w-full h-[300px] overflow-auto flex flex-wrap justify-center items-center gap-4 p-6">
                                 {topWordsData.negative?.length > 0 ? (
@@ -514,11 +637,92 @@ const SentimentBrand = ({
                                     ))
                                 ) : (
                                     <p className="font-jost text-[#6B7280] text-lg">
-                                        No negative words found for {activeBrandView === 'primary' ? search : compareBrand}
+                                        No negative words found for {mainBrand}
                                     </p>
                                 )}
                             </div>
                         </div>
+                    </div>
+                )}
+
+                {/* Keywords driving the conversation, per channel, for the main brand */}
+                <div className='flex items-center gap-3 my-5'>
+                    <p className='font-jost text-[#101828] leading-[30px] text-[20px]'>Keywords</p>
+                    {hasCompare && (
+                        <span className='font-jost text-xs text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-full px-3 py-1'>
+                            {mainBrand} only
+                        </span>
+                    )}
+                </div>
+                {loading ? (
+                    <SkeletonCard />
+                ) : (
+                    <div className='h-auto w-full flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl'>
+                        {keywordsData.length > 0 ? (
+                            <>
+                                <div className='flex items-center justify-between flex-wrap gap-3 mb-6'>
+                                    <div className='flex gap-2 flex-wrap'>
+                                        {['All', ...keywordsData.map((channel) => channel.label)].map((label) => (
+                                            <button
+                                                key={label}
+                                                onClick={() => setKeywordChannel(label)}
+                                                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${keywordChannel === label
+                                                    ? 'bg-[#F48A1F] text-white'
+                                                    : 'bg-gray-100 text-gray-600 hover:text-gray-800'
+                                                    }`}
+                                            >
+                                                {label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <button
+                                        onClick={() => setShowAllKeywords((prev) => !prev)}
+                                        className='font-jost text-sm text-[#F48A1F]'
+                                    >
+                                        {showAllKeywords ? 'Show less' : 'Show all'}
+                                    </button>
+                                </div>
+
+                                <div className='flex flex-col gap-6'>
+                                    {visibleKeywordChannels.map((channel) => (
+                                        <div key={channel.label} className='flex flex-col gap-3'>
+                                            <p className='font-jost font-semibold text-sm text-[#1F2937]'>{channel.label}</p>
+                                            {[
+                                                { tone: 'positive', words: channel.positive, dot: '#10B981', text: 'text-[#10B981]', bg: 'bg-[#ECFDF5]' },
+                                                { tone: 'negative', words: channel.negative, dot: '#EF4444', text: 'text-[#EF4444]', bg: 'bg-[#FEF2F2]' },
+                                            ].map((group) => (
+                                                <div key={group.tone} className='flex items-start gap-3'>
+                                                    <span
+                                                        className='w-2 h-2 mt-2 rounded-full shrink-0'
+                                                        style={{ backgroundColor: group.dot }}
+                                                    ></span>
+                                                    <div className='flex flex-wrap gap-2'>
+                                                        {group.words.length > 0 ? (
+                                                            (showAllKeywords ? group.words : group.words.slice(0, KEYWORD_PREVIEW_COUNT)).map((word) => (
+                                                                <span
+                                                                    key={`${channel.label}-${group.tone}-${word}`}
+                                                                    className={`font-jost text-sm rounded-full px-3 py-1 ${group.bg} ${group.text}`}
+                                                                >
+                                                                    {word}
+                                                                </span>
+                                                            ))
+                                                        ) : (
+                                                            <span className='font-jost text-sm text-[#9CA3AF]'>
+                                                                No {group.tone} keywords
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        ) : (
+                            <div className='flex items-center justify-center h-[150px]'>
+                                <p className='font-jost text-[#6B7280] text-lg'>No keywords found for {mainBrand}</p>
+                            </div>
+                        )}
                     </div>
                 )}
 
