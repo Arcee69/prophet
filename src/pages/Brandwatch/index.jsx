@@ -441,7 +441,7 @@ const Brandwatch = () => {
         setDateChange(value);
         setIsDropdownOpen(false)
 
-        if (value === 7) {
+        if (value === 8) {
             // Custom - show date picker
             setShowCustomDatePicker(true)
             return
@@ -452,22 +452,22 @@ const Brandwatch = () => {
         let newEndDate = new Date(startDate);
 
         switch (value) {
-            case 1: // 1 Day
+            case 2: // 1 Day
                 newEndDate.setDate(startDate.getDate() + 1);
                 break;
-            case 2: // 7 Days
+            case 3: // 7 Days
                 newEndDate.setDate(startDate.getDate() + 7);
                 break;
-            case 3: // 30 Days
+            case 4: // 30 Days
                 newEndDate.setDate(startDate.getDate() + 30);
                 break;
-            case 4: // 3 Months
+            case 5: // 3 Months
                 newEndDate.setMonth(startDate.getMonth() + 3);
                 break;
-            case 5: // 6 Months
+            case 6: // 6 Months
                 newEndDate.setMonth(startDate.getMonth() + 6);
                 break;
-            case 6: // 12 Months
+            case 7: // 12 Months
                 newEndDate.setFullYear(startDate.getFullYear() + 1);
                 break;
             default:
@@ -479,7 +479,7 @@ const Brandwatch = () => {
 
     const handleStartDateChange = (date) => {
         setStartDate(date);
-        if (dateChange !== 7) {
+        if (dateChange !== 8) {
             handleDateChange(dateChange); // recalc end date automatically for presets
         }
     };
@@ -690,7 +690,8 @@ const Brandwatch = () => {
                     {/* Date Range Dropdown */}
                     <div className="w-5/12 relative">
                         <div
-                            className={`w-full border border-[#E2E8F0] rounded-md px-3 py-2 flex items-center justify-between cursor-pointer bg-white ${dateChange === 7 ? 'ring-2 ring-[#F48A1F] ring-offset-1' : ''
+                            className={`w-full border rounded-md px-3 py-2 flex items-center justify-between cursor-pointer bg-white transition-colors duration-150 hover:border-[#F48A1F] hover:bg-[#FFF7ED] ${isDropdownOpen ? 'border-[#F48A1F]' : 'border-[#E2E8F0]'
+                                } ${dateChange === 8 ? 'ring-2 ring-[#F48A1F] ring-offset-1' : ''
                                 }`}
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                         >
@@ -709,9 +710,9 @@ const Brandwatch = () => {
                                 {dateOptions.map((option) => (
                                     <div
                                         key={option.value}
-                                        className={`px-3 py-2 cursor-pointer hover:bg-gray-50 text-sm font-lato ${dateChange === option.value
-                                            ? 'bg-[#F48A1F] text-white'
-                                            : 'text-[#546E7A]'
+                                        className={`px-3 py-2 cursor-pointer text-sm font-lato transition-colors duration-150 ${dateChange === option.value
+                                            ? 'bg-[#F48A1F] text-white hover:bg-[#DB7A15]'
+                                            : 'text-[#546E7A] hover:bg-[#FFF7ED] hover:text-[#F48A1F]'
                                             }`}
                                         onClick={() => handleDateChange(option.value)}
                                     >
