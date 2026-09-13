@@ -5,7 +5,6 @@ import { RiPieChartLine } from 'react-icons/ri';
 import Chart from 'react-apexcharts'
 
 const SentimentBrand = ({
-    reportRef,
     loading,
     mentionsData,
     engagementData,
@@ -96,7 +95,7 @@ const SentimentBrand = ({
 
     return (
         <>
-            <div ref={reportRef}>
+            <div>
 
                 <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
                     {loading ? (
@@ -107,28 +106,32 @@ const SentimentBrand = ({
                         </>
                     ) : (
                         <>
-                            <div className='flex flex-col justify-between p-4 bg-white rounded-lg h-[200px] shadow-md'>
+                            <div className='flex flex-col gap-4 p-4 bg-white rounded-lg h-[200px] shadow-md'>
                                 <p className='font-jost text-2xl font-semibold text-[#252F3D]'>Total Mentions</p>
-                                <div className='flex items-center justify-between'>
+                                <div className='flex flex-col gap-3 overflow-y-auto items-start justify-between'>
                                     {mentionsData?.map((item, index) => (
-                                        <div key={index} className='flex flex-col gap-1.5'>
-                                            <p className={`font-jost font-medium text-xl`} style={{ color: item.color }}>{item.name}</p>
-                                            <p className={`font-jost font-medium text-xl`} style={{ color: item.color }}>{formatter.format(item.value)}</p>
+                                        <div key={index} className='flex items-center gap-2'>
+                                            <p className={`font-jost font-medium text-lg`} style={{ color: item.color }}>{item.name}</p>
+                                            <p className='font-jost text-lg'>-</p>
+                                            <p className={`font-jost font-medium text-lg`} style={{ color: item.color }}>{formatter.format(item.value)}</p>
                                         </div>
                                     ))}
                                 </div>
                             </div>
 
-                            <div className='flex flex-col justify-between p-4 bg-white rounded-lg h-[200px] shadow-md'>
+                            <div className='flex flex-col gap-4 p-4 bg-white rounded-lg h-[200px] shadow-md'>
                                 <div className='flex items-baseline justify-between'>
                                     <p className='font-jost text-2xl font-semibold text-[#252F3D]'>Total Engagement</p>
                                     <span className='font-jost text-xs text-[#9CA3AF]'>likes + comments</span>
                                 </div>
-                                <div className='flex items-center justify-between gap-3 overflow-x-auto'>
+                                <div className='flex flex-col overflow-y-auto gap-3 items-start justify-between'>
                                     {engagementData?.map((item, index) => (
-                                        <div key={index} className='flex flex-col gap-1.5 shrink-0'>
-                                            <p className='font-jost font-medium text-xl' style={{ color: item.color }}>{item.name}</p>
-                                            <p className='font-jost font-medium text-xl' style={{ color: item.color }}>{formatter.format(item.value)}</p>
+                                        <div key={index} className='flex flex-col gap-1.5'>
+                                            <div className='flex items-center gap-2'>
+                                                <p className='font-jost font-medium text-lg' style={{ color: item.color }}>{item.name}</p>
+                                                <p className='font-jost text-lg'>-</p>
+                                                <p className='font-jost font-medium text-lg' style={{ color: item.color }}>{formatter.format(item.value)}</p>
+                                            </div>
                                             <p className='font-jost text-xs text-[#6B7280]'>
                                                 {formatNumber(item.views)} views · {formatNumber(item.likes)} likes · {formatNumber(item.comments)} comments
                                             </p>
@@ -137,13 +140,14 @@ const SentimentBrand = ({
                                 </div>
                             </div>
 
-                            <div className='flex flex-col justify-between p-4 bg-white rounded-lg h-[200px] shadow-md'>
+                            <div className='flex flex-col gap-4 p-4 bg-white rounded-lg h-[200px] shadow-md'>
                                 <p className='font-jost text-2xl font-semibold text-[#252F3D]'>Estimated  Reach</p>
-                                <div className='flex items-center justify-between'>
+                                <div className='flex flex-col gap-3 overflow-y-auto items-start justify-between'>
                                     {reachData?.map((item, index) => (
-                                        <div key={index} className='flex flex-col gap-1.5'>
-                                            <p className={`font-jost font-medium text-xl`} style={{ color: item.color }}>{item.name}</p>
-                                            <p className={`font-jost font-medium text-xl`} style={{ color: item.color }}>{formatter.format(item.value)}</p>
+                                        <div key={index} className='flex items-center gap-1.5'>
+                                            <p className={`font-jost font-medium text-lg`} style={{ color: item.color }}>{item.name}</p>
+                                            <p className='font-jost text-lg'>-</p>
+                                            <p className={`font-jost font-medium text-lg`} style={{ color: item.color }}>{formatter.format(item.value)}</p>
                                         </div>
                                     ))}
                                 </div>

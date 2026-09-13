@@ -4,8 +4,6 @@ import { IoIosArrowDown } from 'react-icons/io'
 import { api } from '../../../services/api'
 import { appUrls } from '../../../services/urls'
 import "react-datepicker/dist/react-datepicker.css";
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { GoGlobe } from 'react-icons/go';
 import { FaRegCalendarAlt } from 'react-icons/fa';
 import DatePicker from 'react-datepicker';
@@ -18,6 +16,10 @@ import { countryMap } from '../../../utils/CountryMap'
 import SentimentBrand from './SentimentBrand'
 import SentimentTable from './SentimentTable'
 import AnalysisLoader from '../../../components/AnalysisLoader'
+import SentimentReportDocument from './report/SentimentReportDocument'
+import buildReportModel from './report/buildReportModel'
+import { slugify } from './report/reportTheme'
+import exportReportPdf from '../../../utils/exportReportPdf'
 
 
 
@@ -133,7 +135,11 @@ const Compare = ({ search, setSearchList }) => {
     const [compareBrands, setCompareBrands] = useState([])
     const [compareBrandInput, setCompareBrandInput] = useState("");
     const [dateChange, setDateChange] = useState(1)
-    const [startDate, setStartDate] = useState(new Date());
+    const [startDate, setStartDate] = useState(() => {
+        const start = new Date();
+        start.setDate(start.getDate() - 1);
+        return start;
+    });
     const [endDate, setEndDate] = useState(new Date());
     const [summaries, setSummaries] = useState([])
     const [loading, setLoading] = useState(false)
@@ -176,11 +182,6 @@ const Compare = ({ search, setSearchList }) => {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [showReportMenu]);
-
-    const handleGenerateReport = (reportType) => {
-        setShowReportMenu(false);
-        console.log(reportType, 'report requested for', brands);
-    };
 
     useEffect(() => {
         if (brands.length === 0) return;
@@ -355,15 +356,15 @@ const Compare = ({ search, setSearchList }) => {
 
     const isCustomRange = dateChange === CUSTOM_RANGE;
 
-    // Initialize dates to last 30 days
+    // Initialize dates to the last day
     useEffect(() => {
         const today = new Date();
-        const thirtyDaysAgo = new Date(today);
-        thirtyDaysAgo.setDate(today.getDate() - 30);
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
 
-        setStartDate(thirtyDaysAgo);
+        setStartDate(yesterday);
         setEndDate(today);
-        setDateChange(3);
+        setDateChange(1);
     }, []);
 
     // const handleDateChange = (value) => {
@@ -665,111 +666,6 @@ const Compare = ({ search, setSearchList }) => {
     }, [mentionsByBrand, activeBrandIndex]);
 
 
-    const reportRef = useRef(null);
-
-
-    const handleDownloadPDF = async () => {
-        const input = reportRef.current;
-
-        // Capture the report content as a canvas
-        const canvas = await html2canvas(input, { scale: 2, useCORS: true });
-        const imgData = canvas.toDataURL('image/png');
-
-        // Create a new jsPDF instance
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-
-        // Logo details (replace with your logo URL or base64 string)
-        const logoUrl = Logo; // Replace with your logo URL
-        const logoWidth = 50; // Width of the logo in mm
-        const logoHeight = 30; // Height of the logo in mm
-        const logoX = 10; // X-coordinate for top-left corner
-        const logoY = 10; // Y-coordinate for top-left corner
-
-        // Title and description details
-        const titleText = `Sentiment Analysis Report - ${brands.join(' vs ')}`;
-        const descriptionText = 'This report provides a comprehensive overview of brand sentiment and engagement.';
-        const titleX = 10; // Align with logo X
-        const titleY = logoY + logoHeight + 5; // Below logo with 5mm spacing
-        const descriptionX = 10; // Align with title X
-        const descriptionY = titleY + 8; // Below title with 8mm spacing (approx. for 24px font + gap)
-
-        // Add content to each page
-        const addHeader = () => {
-            // Add logo
-            pdf.addImage(logoUrl, 'PNG', logoX, logoY, logoWidth, logoHeight);
-
-            // Set font for title (mimicking font-jost, bold, 24px)
-            pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(18); // Approx. 24px (1px ≈ 0.75pt)
-            pdf.setTextColor(16, 25, 40); // #101928
-            pdf.text(titleText, titleX, titleY);
-
-            // Set font for description (mimicking font-jost, regular, 14px)
-            pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(10); // Approx. 14px
-            pdf.setTextColor(102, 113, 133); // #667185
-            pdf.text(descriptionText, descriptionX, descriptionY, { maxWidth: pageWidth - 20 }); // Wrap text within page width
-        };
-
-        // Add header to the first page
-        addHeader();
-
-        // Calculate content position to avoid overlap
-        const contentMarginTop = logoHeight + 30; // Adjust for logo, title, description, and spacing
-        const imgWidth = pageWidth;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        let heightLeft = imgHeight;
-        let position = contentMarginTop;
-
-        // Add the captured report content
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= (pageHeight - contentMarginTop);
-
-        // Handle additional pages if the content exceeds one page
-        while (heightLeft > 0) {
-            position = heightLeft - imgHeight + contentMarginTop;
-            pdf.addPage();
-            // Add header (logo, title, description) to subsequent pages
-            addHeader();
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-        }
-
-        // Save the PDF
-        pdf.save('report.pdf');
-    };
-
-    // const handleDownloadPDF = async () => {
-    //     const input = reportRef.current;
-
-    //     const canvas = await html2canvas(input, { scale: 2, useCORS: true });
-    //     const imgData = canvas.toDataURL('image/png');
-
-    //     const pdf = new jsPDF('p', 'mm', 'a4');
-    //     const pageHeight = pdf.internal.pageSize.getHeight();
-    //     const pageWidth = pdf.internal.pageSize.getWidth();
-
-    //     const imgWidth = pageWidth;
-    //     const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-    //     let heightLeft = imgHeight;
-    //     let position = 0;
-
-    //     // First page
-    //     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-    //     heightLeft -= pageHeight;
-
-    //     while (heightLeft > 0) {
-    //         position = heightLeft - imgHeight;
-    //         pdf.addPage();
-    //         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-    //         heightLeft -= pageHeight;
-    //     }
-
-    //     pdf.save('report.pdf');
-    // };
 
 
     // Add these functions after your existing state
@@ -918,18 +814,85 @@ const Compare = ({ search, setSearchList }) => {
 
     const filteredMentions = useMemo(() => {
         const timeOf = (mention) => (mention.publishedAt ? new Date(mention.publishedAt).getTime() : 0);
+        const hasSentiment = (mention) => typeof mention.sentiment === 'number';
 
         return topMentions
             ?.filter(m => mentionTab === 'All' || m.type === mentionTab)
             ?.slice()
             ?.sort((a, b) => {
-                // Group by channel first so All reads News -> Twitter/X -> YouTube,
+                // Scored mentions lead on every tab; unscored ones sink to the end.
+                const bySentiment = Number(hasSentiment(b)) - Number(hasSentiment(a));
+                if (bySentiment !== 0) return bySentiment;
+                // Then group by channel so All reads News -> Twitter/X -> YouTube,
                 // then newest first inside each group.
                 const byChannel = (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
                 if (byChannel !== 0) return byChannel;
                 return timeOf(b) - timeOf(a);
             });
     }, [topMentions, mentionTab]);
+
+
+    // ----------------------------------------------------------------------
+    // PDF export
+    //
+    // The document is a purpose-built, print-laid-out deck rather than a capture of
+    // this screen: the dashboard is interactive, its charts are sized for a browser
+    // viewport, and its single-brand toggles hide half the board from anyone reading
+    // the file. buildReportModel recomputes every figure for every brand so the deck
+    // can stand on its own.
+    // ----------------------------------------------------------------------
+
+    const [exportState, setExportState] = useState({ active: false, page: 0, total: 0 });
+    const reportDocRef = useRef(null);
+    // Guards the capture against the progress updates below re-entering the effect.
+    const exportRunning = useRef(false);
+
+    const reportModel = useMemo(() => buildReportModel({
+        brands,
+        summaries,
+        mentionsByBrand,
+        startDate,
+        endDate,
+        colorAt,
+        getLocationName,
+    }), [brands, summaries, mentionsByBrand, startDate, endDate]);
+
+    const handleDownloadPDF = () => {
+        if (exportState.active || loading || brands.length === 0) return;
+        // Mounting the off-screen document and capturing it are two separate commits:
+        // the node has to exist and be laid out before html2canvas can read it.
+        setExportState({ active: true, page: 0, total: 0 });
+    };
+
+    // Only `active` is a dependency: the per-page progress updates keep `active` true,
+    // so this runs once per export rather than restarting on every page captured.
+    useEffect(() => {
+        if (!exportState.active || exportRunning.current) return;
+
+        exportRunning.current = true;
+        let mounted = true;
+
+        const run = async () => {
+            try {
+                await exportReportPdf(reportDocRef.current, {
+                    fileName: `${slugify(brands.join(' vs '))}-sentiment-report.pdf`,
+                    onProgress: ({ page, total }) => {
+                        if (mounted) setExportState({ active: true, page, total });
+                    }
+                });
+            } catch (error) {
+                console.error('Sentiment report export failed', error);
+            } finally {
+                exportRunning.current = false;
+                if (mounted) setExportState({ active: false, page: 0, total: 0 });
+            }
+        };
+
+        run();
+
+        return () => { mounted = false };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [exportState.active]);
 
 
 
@@ -945,13 +908,19 @@ const Compare = ({ search, setSearchList }) => {
             <div className='bg-[#fff] h-[88px] rounded-[8px] flex justify-between p-[25px]'>
                 <p className='font-jost font-semibold text-[#1F2937] leading-[32px] text-[24px]'>{brands.join('  vs  ')}</p>
                 <div className='flex gap-2 items-center'>
-                    <div 
-                        className={`${activeTab === 'Feeds' ? "hidden" : "flex bg-black p-2 rounded-lg items-center gap-1.5 cursor-pointer w-[160px] h-[40px]"}`} 
+                    <button
+                        type='button'
+                        disabled={exportState.active || loading}
+                        className={`${activeTab === 'Feeds' ? "hidden" : "flex bg-black disabled:bg-[#4B5563] disabled:cursor-wait p-2 rounded-lg items-center justify-center gap-1.5 cursor-pointer w-[185px] h-[40px]"}`}
                         onClick={handleDownloadPDF}
                     >
                         <AiOutlineDownload className='w-5 h-5 text-[#fff]' />
-                        <p className='text-[#fff] text-base font-lato'>Export Analysis</p>
-                    </div>
+                        <p className='text-[#fff] text-base font-lato whitespace-nowrap'>
+                            {exportState.active
+                                ? `Building PDF${exportState.total ? ` ${exportState.page}/${exportState.total}` : '…'}`
+                                : 'Export Analysis'}
+                        </p>
+                    </button>
 
                     <div className={`${activeTab === 'Feeds' ? 'hidden' : 'relative'}`} ref={reportMenuRef}>
                         <button
@@ -964,17 +933,23 @@ const Compare = ({ search, setSearchList }) => {
                         </button>
 
                         {showReportMenu && (
-                            <div className='absolute right-0 top-[46px] z-20 w-[220px] bg-[#fff] rounded-lg border border-[#E5E7EB] shadow-lg py-1'>
+                            <div className='absolute right-0 top-[46px] z-20 w-[240px] bg-[#fff] rounded-lg border border-[#E5E7EB] shadow-lg py-1'>
                                 {REPORT_TYPES.map((reportType) => (
                                     <button
                                         key={reportType}
                                         type='button'
-                                        className='w-full text-left px-4 py-2.5 font-lato text-sm text-[#263238] hover:bg-[#FDF3E7] hover:text-[#F48A1F]'
-                                        onClick={() => handleGenerateReport(reportType)}
+                                        disabled
+                                        aria-disabled='true'
+                                        title='Not available yet'
+                                        className='w-full flex items-center justify-between gap-2 text-left px-4 py-2.5 font-lato text-sm text-[#9CA3AF] cursor-not-allowed'
                                     >
-                                        {reportType}
+                                        <span>{reportType}</span>
+                                        <span className='text-[10px] uppercase tracking-wide text-[#9CA3AF] bg-[#F3F4F6] rounded px-1.5 py-0.5'>Soon</span>
                                     </button>
                                 ))}
+                                <p className='px-4 pt-2 pb-1 font-lato text-[11px] text-[#9CA3AF] border-t border-[#F3F4F6] mt-1'>
+                                    Use Export Analysis for the full PDF report.
+                                </p>
                             </div>
                         )}
                     </div>
@@ -1069,10 +1044,10 @@ const Compare = ({ search, setSearchList }) => {
                         </select>
                     </div>
 
-                    <div className="bg-[#F9FAFB] w-[472px] h-[36px] rounded-[8px] px-[26px] py-2 flex items-center gap-1">
+                    <div className="bg-[#F9FAFB] w-[350px] h-[36px] rounded-[8px] px-[26px] py-2 flex items-center gap-1">
                         {/* Date Range Options */}
                         <div className="flex items-center w-5/12 gap-[5px]">
-                            {["1D", "7D", "30D", "3M", "6M", "12M"].map((label, index) => (
+                            {["1D", "7D", "30D"].map((label, index) => (
                                 <div
                                     key={index}
                                     className={`cursor-pointer rounded-full p-1 flex items-center justify-center ${dateChange === index + 1 ? "bg-[#F48A1F]" : ""
@@ -1155,7 +1130,6 @@ const Compare = ({ search, setSearchList }) => {
 
             {!loading && activeTab === 'Overview' && (
                 <SentimentBrand
-                    reportRef={reportRef}
                     loading={loading}
                     mentionsData={mentionsData}
                     engagementData={engagementTotals}
@@ -1186,7 +1160,16 @@ const Compare = ({ search, setSearchList }) => {
                 />
             )}
 
-
+            {/* Parked off-screen rather than hidden: html2canvas measures a real laid-out
+                node, so `display: none` or zero opacity would capture nothing. */}
+            {exportState.active && (
+                <div
+                    aria-hidden='true'
+                    style={{ position: 'absolute', left: '-20000px', top: 0, width: 794, pointerEvents: 'none' }}
+                >
+                    <SentimentReportDocument ref={reportDocRef} model={reportModel} logo={Logo} />
+                </div>
+            )}
 
         </div>
     )
