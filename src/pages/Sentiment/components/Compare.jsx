@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import PropTypes from 'prop-types'
 import { AiOutlineDownload } from 'react-icons/ai'
 import { IoIosArrowDown } from 'react-icons/io'
 import { api } from '../../../services/api'
@@ -7,7 +8,6 @@ import "react-datepicker/dist/react-datepicker.css";
 import { GoGlobe } from 'react-icons/go';
 import { FaRegCalendarAlt } from 'react-icons/fa';
 import DatePicker from 'react-datepicker';
-import { useNavigate } from 'react-router-dom'
 
 import Logo from '../../../assets/png/logo.png';
 
@@ -162,8 +162,6 @@ const Compare = ({ search, setSearchList }) => {
     };
 
 
-    const navigate = useNavigate()
-
     // A sentiment call takes ~20s, so results are cached per brand + filter combination.
     // Without this, adding a fourth brand would re-run the three already on the board.
     const resultCache = useRef(new Map());
@@ -292,10 +290,6 @@ const Compare = ({ search, setSearchList }) => {
         const sent = getSentimentPercentages(summaryAt(index).summary || {});
         return { name, positive: sent.positive, negative: sent.negative, neutral: sent.neutral };
     });
-
-    const hasPositive = sentimentChartData.some(d => d.positive > 0);
-    const hasNeutral = sentimentChartData.some(d => d.neutral > 0);
-    const hasNegative = sentimentChartData.some(d => d.negative > 0);
 
 
 
@@ -820,13 +814,12 @@ const Compare = ({ search, setSearchList }) => {
             ?.filter(m => mentionTab === 'All' || m.type === mentionTab)
             ?.slice()
             ?.sort((a, b) => {
-                // Scored mentions lead on every tab; unscored ones sink to the end.
-                const bySentiment = Number(hasSentiment(b)) - Number(hasSentiment(a));
-                if (bySentiment !== 0) return bySentiment;
-                // Then group by channel so All reads News -> Twitter/X -> YouTube,
-                // then newest first inside each group.
+                // Group by channel first so All reads News -> Twitter/X -> YouTube,
+                // then scored mentions ahead of unscored ones, then newest first.
                 const byChannel = (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
                 if (byChannel !== 0) return byChannel;
+                const bySentiment = Number(hasSentiment(b)) - Number(hasSentiment(a));
+                if (bySentiment !== 0) return bySentiment;
                 return timeOf(b) - timeOf(a);
             });
     }, [topMentions, mentionTab]);
@@ -1173,6 +1166,11 @@ const Compare = ({ search, setSearchList }) => {
 
         </div>
     )
+}
+
+Compare.propTypes = {
+    search: PropTypes.string.isRequired,
+    setSearchList: PropTypes.func.isRequired,
 }
 
 export default Compare
