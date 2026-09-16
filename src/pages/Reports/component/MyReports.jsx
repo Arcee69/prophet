@@ -1,17 +1,49 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../../../services/api'
 import { appUrls } from '../../../services/urls'
-import { CiMenuKebab } from 'react-icons/ci'
-import axios from 'axios'
 import { toast } from 'react-toastify'
+
+import Logo from '../../../assets/png/logo.png'
+import ReputationReportDocument from '../../Sentiment/components/report/ReputationReportDocument'
+import buildReputationModel, { formatPeriod, unwrapReport } from '../../Sentiment/components/report/buildReputationModel'
+import { slugify } from '../../Sentiment/components/report/reportTheme'
+import exportReportPdf from '../../../utils/exportReportPdf'
+
+// Rows carry the written report as JSON rather than a stored file, so the PDF is
+// rebuilt here on demand - the same document the Sentiment board exports.
+const reportMetaOf = (item) => item?.data?.report_metadata || {}
+
+const humaniseType = (item) => {
+    const raw = String(item?.report_type || '').replace(/_/g, ' ').trim()
+    return raw || 'Report'
+}
+
+const brandOf = (item) => reportMetaOf(item).brand_name || ''
+
+const periodOf = (item) => {
+    const range = reportMetaOf(item).reporting_period || {}
+    if (!range.start_date && !range.end_date) return null
+    return formatPeriod(range.start_date, range.end_date)
+}
+
+const formatDateTime = (value) => {
+    if (!value) return null
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return null
+    return { date: date.toLocaleDateString(), time: date.toLocaleTimeString() }
+}
 
 const MyReports = () => {
     const [allReports, setAllReports] = useState({ data: [], pagination: {} })
     const [search, setSearch] = useState('')
     const [loading, setLoading] = useState(false)
-    const [showModal, setShowModal] = useState(false)
-    const [selectedReport, setSelectedReport] = useState(null)
+    // The report being rendered off-screen for capture, if any.
+    const [exportJob, setExportJob] = useState(null)
+
+    const reportDocRef = useRef(null)
+    // Guards the capture against the effect re-entering while it runs.
+    const exportRunning = useRef(false)
 
     const navigate = useNavigate()
 
@@ -31,90 +63,57 @@ const MyReports = () => {
         getAllMyReports()
     }, [])
 
-    const filteredReports = allReports.data?.filter(item =>
-        item.subject.toLowerCase().includes(search.toLowerCase()) ||
-        item.report_type.toLowerCase().includes(search.toLowerCase()) ||
-        item.region.toLowerCase().includes(search.toLowerCase())
-    ) || []
+    // Reports generated from the Sentiment board carry no subject or region, so every
+    // field is read defensively: a missing one must not take the page down.
+    const filteredReports = allReports.data?.filter(item => {
+        const term = search.toLowerCase()
+        return [brandOf(item), humaniseType(item), periodOf(item)]
+            .some(value => String(value || '').toLowerCase().includes(term))
+    }) || []
 
-    const handleKebabClick = (report) => {
-        setSelectedReport(report)
-        setShowModal(true)
+    const handleDownload = (item) => {
+        if (exportJob) return
+
+        const model = buildReputationModel({ brand: brandOf(item), response: item })
+        if (!model.hasReport) {
+            toast.error('This report has no content to download yet.')
+            return
+        }
+
+        setExportJob({
+            id: item.id,
+            model,
+            fileName: `${slugify(model.brand || 'report')}-reputation-intelligence-report.pdf`
+        })
     }
 
+    // The document has to be mounted and laid out before html2canvas can read it, so
+    // the capture runs from an effect once the off-screen node is on the page.
+    useEffect(() => {
+        if (!exportJob || exportRunning.current) return
 
-    const getFileExtension = (url) => {
-        return url?.split('.').pop().split(/\#|\?/)[0];
-    };
+        exportRunning.current = true
+        let mounted = true
 
-
-    const handleDownload = async (item) => {
-        console.log(item, "item");
-        if (item?.file) {
+        const run = async () => {
             try {
-                // Extract file name from the URL
-                const fileName = item.file?.substring(item.file?.lastIndexOf('/') + 1);
-
-                // Fetch file as a blob
-                const response = await axios.get(`/report-files/${fileName}`, {
-                    responseType: 'blob',
-                });
-
-                if (response.status !== 200) {
-                    throw new Error('Failed to fetch file');
-                }
-
-                // ✅ Axios stores the blob in response.data
-                const blob = response.data;
-
-                // Create a temporary download link
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-
-                // Create a nice filename
-                const filename = `${item.subject || 'report'}.${getFileExtension(item.file)}`;
-                link.download = filename;
-
-                // Trigger download
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(url);
-                toast.success("Report Downloaded Successfully")
+                await exportReportPdf(reportDocRef.current, { fileName: exportJob.fileName })
+                toast.success('Report downloaded successfully')
             } catch (error) {
-                console.error('Download failed:', error);
-                alert('Download failed. Please try again.');
+                console.error('Report export failed', error)
+                toast.error('The report could not be built. Please try again.')
+            } finally {
+                exportRunning.current = false
+                if (mounted) setExportJob(null)
             }
         }
 
-        setShowModal(false);
-        setSelectedReport(null);
-    };
+        run()
 
-
-    const closeModal = () => {
-        setShowModal(false)
-        setSelectedReport(null)
-    }
-
-    const getStatusColor = (status) => {
-        const text = status === null ? 'Pending' : status
-        let bgColor = 'bg-[#FDE68A]'
-        let textColor = 'text-[#92400E]'
-        if (status === 'done') {
-            bgColor = 'bg-[#A7F3D0]'
-            textColor = 'text-[#065F46]'
-        } else if (status === 'failed') {
-            bgColor = 'bg-[#FECACA]'
-            textColor = 'text-[#991B1B]'
-        }
-        return { text, bgColor, textColor }
-    }
+        return () => { mounted = false }
+    }, [exportJob])
 
     const { pagination } = allReports
-
-    const totalPages = Math.ceil(pagination.total / pagination.per_page)
 
     return (
         <div>
@@ -136,7 +135,7 @@ const MyReports = () => {
                         <input
                             name='search'
                             value={search}
-                            placeholder='Search Report Title...'
+                            placeholder='Search by brand or report type...'
                             className='appearance-none w-[350px] outline-none border border-[#D1D5DB] p-2 rounded-lg bg-transparent font-jost text-base text-[#111827]'
                             onChange={(e) => setSearch(e.target.value)}
                         />
@@ -151,41 +150,40 @@ const MyReports = () => {
                                 <table className="min-w-full divide-y divide-gray-200">
                                     <thead className="bg-[#F1F3F9]">
                                         <tr>
-                                            <th className="px-4 py-2 text-left text-base font-medium text-[#667185] uppercase tracking-wider font-jost">Date</th>
-                                            <th className="px-4 py-2 text-left text-base font-medium text-[#667185] uppercase tracking-wider font-jost">Title</th>
-                                            <th className="px-4 py-2 text-left text-base font-medium text-[#667185] uppercase tracking-wider font-jost">Type</th>
-                                            <th className="px-4 py-2 text-left text-base font-medium text-[#667185] uppercase tracking-wider font-jost">Region</th>
-                                            <th className="px-4 py-2 text-left text-base font-medium text-[#667185] uppercase tracking-wider font-jost">Status</th>
+                                            <th className="px-4 py-2 text-left text-base font-medium text-[#667185] uppercase tracking-wider font-jost">Brand</th>
+                                            <th className="px-4 py-2 text-left text-base font-medium text-[#667185] uppercase tracking-wider font-jost">Report Type</th>
+                                            <th className="px-4 py-2 text-left text-base font-medium text-[#667185] uppercase tracking-wider font-jost">Reporting Period</th>
+                                            <th className="px-4 py-2 text-left text-base font-medium text-[#667185] uppercase tracking-wider font-jost">Generated At</th>
                                             <th className="px-4 py-2 text-left text-base font-medium text-[#667185] uppercase tracking-wider font-jost">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
                                         {filteredReports.length > 0 ? filteredReports.map((item) => {
-                                            const { text, bgColor, textColor } = getStatusColor(item.status)
-                                            console.log(item, "item")
+                                            const generated = formatDateTime(reportMetaOf(item).generated_at || item.created_at)
+                                            // Only a report that carries written content can be rebuilt as a PDF.
+                                            const downloadable = Boolean(unwrapReport(item))
+                                            const busy = exportJob?.id === item.id
+
                                             return (
                                                 <tr key={item.id}>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-[#101928] font-jost capitalize">
-                                                        <div className='flex flex-col'>
-                                                            <p>{new Date(item.created_at).toLocaleDateString()}</p>
-                                                            <p>{new Date(item.created_at).toLocaleTimeString()}</p>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-[#101928] font-jost capitalize">{item.subject}</td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-[#101928] font-jost capitalize">{item.report_type}</td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-[#101928] font-jost capitalize">{item.region}</td>
-                                                    <td className="px-4 py-3 whitespace-nowrap">
-                                                        <span className={`inline-flex px-2 py-1 text-xs capitalize font-semibold font-jost rounded-full ${bgColor} ${textColor}`}>
-                                                            {text}
-                                                        </span>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-[#101928] font-jost capitalize">{brandOf(item) || '--'}</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-[#101928] font-jost capitalize">{humaniseType(item)}</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-[#101928] font-jost">{periodOf(item) || '--'}</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-[#101928] font-jost">
+                                                        {generated ? (
+                                                            <div className='flex flex-col'>
+                                                                <p>{generated.date}</p>
+                                                                <p>{generated.time}</p>
+                                                            </div>
+                                                        ) : '--'}
                                                     </td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-left text-sm font-medium">
                                                         <button
                                                             onClick={() => handleDownload(item)}
-                                                            disabled={item.status !== "done"}
-                                                            className={`${item.status === "done" ? "bg-[#111827] text-white" : "bg-[#ccc] text-white"} w-[150px] py-2 px-4 rounded-md font-jost text-sm`}
+                                                            disabled={!downloadable || Boolean(exportJob)}
+                                                            className={`${downloadable ? "bg-[#111827] text-white" : "bg-[#ccc] text-white"} w-[150px] py-2 px-4 rounded-md font-jost text-sm disabled:cursor-not-allowed`}
                                                         >
-                                                            Download Report
+                                                            {busy ? 'Preparing...' : 'Download Report'}
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -252,25 +250,14 @@ const MyReports = () => {
                 </div>
             </div>
 
-            {showModal && selectedReport && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-4 min-w-[200px]">
-                        <div className="flex flex-col items-center">
-                            <p className="text-sm font-jost text-gray-700 mb-4">Download</p>
-                            <button
-                                onClick={handleDownload}
-                                className="w-full bg-[#111827] text-white py-2 px-4 rounded-md font-jost text-sm"
-                            >
-                                Download Report
-                            </button>
-                            <button
-                                onClick={closeModal}
-                                className="w-full mt-2 text-gray-500 py-2 px-4 rounded-md font-jost text-sm hover:text-gray-700"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
+            {/* Parked off-screen rather than hidden: html2canvas measures a real laid-out
+                node, so `display: none` or zero opacity would capture nothing. */}
+            {exportJob && (
+                <div
+                    aria-hidden='true'
+                    style={{ position: 'absolute', left: '-20000px', top: 0, width: 794, pointerEvents: 'none' }}
+                >
+                    <ReputationReportDocument ref={reportDocRef} model={exportJob.model} logo={Logo} />
                 </div>
             )}
         </div>

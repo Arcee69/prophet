@@ -100,11 +100,6 @@ const ComparisonTile = ({ label, total, rows, background, diverging = false }) =
                                 fontSize: 11,
                                 lineHeight: 1.5,
                                 color: COLORS.inkSoft,
-                                // `nowrap` keeps every row one line tall so the tile cannot
-                                // grow, but there is deliberately no `overflow: hidden` here:
-                                // html2canvas clips such a box to a tighter line height than
-                                // the browser and shears the descenders off names like
-                                // "Dangote". The clamp below is what keeps the text in bounds.
                                 whiteSpace: 'nowrap',
                             }}
                         >

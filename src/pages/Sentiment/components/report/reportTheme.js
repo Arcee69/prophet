@@ -37,6 +37,35 @@ export const COLORS = {
     violetSoft: '#F1EEFF',
 };
 
+// Palette for the reputation intelligence edition, which follows its own green and
+// gold executive template rather than the sentiment report's orange.
+export const REPUTATION_COLORS = {
+    green: '#00874F',
+    greenBright: '#1FA463',
+    greenSoft: '#E5F2EA',
+    greenLine: '#BFDFCB',
+    yellow: '#F2C300',
+    gold: '#E0B000',
+    yellowSoft: '#FFF5CE',
+    yellowLine: '#F0DC8A',
+    orange: '#E8822A',
+    orangeSoft: '#FDEFE3',
+    orangeLine: '#F5D3B5',
+    red: '#D9534F',
+    redSoft: '#FBE7E6',
+    redLine: '#F2C4C2',
+    blue: '#3A76A8',
+    blueSoft: '#E8F0F7',
+    blueLine: '#C5D8E8',
+    ink: '#1B3345',
+    inkSoft: '#2F4454',
+    muted: '#6B7A89',
+    line: '#DDE3E7',
+    track: '#EEF1F0',
+    surface: '#F4F6F5',
+    navy: '#0B2239',
+};
+
 export const TONE_COLORS = {
     positive: COLORS.positive,
     neutral: COLORS.neutral,

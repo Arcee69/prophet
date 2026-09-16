@@ -8,16 +8,20 @@ import "react-datepicker/dist/react-datepicker.css";
 import { GoGlobe } from 'react-icons/go';
 import { FaRegCalendarAlt } from 'react-icons/fa';
 import DatePicker from 'react-datepicker';
+import { toast } from 'react-toastify';
 
 import Logo from '../../../assets/png/logo.png';
 
 
-import { countryMap } from '../../../utils/CountryMap'
+import { getLocationName, getSentimentColor, normaliseSource } from '../../../utils/sentimentHelpers'
 import SentimentBrand from './SentimentBrand'
 import SentimentTable from './SentimentTable'
 import AnalysisLoader from '../../../components/AnalysisLoader'
 import SentimentReportDocument from './report/SentimentReportDocument'
 import buildReportModel from './report/buildReportModel'
+import ReputationReportDocument from './report/ReputationReportDocument'
+import buildReputationModel from './report/buildReputationModel'
+import buildReputationPayload, { REPUTATION_REPORT_TYPE } from './report/reputationPayload'
 import { slugify } from './report/reportTheme'
 import exportReportPdf from '../../../utils/exportReportPdf'
 
@@ -30,7 +34,12 @@ const MAX_COMPARE_BRANDS = 3;
 const CUSTOM_RANGE = 0;
 
 // The reports offered by the Generate Report dropdown.
-const REPORT_TYPES = ['Sentiment Intelligence', 'Competitive Intelligence', 'Reputation Intelligence'];
+const REPORT_TYPES = [
+    { label: 'Reputation Intelligence', value: REPUTATION_REPORT_TYPE, available: true },
+    { label: 'Competitive Intelligence', value: 'competitive_intelligence', available: false },
+];
+
+const IDLE_EXPORT = { active: false, kind: null, page: 0, total: 0 };
 
 const BRAND_COLORS = ['#1E5631', '#FF4E4C', '#F48A1F', '#3B82F6'];
 const colorAt = (index) => BRAND_COLORS[index % BRAND_COLORS.length];
@@ -41,86 +50,6 @@ const CHANNELS = [
     { key: 'twitter_sentiment', label: 'Twitter/X', color: '#1DA1F2' },
     { key: 'news_sentiment', label: 'News', color: '#F48A1F' },
 ];
-
-// Sentiment score thresholds, shared by every per-item classification below.
-const POSITIVE_THRESHOLD = 0.1;
-const NEGATIVE_THRESHOLD = -0.1;
-
-const toneOf = (score) => {
-    if (typeof score !== 'number') return 'neutral';
-    if (score > POSITIVE_THRESHOLD) return 'positive';
-    if (score < NEGATIVE_THRESHOLD) return 'negative';
-    return 'neutral';
-};
-
-// The API sends counts as strings on YouTube and numbers on news.
-const toNumber = (value) => {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : 0;
-};
-
-// News items arrive as a wall of article text with no title, so derive a headline
-// from the opening sentence rather than showing a bare URL.
-const deriveTitle = (text, url) => {
-    const clean = (text || '').replace(/\s+/g, ' ').trim();
-    if (clean) {
-        const firstSentence = clean.split(/(?<=[.!?])\s/)[0] || clean;
-        return firstSentence.length > 110 ? `${firstSentence.slice(0, 110).trim()}…` : firstSentence;
-    }
-    try {
-        return decodeURIComponent(new URL(url).pathname.split('/').filter(Boolean).pop() || url)
-            .replace(/[-_]+/g, ' ');
-    } catch {
-        return url;
-    }
-};
-
-const summarise = (text, limit = 260) => {
-    const clean = (text || '').replace(/\s+/g, ' ').trim();
-    if (!clean) return '';
-    return clean.length > limit ? `${clean.slice(0, limit).trim()}…` : clean;
-};
-
-// A source is either the old bare URL string or the new object payload.
-const normaliseSource = (item, type) => {
-    if (typeof item === 'string') {
-        return {
-            id: null,
-            url: item,
-            type,
-            title: deriveTitle('', item),
-            description: '',
-            publishedAt: null,
-            sentiment: null,
-            tone: 'neutral',
-            views: 0,
-            likes: 0,
-            comments: 0,
-            engagement: 0
-        };
-    }
-
-    const stats = item?.statistics || {};
-    const sentiment = typeof stats.sentiment === 'number' ? stats.sentiment : null;
-    const likes = toNumber(stats.likeCount);
-    const comments = toNumber(stats.commentCount);
-
-    return {
-        id: item?.id || null,
-        url: item?.url,
-        type,
-        title: item?.title || deriveTitle(item?.text, item?.url),
-        description: summarise(item?.description || item?.text),
-        publishedAt: item?.published_at || null,
-        sentiment,
-        tone: toneOf(sentiment),
-        views: toNumber(stats.viewCount),
-        likes,
-        comments,
-        // News carries no likes or comments, so interactions are YouTube-driven.
-        engagement: likes + comments
-    };
-};
 
 // Channel order on the Feeds "All" tab: News, then Twitter/X, then YouTube.
 const typeOrder = { News: 0, Twitter: 1, Youtube: 2 };
@@ -166,6 +95,10 @@ const Compare = ({ search, setSearchList }) => {
     // Without this, adding a fourth brand would re-run the three already on the board.
     const resultCache = useRef(new Map());
 
+    // The key each brand came back under in the sentiment response (e.g. "nnpc"). The
+    // report API is sent the payload under that same key.
+    const responseKeys = useRef(new Map());
+
     const reportMenuRef = useRef(null);
 
     useEffect(() => {
@@ -203,7 +136,8 @@ const Compare = ({ search, setSearchList }) => {
                     "start_date": formatDate(startDate),
                     "end_date": formatDate(endDate)
                 })
-                const summary = Object.values(res?.data || {})[0] || {}
+                const [responseKey, summary = {}] = Object.entries(res?.data || {})[0] || []
+                if (responseKey) responseKeys.current.set(keyword.toLowerCase(), responseKey)
                 resultCache.current.set(cacheKey, summary)
                 return summary
             } catch (err) {
@@ -662,21 +596,6 @@ const Compare = ({ search, setSearchList }) => {
 
 
 
-    // Add these functions after your existing state
-    // Locations now arrive as names; fall back to the ISO map for older payloads.
-    const getLocationName = (value) => {
-        if (!value) return 'Unknown';
-        if (countryMap[value]) return countryMap[value];
-        if (value.length <= 3) return value.toUpperCase();
-        return value.replace(/\b\w/g, (char) => char.toUpperCase());
-    };
-
-    const getSentimentColor = (score) => {
-        if (score > 0.1) return '#10B981'; // Positive - Green
-        if (score < -0.1) return '#EF4444'; // Negative - Red
-        return '#D1D5DB'; // Neutral - Gray
-    };
-
     // Word cloud is always the main brand. It used to follow activeBrandView, which is
     // owned by the Sentiment-by-Region toggle, so switching regions silently swapped the
     // cloud to a competitor's words with no visible control.
@@ -835,7 +754,12 @@ const Compare = ({ search, setSearchList }) => {
     // can stand on its own.
     // ----------------------------------------------------------------------
 
-    const [exportState, setExportState] = useState({ active: false, page: 0, total: 0 });
+    // `kind` is 'analysis' for Export Analysis or 'reputation' for a generated report.
+    const [exportState, setExportState] = useState(IDLE_EXPORT);
+    const [reputationModel, setReputationModel] = useState(null);
+    // The report type whose API request is in flight, if any.
+    const [reportRequest, setReportRequest] = useState(null);
+    const reportBusy = Boolean(reportRequest) || exportState.active;
     const reportDocRef = useRef(null);
     // Guards the capture against the progress updates below re-entering the effect.
     const exportRunning = useRef(false);
@@ -851,10 +775,48 @@ const Compare = ({ search, setSearchList }) => {
     }), [brands, summaries, mentionsByBrand, startDate, endDate]);
 
     const handleDownloadPDF = () => {
-        if (exportState.active || loading || brands.length === 0) return;
+        if (reportBusy || loading || brands.length === 0) return;
         // Mounting the off-screen document and capturing it are two separate commits:
         // the node has to exist and be laid out before html2canvas can read it.
-        setExportState({ active: true, page: 0, total: 0 });
+        setExportState({ active: true, kind: 'analysis', page: 0, total: 0 });
+    };
+
+    // Reputation Intelligence covers the main brand only. The report service writes
+    // the narrative from the brand's sentiment payload; the PDF is then laid out and
+    // captured here, the same way as Export Analysis.
+    const handleGenerateReport = async (reportType) => {
+        if (!reportType.available || reportBusy || loading) return;
+
+        const summary = summaryAt(0);
+        if (Object.keys(summary).length === 0) {
+            toast.error(`No sentiment data for ${search} yet. Run the analysis before generating a report.`);
+            return;
+        }
+
+        setShowReportMenu(false);
+        setReportRequest(reportType.value);
+
+        // Captured now so a filter change mid-request cannot relabel the period.
+        const period = { startDate, endDate };
+        const brandKey = responseKeys.current.get(search.toLowerCase()) || search.toLowerCase();
+
+        try {
+            const res = await api.post(appUrls?.REPORTS_URL, buildReputationPayload(brandKey, summary));
+            const model = buildReputationModel({ brand: search, summary, response: res?.data, ...period });
+
+            if (!model.hasReport) {
+                toast.error(res?.data?.message || 'The report service returned no report content. Please try again.');
+                return;
+            }
+
+            setReputationModel(model);
+            setExportState({ active: true, kind: 'reputation', page: 0, total: 0 });
+        } catch (error) {
+            console.error('Reputation report request failed', error);
+            toast.error(error?.data?.message || 'Could not generate the report. Please try again.');
+        } finally {
+            setReportRequest(null);
+        }
     };
 
     // Only `active` is a dependency: the per-page progress updates keep `active` true,
@@ -865,19 +827,24 @@ const Compare = ({ search, setSearchList }) => {
         exportRunning.current = true;
         let mounted = true;
 
+        const isReputation = exportState.kind === 'reputation';
+
         const run = async () => {
             try {
                 await exportReportPdf(reportDocRef.current, {
-                    fileName: `${slugify(brands.join(' vs '))}-sentiment-report.pdf`,
+                    fileName: isReputation
+                        ? `${slugify(search)}-reputation-intelligence-report.pdf`
+                        : `${slugify(brands.join(' vs '))}-sentiment-report.pdf`,
                     onProgress: ({ page, total }) => {
-                        if (mounted) setExportState({ active: true, page, total });
+                        if (mounted) setExportState((prev) => ({ ...prev, page, total }));
                     }
                 });
             } catch (error) {
-                console.error('Sentiment report export failed', error);
+                console.error(`${isReputation ? 'Reputation' : 'Sentiment'} report export failed`, error);
+                if (isReputation) toast.error('The report was generated but the PDF could not be built. Please try again.');
             } finally {
                 exportRunning.current = false;
-                if (mounted) setExportState({ active: false, page: 0, total: 0 });
+                if (mounted) setExportState(IDLE_EXPORT);
             }
         };
 
@@ -903,13 +870,13 @@ const Compare = ({ search, setSearchList }) => {
                 <div className='flex gap-2 items-center'>
                     <button
                         type='button'
-                        disabled={exportState.active || loading}
+                        disabled={reportBusy || loading}
                         className={`${activeTab === 'Feeds' ? "hidden" : "flex bg-black disabled:bg-[#4B5563] disabled:cursor-wait p-2 rounded-lg items-center justify-center gap-1.5 cursor-pointer w-[185px] h-[40px]"}`}
                         onClick={handleDownloadPDF}
                     >
                         <AiOutlineDownload className='w-5 h-5 text-[#fff]' />
                         <p className='text-[#fff] text-base font-lato whitespace-nowrap'>
-                            {exportState.active
+                            {exportState.kind === 'analysis'
                                 ? `Building PDF${exportState.total ? ` ${exportState.page}/${exportState.total}` : '…'}`
                                 : 'Export Analysis'}
                         </p>
@@ -918,31 +885,47 @@ const Compare = ({ search, setSearchList }) => {
                     <div className={`${activeTab === 'Feeds' ? 'hidden' : 'relative'}`} ref={reportMenuRef}>
                         <button
                             type='button'
-                            className='flex bg-[#F48A1F] hover:bg-[#DB7A15] p-2 rounded-lg items-center justify-center gap-1.5 cursor-pointer w-[180px] h-[40px]'
+                            disabled={reportBusy || loading}
+                            className='flex bg-[#F48A1F] hover:bg-[#DB7A15] disabled:bg-[#F6B26B] disabled:cursor-wait p-2 rounded-lg items-center justify-center gap-1.5 cursor-pointer w-[180px] h-[40px]'
                             onClick={() => setShowReportMenu(prev => !prev)}
                         >
-                            <p className='text-[#fff] text-base font-lato'>Generate Report</p>
-                            <IoIosArrowDown className={`w-5 h-5 text-[#fff] transition-transform ${showReportMenu ? 'rotate-180' : ''}`} />
+                            <p className='text-[#fff] text-base font-lato whitespace-nowrap'>
+                                {reportRequest
+                                    ? 'Generating…'
+                                    : exportState.kind === 'reputation'
+                                        ? `Building PDF${exportState.total ? ` ${exportState.page}/${exportState.total}` : '…'}`
+                                        : 'Generate Report'}
+                            </p>
+                            {!reportBusy && (
+                                <IoIosArrowDown className={`w-5 h-5 text-[#fff] transition-transform ${showReportMenu ? 'rotate-180' : ''}`} />
+                            )}
                         </button>
 
                         {showReportMenu && (
                             <div className='absolute right-0 top-[46px] z-20 w-[240px] bg-[#fff] rounded-lg border border-[#E5E7EB] shadow-lg py-1'>
-                                {REPORT_TYPES.map((reportType) => (
+                                {REPORT_TYPES.map((reportType) => reportType.available ? (
                                     <button
-                                        key={reportType}
+                                        key={reportType.value}
+                                        type='button'
+                                        disabled={reportBusy || loading}
+                                        className='w-full flex items-center justify-between gap-2 text-left px-4 py-2.5 font-lato text-sm text-[#1F2937] hover:bg-[#FDF3E7] disabled:text-[#9CA3AF] disabled:cursor-wait'
+                                        onClick={() => handleGenerateReport(reportType)}
+                                    >
+                                        <span>{reportType.label}</span>
+                                    </button>
+                                ) : (
+                                    <button
+                                        key={reportType.value}
                                         type='button'
                                         disabled
                                         aria-disabled='true'
                                         title='Not available yet'
                                         className='w-full flex items-center justify-between gap-2 text-left px-4 py-2.5 font-lato text-sm text-[#9CA3AF] cursor-not-allowed'
                                     >
-                                        <span>{reportType}</span>
+                                        <span>{reportType.label}</span>
                                         <span className='text-[10px] uppercase tracking-wide text-[#9CA3AF] bg-[#F3F4F6] rounded px-1.5 py-0.5'>Soon</span>
                                     </button>
                                 ))}
-                                <p className='px-4 pt-2 pb-1 font-lato text-[11px] text-[#9CA3AF] border-t border-[#F3F4F6] mt-1'>
-                                    Use Export Analysis for the full PDF report.
-                                </p>
                             </div>
                         )}
                     </div>
@@ -1160,7 +1143,11 @@ const Compare = ({ search, setSearchList }) => {
                     aria-hidden='true'
                     style={{ position: 'absolute', left: '-20000px', top: 0, width: 794, pointerEvents: 'none' }}
                 >
-                    <SentimentReportDocument ref={reportDocRef} model={reportModel} logo={Logo} />
+                    {exportState.kind === 'reputation' ? (
+                        <ReputationReportDocument ref={reportDocRef} model={reputationModel} logo={Logo} />
+                    ) : (
+                        <SentimentReportDocument ref={reportDocRef} model={reportModel} logo={Logo} />
+                    )}
                 </div>
             )}
 

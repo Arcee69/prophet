@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { AiOutlineDownload } from 'react-icons/ai';
+import { IoLocationOutline } from 'react-icons/io5';
 
 // Pages either side of the current one kept visible in the pager.
 const PAGE_WINDOW = 1;
@@ -76,13 +77,14 @@ const SentimentTable = ({
     const handleExportCSV = () => {
         if (filteredMentions?.length === 0) return;
 
-        const header = 'Type,Published,URL,Title,Description,Sentiment,Score,Views,Likes,Comments\n';
+        const header = 'Type,Published,Location,URL,Title,Description,Sentiment,Score,Views,Likes,Comments\n';
         const rows = filteredMentions
             .map(item => {
                 const clean = (value) => String(value ?? '').replace(/"/g, '""');
                 return [
                     item.type,
                     item.publishedAt || '',
+                    item.location || '',
                     item.url,
                     clean(item.title),
                     clean(item.description),
@@ -248,6 +250,12 @@ const SentimentTable = ({
                                                         {mention.tone} ({mention.sentiment.toFixed(2)})
                                                     </p>
                                                 </div>
+                                            )}
+                                            {mention.location && (
+                                                <span className='flex items-center gap-1 font-jost text-xs text-[#4B5563] bg-[#F9FAFB] border border-[#E5E7EB] rounded-full px-3 py-1'>
+                                                    <IoLocationOutline className='w-3.5 h-3.5 text-[#F48A1F]' />
+                                                    {mention.location}
+                                                </span>
                                             )}
                                             {mention.brands?.length > 1 && (
                                                 <span className='font-jost text-xs text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-full px-3 py-1'>
