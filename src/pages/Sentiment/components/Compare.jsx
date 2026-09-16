@@ -13,7 +13,7 @@ import { toast } from 'react-toastify';
 import Logo from '../../../assets/png/logo.png';
 
 
-import { getLocationName, getSentimentColor, normaliseSource } from '../../../utils/sentimentHelpers'
+import { CUSTOM_RANGE, getLocationName, getSentimentColor, normaliseSource, rangeForPreset } from '../../../utils/sentimentHelpers'
 import SentimentBrand from './SentimentBrand'
 import SentimentTable from './SentimentTable'
 import AnalysisLoader from '../../../components/AnalysisLoader'
@@ -29,9 +29,6 @@ import exportReportPdf from '../../../utils/exportReportPdf'
 
 // The board holds the searched brand plus this many competitors.
 const MAX_COMPARE_BRANDS = 3;
-
-// dateChange holds the 1-based preset index, or this when the range was typed by hand.
-const CUSTOM_RANGE = 0;
 
 // The reports offered by the Generate Report dropdown.
 const REPORT_TYPES = [
@@ -60,16 +57,15 @@ const CHANNEL_TYPES = [
     { key: 'youtube', type: 'Youtube' },
 ];
 
-const Compare = ({ search, setSearchList }) => {
+const Compare = ({ search, setSearchList, initialRange }) => {
     const [compareBrands, setCompareBrands] = useState([])
     const [compareBrandInput, setCompareBrandInput] = useState("");
-    const [dateChange, setDateChange] = useState(1)
-    const [startDate, setStartDate] = useState(() => {
-        const start = new Date();
-        start.setDate(start.getDate() - 1);
-        return start;
-    });
-    const [endDate, setEndDate] = useState(new Date());
+    // Seeded from the duration picked on the landing page, so the board's first fetch
+    // already covers the range the user asked for. Resetting these after mount would
+    // fire a second request for the default day before the chosen range loaded.
+    const [dateChange, setDateChange] = useState(initialRange?.preset ?? 1)
+    const [startDate, setStartDate] = useState(() => initialRange?.startDate ?? rangeForPreset(1).startDate);
+    const [endDate, setEndDate] = useState(() => initialRange?.endDate ?? rangeForPreset(1).endDate);
     const [summaries, setSummaries] = useState([])
     const [loading, setLoading] = useState(false)
     const [selectedMetric, setSelectedMetric] = useState('mentions');
@@ -229,41 +225,7 @@ const Compare = ({ search, setSearchList }) => {
 
     // Add date range presets
     const handleDateChange = (presetIndex) => {
-        const today = new Date();
-        let newStart, newEnd;
-
-        switch (presetIndex) {
-            case 1: // 1D
-                newEnd = today;
-                newStart = new Date(today);
-                newStart.setDate(today.getDate() - 1);
-                break;
-            case 2: // 7D
-                newEnd = today;
-                newStart = new Date(today);
-                newStart.setDate(today.getDate() - 7);
-                break;
-            case 3: // 30D
-                newEnd = today;
-                newStart = new Date(today);
-                newStart.setDate(today.getDate() - 30);
-                break;
-            case 4: // 3M
-                newEnd = today;
-                newStart = new Date(today);
-                newStart.setMonth(today.getMonth() - 3);
-                break;
-            case 5: // 6M
-                newEnd = today;
-                newStart = new Date(today);
-                newStart.setMonth(today.getMonth() - 6);
-                break;
-            default: // 13M
-                newEnd = today;
-                newStart = new Date(today);
-                newStart.setMonth(today.getMonth() - 13);
-                break;
-        }
+        const { startDate: newStart, endDate: newEnd } = rangeForPreset(presetIndex);
 
         setStartDate(newStart);
         setEndDate(newEnd);
@@ -283,17 +245,6 @@ const Compare = ({ search, setSearchList }) => {
     };
 
     const isCustomRange = dateChange === CUSTOM_RANGE;
-
-    // Initialize dates to the last day
-    useEffect(() => {
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(today.getDate() - 1);
-
-        setStartDate(yesterday);
-        setEndDate(today);
-        setDateChange(1);
-    }, []);
 
     // const handleDateChange = (value) => {
     //     setDateChange(value)
@@ -1158,6 +1109,11 @@ const Compare = ({ search, setSearchList }) => {
 Compare.propTypes = {
     search: PropTypes.string.isRequired,
     setSearchList: PropTypes.func.isRequired,
+    initialRange: PropTypes.shape({
+        preset: PropTypes.number,
+        startDate: PropTypes.instanceOf(Date),
+        endDate: PropTypes.instanceOf(Date),
+    }),
 }
 
 export default Compare

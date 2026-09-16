@@ -110,3 +110,41 @@ export const normaliseSource = (item, type) => {
         engagement: likes + comments
     };
 };
+
+// ---------------------------------------------------------------------------
+// Date range presets
+//
+// Shared by the Sentiment landing page's duration picker and the board itself, so a
+// range chosen before the search produces exactly the same window as the equivalent
+// preset chosen once the board is open.
+// ---------------------------------------------------------------------------
+
+// dateChange holds the 1-based preset index, or this when the range was typed by hand.
+export const CUSTOM_RANGE = 0;
+
+export const DATE_PRESETS = [
+    { value: 1, label: '1 Day', key: '1D' },
+    { value: 2, label: '7 Days', key: '7D' },
+    { value: 3, label: '30 Days', key: '30D' },
+];
+
+// Every preset ends today and counts backwards. An unknown index falls back to a day,
+// which is the range the board has always opened on.
+export const rangeForPreset = (preset) => {
+    const endDate = new Date();
+    const startDate = new Date(endDate);
+
+    switch (preset) {
+        case 2:
+            startDate.setDate(endDate.getDate() - 7);
+            break;
+        case 3:
+            startDate.setDate(endDate.getDate() - 30);
+            break;
+        default:
+            startDate.setDate(endDate.getDate() - 1);
+            break;
+    }
+
+    return { startDate, endDate };
+};
