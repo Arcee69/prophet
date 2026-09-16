@@ -43,9 +43,9 @@ const colorAt = (index) => BRAND_COLORS[index % BRAND_COLORS.length];
 
 // Channels shared by the volume chart and the per-channel sentiment breakdown.
 const CHANNELS = [
-    { key: 'youtube_sentiment', label: 'YouTube', color: '#FF4E4C' },
-    { key: 'twitter_sentiment', label: 'Twitter/X', color: '#1DA1F2' },
-    { key: 'news_sentiment', label: 'News', color: '#F48A1F' },
+    { key: 'youtube_sentiment', label: 'YouTube', type: 'Youtube', color: '#FF4E4C' },
+    { key: 'twitter_sentiment', label: 'Twitter/X', type: 'Twitter', color: '#1DA1F2' },
+    { key: 'news_sentiment', label: 'News', type: 'News', color: '#F48A1F' },
 ];
 
 // Channel order on the Feeds "All" tab: News, then Twitter/X, then YouTube.
@@ -119,28 +119,37 @@ const Compare = ({ search, setSearchList, initialRange }) => {
         const formatDate = (date) => date.toISOString().split('T')[0];
         const filterKey = `${[...selectedSources].sort().join(',')}|${formatDate(startDate)}|${formatDate(endDate)}`;
 
-        const fetchSentiment = async (keyword) => {
+        // The cache holds the in-flight promise, not just the settled result, so a
+        // repeated run reuses the request already on the wire. StrictMode mounts,
+        // cleans up and re-runs this effect in development, and caching only on
+        // completion let that second run fire its own request for the same brand.
+        const fetchSentiment = (keyword) => {
             const cacheKey = `${keyword.toLowerCase()}|${filterKey}`;
-            if (resultCache.current.has(cacheKey)) {
-                return resultCache.current.get(cacheKey);
-            }
+            const inFlight = resultCache.current.get(cacheKey);
+            if (inFlight) return inFlight;
 
-            try {
-                const res = await api.post(appUrls?.SENTIMENT_URL, {
-                    "keyword1": keyword,
-                    "sources": selectedSources ? selectedSources : "",
-                    "start_date": formatDate(startDate),
-                    "end_date": formatDate(endDate)
-                })
-                const [responseKey, summary = {}] = Object.entries(res?.data || {})[0] || []
-                if (responseKey) responseKeys.current.set(keyword.toLowerCase(), responseKey)
-                resultCache.current.set(cacheKey, summary)
-                return summary
-            } catch (err) {
-                console.log(err)
-                // Not cached: a failed brand should be retried, not stuck empty.
-                return {}
-            }
+            const request = (async () => {
+                try {
+                    const res = await api.post(appUrls?.SENTIMENT_URL, {
+                        "keyword1": keyword,
+                        "sources": selectedSources ? selectedSources : "",
+                        "start_date": formatDate(startDate),
+                        "end_date": formatDate(endDate)
+                    })
+                    const [responseKey, summary = {}] = Object.entries(res?.data || {})[0] || []
+                    if (responseKey) responseKeys.current.set(keyword.toLowerCase(), responseKey)
+                    return summary
+                } catch (err) {
+                    console.log(err)
+                    // Dropped from the cache: a failed brand should be retried, not
+                    // stuck empty behind a rejected entry.
+                    resultCache.current.delete(cacheKey)
+                    return {}
+                }
+            })();
+
+            resultCache.current.set(cacheKey, request);
+            return request;
         }
 
         const run = async () => {
@@ -432,6 +441,8 @@ const Compare = ({ search, setSearchList, initialRange }) => {
                     return {
                         label: channel.label,
                         mentions: total,
+                        scoredMentions: scored,
+                        fromItems: true,
                         basis: `${scored.length.toLocaleString()} scored mentions`,
                         positive: toPct(counts.positive),
                         neutral: toPct(counts.neutral),
@@ -442,6 +453,8 @@ const Compare = ({ search, setSearchList, initialRange }) => {
                 return {
                     label: channel.label,
                     mentions: total,
+                    scoredMentions: scored,
+                    fromItems: false,
                     basis: 'channel average score',
                     ...getSentimentPercentages(summary?.[channel.key] || {})
                 };

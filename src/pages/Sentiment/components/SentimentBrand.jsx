@@ -1,8 +1,12 @@
-import React, { useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { GoGlobe } from 'react-icons/go';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, LabelList, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { RiPieChartLine } from 'react-icons/ri';
 import Chart from 'react-apexcharts'
+import ChannelMentionsModal from './ChannelMentionsModal'
+
+// Series order in channelSentimentData: Positive, Neutral, Negative.
+const SERIES_TONES = ['positive', 'neutral', 'negative'];
 
 const SentimentBrand = ({
     loading,
@@ -62,6 +66,36 @@ const SentimentBrand = ({
             ))}
         </div>
     );
+
+    // The chart segment the user clicked, e.g. { channel: News, tone: 'positive' }.
+    const [channelSelection, setChannelSelection] = useState(null);
+    const closeChannelSelection = useCallback(() => setChannelSelection(null), []);
+
+    const channelChartOptions = useMemo(() => {
+        const options = channelSentimentData?.options;
+        if (!options) return options;
+        return {
+            ...options,
+            chart: {
+                ...options.chart,
+                events: {
+                    dataPointSelection: (_event, _context, { seriesIndex, dataPointIndex }) => {
+                        const channel = channelSentimentData.channels[dataPointIndex];
+                        const tone = SERIES_TONES[seriesIndex];
+                        if (channel && tone) setChannelSelection({ channel, tone });
+                    }
+                }
+            },
+            // Clicking opens the modal, so don't leave the bar stuck in a selected state.
+            // ApexCharts' default hover filter doubles each colour channel, which turns
+            // the grey neutral segment pure white; hover feedback is a CSS dim instead.
+            states: {
+                ...options.states,
+                hover: { filter: { type: 'none' } },
+                active: { filter: { type: 'none' } }
+            }
+        };
+    }, [channelSentimentData]);
 
     const [keywordChannel, setKeywordChannel] = useState('All');
     const [showAllKeywords, setShowAllKeywords] = useState(false);
@@ -349,11 +383,21 @@ const SentimentBrand = ({
 
                         {channelSentimentData?.channels?.length > 0 ? (
                             <>
-                                <Chart
-                                    options={channelSentimentData.options}
-                                    series={channelSentimentData.series}
-                                    type='bar'
-                                    height={300}
+                                <p className='font-jost text-xs text-[#9CA3AF]'>
+                                    Click a segment to see the mentions behind it
+                                </p>
+                                <div className='cursor-pointer [&_.apexcharts-bar-area]:transition-opacity [&_.apexcharts-bar-area:hover]:opacity-80'>
+                                    <Chart
+                                        options={channelChartOptions}
+                                        series={channelSentimentData.series}
+                                        type='bar'
+                                        height={300}
+                                    />
+                                </div>
+                                <ChannelMentionsModal
+                                    selection={channelSelection}
+                                    brand={activeBrand}
+                                    onClose={closeChannelSelection}
                                 />
                                 <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mt-2'>
                                     {channelSentimentData.channels.map((channel) => (
