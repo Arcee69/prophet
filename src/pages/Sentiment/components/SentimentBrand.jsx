@@ -8,12 +8,16 @@ import ChannelMentionsModal from './ChannelMentionsModal'
 // Series order in channelSentimentData: Positive, Neutral, Negative.
 const SERIES_TONES = ['positive', 'neutral', 'negative'];
 
+// Total Mentions bars, one per brand, kept clear of the sentiment red/green.
+const MENTION_BAR_COLORS = ['#6366F1', '#0EA5E9', '#F59E0B', '#EC4899'];
+
 const SentimentBrand = ({
     loading,
     mentionsData,
     engagementData,
     reachData,
-    sentimentChartData,
+    overallSentimentData = [],
+    sourceReachData,
     barChartData,
     lineChartData,
     selectedMetric,
@@ -39,6 +43,23 @@ const SentimentBrand = ({
 }) => {
 
     const TONE_COLORS = { positive: '#1E5631', neutral: '#BFBFBF', negative: '#FF4E4C' };
+    const TONE_STYLES = {
+        positive: { badge: 'bg-[#DCFCE7] text-[#1E5631]' },
+        neutral: { badge: 'bg-[#F3F4F6] text-[#4B5563]' },
+        negative: { badge: 'bg-[#FEE2E2] text-[#B91C1C]' }
+    };
+
+    // Plain-language read of a brand's overall sentiment for the summary card.
+    const sentimentWriteUp = ({ name, tone, positive, neutral, negative, mentions }) => {
+        const across = mentions > 0 ? ` across ${formatter.format(mentions)} mentions` : '';
+        if (tone === 'positive') {
+            return `Coverage of ${name} leans positive${across}, with ${positive}% of the conversation favourable and ${negative}% negative. The brand is being discussed in a supportive light; keep amplifying the stories and channels driving this goodwill.`;
+        }
+        if (tone === 'negative') {
+            return `Coverage of ${name} leans negative${across}, with ${negative}% of the conversation unfavourable against ${positive}% positive. Review the negative keywords and channel breakdown above to find what is driving criticism and respond early.`;
+        }
+        return `Coverage of ${name} is largely neutral${across}, with ${neutral}% of the conversation carrying no strong opinion either way. Mentions are mostly informational, which leaves room to shape the narrative before it tips in either direction.`;
+    };
 
     const mainBrand = brands[0] || search;
     const activeBrand = brands[activeBrandIndex] || mainBrand;
@@ -112,8 +133,6 @@ const SentimentBrand = ({
             <div className="h-full bg-[#BFBFBF] rounded"></div>
         </div>
     );
-
-    const labelFormatter = (val) => val > 0 ? `${val}%` : '';
 
     const formatter = new Intl.NumberFormat('en-US');
 
@@ -216,8 +235,8 @@ const SentimentBrand = ({
                                                 <YAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
                                                 <Tooltip formatter={formatNumber} />
                                                 <Bar dataKey="value">
-                                                    {mentionsData.map((entry, index) => (
-                                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                                    {mentionsData.map((_, index) => (
+                                                        <Cell key={`cell-${index}`} fill={MENTION_BAR_COLORS[index % MENTION_BAR_COLORS.length]} />
                                                     ))}
                                                     <LabelList dataKey="value" position="top" formatter={formatNumber} />
                                                 </Bar>
@@ -253,64 +272,12 @@ const SentimentBrand = ({
                             </>
                         )}
                     </div>
-                    <div className="flex items-center gap-4">
-                        {loading ? (
-                            <SkeletonCard />
-                        ) : (
-                            <div className="h-[362px] w-full flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
-                                <div className='flex items-center justify-between'>
-                                    <div className='flex items-center gap-2'>
-                                        <RiPieChartLine className='w-5 h-5 text-[#F48A1F]' />
-                                        <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Sentiment</p>
-                                    </div>
-                                    <div className='flex items-center gap-2'>
-                                        <div className='flex items-center gap-1'>
-                                            <div className='bg-[#1E5631] w-2 h-2 rounded-full'></div>
-                                            <p className='font-jost text-black text-xs leading-[100%]'>Positive</p>
-                                        </div>
-                                        <div className='flex items-center gap-1'>
-                                            <div className='bg-[#DEDEDE] w-2 h-2 rounded-full'></div>
-                                            <p className='font-jost text-black text-xs leading-[100%]'>Neutral</p>
-                                        </div>
-                                        <div className='flex items-center gap-1'>
-                                            <div className='bg-[#FF4E4C] w-2 h-2 rounded-full'></div>
-                                            <p className='font-jost text-black text-xs leading-[100%]'>Negative</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="w-full h-[250px]">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart
-                                            // layout="vertical"
-                                            data={sentimentChartData}
-                                            margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
-                                        >
-                                            {/* <XAxis type="number" domain={[0, 100]} tickFormatter={(tick) => `${tick}%`} />
-                                        <YAxis type="category" dataKey="name" width={100} /> */}
-                                            <XAxis type="category" dataKey="name" position="top" />
-                                            <YAxis type="number" domain={[0, 100]} tickFormatter={(tick) => `${tick}%`} />
-                                            <Tooltip formatter={(value) => `${value}%`} />
-                                            <Bar dataKey="positive" stackId="a" fill="#1E5631">
-                                                <LabelList dataKey="positive" fill="#fff" position="center" formatter={labelFormatter} />
-                                            </Bar>
-                                            <Bar dataKey="neutral" stackId="a" fill="#BFBFBF">
-                                                <LabelList dataKey="neutral" fill="#fff" position="center" formatter={labelFormatter} />
-                                            </Bar>
-                                            <Bar dataKey="negative" stackId="a" fill="#FF4E4C">
-                                                <LabelList dataKey="negative" fill="#fff" position="center" formatter={labelFormatter} />
-                                            </Bar>
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            </div>
-                        )}
-                    </div>
                 </div>
 
 
                 {/* Charts Row */}
                 <div className='flex gap-4 mt-5'>
-                    {/* Potent Reach Chart */}
+                    {/* Reach per source (channel) */}
                     {loading ? (
                         <>
                             <SkeletonCard />
@@ -318,30 +285,25 @@ const SentimentBrand = ({
                         </>
                     ) : (
                         <>
-                            <div className="h-full w-1/2 flex flex-col px-[25px] py-[28px] shadow bg-white border-[1px] border-white rounded-xl">
-                                <div className='flex items-center justify-between'>
-                                    <div className='flex items-center gap-2'>
-                                        <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>Potential Reach</p>
+                            <div className='bg-white rounded-[18px] w-1/2 p-4 shadow-sm'>
+                                <div className='flex items-start justify-between'>
+                                    <p className='font-jost font-medium text-[20px] mb-4 text-[#4B5563]'>
+                                        Sources Reach
+                                    </p>
+                                    <p className='text-[#6B7280] font-jost text-sm'>Reach by channel</p>
+                                </div>
+                                {sourceReachData?.series?.length > 0 ? (
+                                    <Chart
+                                        options={sourceReachData.options}
+                                        series={sourceReachData.series}
+                                        type='bar'
+                                        height={300}
+                                    />
+                                ) : (
+                                    <div className='flex items-center justify-center h-[300px]'>
+                                        <p className='font-jost text-[#6B7280] text-lg'>No reach recorded for any source</p>
                                     </div>
-                                </div>
-                                <div className="w-full h-[300px]">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart
-                                            data={reachData}
-                                            margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
-                                        >
-                                            <XAxis type="category" dataKey="name" />
-                                            <YAxis type="number" domain={[0, 'dataMax']} tickFormatter={formatNumber} />
-                                            <Tooltip formatter={formatNumber} />
-                                            <Bar dataKey="value">
-                                                {reachData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={entry.color} />
-                                                ))}
-                                                <LabelList dataKey="value" position="top" formatter={formatNumber} />
-                                            </Bar>
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </div>
+                                )}
                             </div>
 
                             {/* Mention volume per channel (counts, not sentiment) */}
@@ -771,6 +733,68 @@ const SentimentBrand = ({
                                 <p className='font-jost text-[#6B7280] text-lg'>No keywords found for {mainBrand}</p>
                             </div>
                         )}
+                    </div>
+                )}
+
+                {/* Overall sentiment, from the summary's overall_sentiment */}
+                <p className='font-jost text-[#101828] my-5 leading-[30px] text-[20px]'>Overall Sentiment</p>
+                {loading ? (
+                    <SkeletonCard />
+                ) : (
+                    <div className={`grid grid-cols-1 ${overallSentimentData.length > 1 ? 'md:grid-cols-2' : ''} gap-4`}>
+                        {overallSentimentData.map((brand) => {
+                            const style = TONE_STYLES[brand.tone];
+                            return (
+                                <div
+                                    key={brand.name}
+                                    className='flex flex-col gap-4 px-[25px] py-[28px] shadow bg-white rounded-xl border-l-4'
+                                    style={{ borderLeftColor: TONE_COLORS[brand.tone] }}
+                                >
+                                    <div className='flex items-center justify-between gap-3'>
+                                        <div className='flex items-center gap-2'>
+                                            <RiPieChartLine className='w-5 h-5 text-[#F48A1F]' />
+                                            {hasCompare && (
+                                                <span className='w-2 h-2 rounded-full' style={{ backgroundColor: brand.color }}></span>
+                                            )}
+                                            <p className='font-semibold font-jost text-[#6B7280] text-[20px]'>{brand.name}</p>
+                                        </div>
+                                        <span className={`font-jost text-sm font-medium capitalize rounded-full px-3 py-1 ${style.badge}`}>
+                                            {brand.tone}
+                                        </span>
+                                    </div>
+
+                                    <p className='font-jost text-[15px] leading-6 text-[#374151]'>
+                                        {sentimentWriteUp(brand)}
+                                    </p>
+
+                                    <div className='flex w-full h-2 rounded-full overflow-hidden bg-gray-100'>
+                                        {['positive', 'neutral', 'negative'].map((tone) => (
+                                            brand[tone] > 0 && (
+                                                <div
+                                                    key={tone}
+                                                    className='h-full'
+                                                    style={{ width: `${brand[tone]}%`, backgroundColor: TONE_COLORS[tone] }}
+                                                    title={`${tone}: ${brand[tone]}%`}
+                                                ></div>
+                                            )
+                                        ))}
+                                    </div>
+                                    <div className='flex items-center gap-4 flex-wrap'>
+                                        {['positive', 'neutral', 'negative'].map((tone) => (
+                                            <div key={tone} className='flex items-center gap-1'>
+                                                <span className='w-2 h-2 rounded-full' style={{ backgroundColor: TONE_COLORS[tone] }}></span>
+                                                <span className='font-jost text-xs text-[#6B7280] capitalize'>{tone} {brand[tone]}%</span>
+                                            </div>
+                                        ))}
+                                        {brand.score !== null && (
+                                            <span className='font-jost text-xs text-[#9CA3AF] ml-auto'>
+                                                Avg. score {brand.score.toFixed(2)}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
 

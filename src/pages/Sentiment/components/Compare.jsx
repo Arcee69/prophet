@@ -13,7 +13,7 @@ import { toast } from 'react-toastify';
 import Logo from '../../../assets/png/logo.png';
 
 
-import { CUSTOM_RANGE, getLocationName, getSentimentColor, normaliseSource, rangeForPreset } from '../../../utils/sentimentHelpers'
+import { CUSTOM_RANGE, getLocationName, getSentimentColor, normaliseSource, rangeForPreset, toneOf } from '../../../utils/sentimentHelpers'
 import SentimentBrand from './SentimentBrand'
 import SentimentTable from './SentimentTable'
 import AnalysisLoader from '../../../components/AnalysisLoader'
@@ -225,9 +225,39 @@ const Compare = ({ search, setSearchList, initialRange }) => {
         color: colorAt(index)
     }));
 
-    const sentimentChartData = brands.map((name, index) => {
-        const sent = getSentimentPercentages(summaryAt(index).summary || {});
-        return { name, positive: sent.positive, negative: sent.negative, neutral: sent.neutral };
+    // The summary's overall_sentiment is a single verdict per brand, so it is shown as
+    // a card rather than a chart. It may arrive as a label, a score or an object, so
+    // each shape is read here and average_score fills any gaps.
+    const overallSentimentData = brands.map((name, index) => {
+        const summary = summaryAt(index).summary || {};
+        const raw = summary.overall_sentiment;
+        const details = raw && typeof raw === 'object' ? raw : {};
+
+        const score = [
+            typeof raw === 'number' ? raw : undefined,
+            details.average_score,
+            details.score,
+            summary.average_score
+        ].find(value => typeof value === 'number') ?? null;
+
+        const label = String(
+            typeof raw === 'string' ? raw : details.label ?? details.sentiment ?? ''
+        ).toLowerCase();
+        const tone = ['positive', 'negative', 'neutral'].find(t => label.includes(t)) || toneOf(score);
+
+        const hasSplit = ['positive', 'neutral', 'negative'].every(t => typeof details[t] === 'number');
+        const split = hasSplit
+            ? { positive: details.positive, neutral: details.neutral, negative: details.negative }
+            : getSentimentPercentages(summary);
+
+        return {
+            name,
+            color: colorAt(index),
+            tone,
+            score,
+            mentions: summary.total_mentions || 0,
+            ...split
+        };
     });
 
 
@@ -413,6 +443,75 @@ const Compare = ({ search, setSearchList, initialRange }) => {
             }
         };
     }, [summaryAt, brands]);
+
+    // Reach per source, one bar group per brand. Uses the channel's own reach figure
+    // when the API sends one, otherwise the views on that channel's mentions.
+    const sourceReachData = useMemo(() => {
+        const channelReach = (index, channel) => {
+            const stats = summaryAt(index).summary?.[channel.key] || {};
+            const reported = stats.total_reach ?? stats.estimated_reach ?? stats.reach;
+            if (typeof reported === 'number') return reported;
+            return (mentionsByBrand[index] || [])
+                .filter(mention => mention.type === channel.type)
+                .reduce((sum, mention) => sum + mention.views, 0);
+        };
+
+        const series = CHANNELS
+            .map(channel => ({
+                name: channel.label,
+                data: brands.map((_, index) => channelReach(index, channel))
+            }))
+            .filter(s => s.data.some(value => value > 0));
+
+        const compact = (value) => new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(value);
+        // Its own palette, kept clear of the red/green used for sentiment elsewhere.
+        const channelColors = { 'News': '#2563EB', 'Twitter/X': '#14B8A6', 'YouTube': '#8B5CF6' };
+
+        return {
+            series,
+            options: {
+                chart: {
+                    type: 'bar',
+                    stacked: true,
+                    toolbar: { show: false },
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: '45%',
+                        borderRadius: 4,
+                        borderRadiusApplication: 'end',
+                        borderRadiusWhenStacked: 'last',
+                        // Total reach across every source, shown above each brand's stack.
+                        dataLabels: {
+                            total: {
+                                enabled: true,
+                                formatter: compact,
+                                style: { fontSize: '12px', fontWeight: 600, color: '#374151' }
+                            }
+                        }
+                    },
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                legend: {
+                    show: true,
+                    position: 'top',
+                },
+                xaxis: {
+                    categories: brands,
+                },
+                yaxis: {
+                    labels: { formatter: compact }
+                },
+                colors: series.map(s => channelColors[s.name]),
+                tooltip: {
+                    y: { formatter: (value) => value.toLocaleString() }
+                }
+            }
+        };
+    }, [summaryAt, mentionsByBrand, brands]);
 
 
     // Sentiment breakdown per channel for the brand currently selected in the toggle.
@@ -1075,7 +1174,8 @@ const Compare = ({ search, setSearchList, initialRange }) => {
                     engagementData={engagementTotals}
                     engagementTonality={engagementTonality}
                     reachData={reachData}
-                    sentimentChartData={sentimentChartData}
+                    overallSentimentData={overallSentimentData}
+                    sourceReachData={sourceReachData}
                     barChartData={barChartData}
                     lineChartData={lineChartData}
                     selectedMetric={selectedMetric}
