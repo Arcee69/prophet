@@ -134,7 +134,8 @@ const SentimentBrand = ({
         </div>
     );
 
-    const formatter = new Intl.NumberFormat('en-US');
+    // Counts and reach are whole things, so no figure here carries decimals.
+    const formatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 
     const formatNumber = (num) => {
         if (num >= 1000000) {
