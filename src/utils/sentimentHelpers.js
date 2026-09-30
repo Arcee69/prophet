@@ -106,7 +106,7 @@ export const normaliseSource = (item, type) => {
         views: toNumber(stats.viewCount),
         likes,
         comments,
-        // News carries no likes or comments, so interactions are YouTube-driven.
+        // News carries no likes or comments, so interactions come from the social channels.
         engagement: likes + comments
     };
 };

@@ -7,6 +7,9 @@ import { toast } from 'react-toastify'
 import Logo from '../../../assets/png/logo.png'
 import ReputationReportDocument from '../../Sentiment/components/report/ReputationReportDocument'
 import buildReputationModel, { formatPeriod, unwrapReport } from '../../Sentiment/components/report/buildReputationModel'
+import ComparativeReportDocument from '../../Sentiment/components/report/ComparativeReportDocument'
+import buildComparativeModel, { displayNameOf, unwrapComparative } from '../../Sentiment/components/report/buildComparativeModel'
+import { COMPARATIVE_REPORT_TYPE } from '../../Sentiment/components/report/comparativePayload'
 import { slugify } from '../../Sentiment/components/report/reportTheme'
 import exportReportPdf from '../../../utils/exportReportPdf'
 
@@ -19,7 +22,15 @@ const humaniseType = (item) => {
     return raw || 'Report'
 }
 
-const brandOf = (item) => reportMetaOf(item).brand_name || ''
+const isComparative = (item) => item?.report_type === COMPARATIVE_REPORT_TYPE
+
+// A comparative report names its brands by key rather than by a single brand_name.
+const brandOf = (item) => {
+    const meta = reportMetaOf(item)
+    if (meta.brand_name) return meta.brand_name
+    const keys = [meta.lead_brand, ...(Array.isArray(meta.competitor_brands) ? meta.competitor_brands : [])]
+    return keys.filter(Boolean).map(displayNameOf).join(' vs ')
+}
 
 const periodOf = (item) => {
     const range = reportMetaOf(item).reporting_period || {}
@@ -74,7 +85,10 @@ const MyReports = () => {
     const handleDownload = (item) => {
         if (exportJob) return
 
-        const model = buildReputationModel({ brand: brandOf(item), response: item })
+        const comparative = isComparative(item)
+        const model = comparative
+            ? buildComparativeModel({ response: item })
+            : buildReputationModel({ brand: brandOf(item), response: item })
         if (!model.hasReport) {
             toast.error('This report has no content to download yet.')
             return
@@ -83,7 +97,10 @@ const MyReports = () => {
         setExportJob({
             id: item.id,
             model,
-            fileName: `${slugify(model.brand || 'report')}-reputation-intelligence-report.pdf`
+            Document: comparative ? ComparativeReportDocument : ReputationReportDocument,
+            fileName: comparative
+                ? `${slugify(model.title || 'report')}-comparative-intelligence-report.pdf`
+                : `${slugify(model.brand || 'report')}-reputation-intelligence-report.pdf`
         })
     }
 
@@ -161,7 +178,7 @@ const MyReports = () => {
                                         {filteredReports.length > 0 ? filteredReports.map((item) => {
                                             const generated = formatDateTime(reportMetaOf(item).generated_at || item.created_at)
                                             // Only a report that carries written content can be rebuilt as a PDF.
-                                            const downloadable = Boolean(unwrapReport(item))
+                                            const downloadable = Boolean(isComparative(item) ? unwrapComparative(item) : unwrapReport(item))
                                             const busy = exportJob?.id === item.id
 
                                             return (
@@ -257,7 +274,7 @@ const MyReports = () => {
                     aria-hidden='true'
                     style={{ position: 'absolute', left: '-20000px', top: 0, width: 794, pointerEvents: 'none' }}
                 >
-                    <ReputationReportDocument ref={reportDocRef} model={exportJob.model} logo={Logo} />
+                    <exportJob.Document ref={reportDocRef} model={exportJob.model} logo={Logo} />
                 </div>
             )}
         </div>

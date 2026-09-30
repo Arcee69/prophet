@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import { IoLocationOutline } from 'react-icons/io5';
+import { FaLinkedinIn } from 'react-icons/fa';
 
 const formatNumber = (num) => {
     const value = Number(num) || 0;
@@ -26,9 +27,14 @@ const MentionCard = ({ mention }) => (
                 mention.type === 'Twitter' ?
                     <img width="48" height="48" src="https://img.icons8.com/fluency/48/twitterx--v1.png" alt="twitterx--v1" />
                     :
-                    <div className='w-[32px] h-[32px] flex items-center justify-center rounded-full bg-[#10B981] p-2'>
-                        <p className='text-white font-jost font-semibold'>N</p>
-                    </div>
+                    mention.type === 'Linkedin' ?
+                        <div className='w-[32px] h-[32px] shrink-0 flex items-center justify-center rounded-md bg-[#0A66C2]'>
+                            <FaLinkedinIn className='w-[18px] h-[18px] text-white' />
+                        </div>
+                        :
+                        <div className='w-[32px] h-[32px] flex items-center justify-center rounded-full bg-[#10B981] p-2'>
+                            <p className='text-white font-jost font-semibold'>N</p>
+                        </div>
         }
         <div className='flex gap-3 flex-col w-full'>
             <div className='flex flex-col mt-1 gap-1'>

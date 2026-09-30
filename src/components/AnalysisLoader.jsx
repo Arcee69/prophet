@@ -21,7 +21,7 @@ const STAGES = [
     { at: 155, label: 'Building your report', detail: 'Almost there — larger brands take longer' },
 ];
 
-const CHANNELS = ['News', 'Twitter/X', 'YouTube'];
+const CHANNELS = ['News', 'Twitter/X', 'YouTube', 'LinkedIn'];
 
 const PROGRESS_CEILING = 94;
 // Time constant for the easing curve, in seconds. Tuned so a fast run (~20s)
@@ -105,7 +105,7 @@ const AnalysisLoader = ({ brands = [], context = 'report' }) => {
                     Analyzing {brandLabel || 'your search'}
                 </p>
                 <p className="font-jost text-sm text-[#667185] max-w-[520px]">
-                    We&apos;re gathering every mention across news, YouTube and X, then scoring
+                    We&apos;re gathering every mention across news, LinkedIn, YouTube and X, then scoring
                     the tone of each one. This usually takes under a minute, but brands with
                     heavy coverage can take a few.
                 </p>

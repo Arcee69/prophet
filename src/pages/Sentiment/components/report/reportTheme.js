@@ -57,6 +57,9 @@ export const REPUTATION_COLORS = {
     blue: '#3A76A8',
     blueSoft: '#E8F0F7',
     blueLine: '#C5D8E8',
+    linkedin: '#0A66C2',
+    linkedinSoft: '#E6F0FA',
+    linkedinLine: '#B3D0EE',
     ink: '#1B3345',
     inkSoft: '#2F4454',
     muted: '#6B7A89',
@@ -82,6 +85,8 @@ export const CHANNEL_STYLE = {
     'Twitter': '#1DA1F2',
     'News': '#F48A1F',
     'Youtube': '#FF4E4C',
+    'LinkedIn': '#0A66C2',
+    'Linkedin': '#0A66C2',
 };
 
 export const channelColor = (label) => CHANNEL_STYLE[label] || COLORS.violet;

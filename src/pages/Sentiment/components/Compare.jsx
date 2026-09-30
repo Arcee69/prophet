@@ -22,6 +22,9 @@ import buildReportModel from './report/buildReportModel'
 import ReputationReportDocument from './report/ReputationReportDocument'
 import buildReputationModel from './report/buildReputationModel'
 import buildReputationPayload, { REPUTATION_REPORT_TYPE } from './report/reputationPayload'
+import ComparativeReportDocument from './report/ComparativeReportDocument'
+import buildComparativeModel from './report/buildComparativeModel'
+import buildComparativePayload, { COMPARATIVE_REPORT_TYPE } from './report/comparativePayload'
 import { slugify } from './report/reportTheme'
 import exportReportPdf from '../../../utils/exportReportPdf'
 
@@ -33,10 +36,16 @@ const MAX_COMPARE_BRANDS = 3;
 // The reports offered by the Generate Report dropdown.
 const REPORT_TYPES = [
     { label: 'Reputation Intelligence', value: REPUTATION_REPORT_TYPE, available: true },
-    { label: 'Competitive Intelligence', value: 'competitive_intelligence', available: false },
+    { label: 'Comparative Intelligence', value: COMPARATIVE_REPORT_TYPE, available: true },
 ];
 
 const IDLE_EXPORT = { active: false, kind: null, page: 0, total: 0 };
+
+// The export kinds that come from the report service, keyed by `exportState.kind`.
+const GENERATED_EDITIONS = {
+    reputation: { label: 'Reputation', slug: 'reputation-intelligence-report' },
+    comparative: { label: 'Comparative', slug: 'comparative-intelligence-report' },
+};
 
 const BRAND_COLORS = ['#1E5631', '#FF4E4C', '#F48A1F', '#3B82F6'];
 const colorAt = (index) => BRAND_COLORS[index % BRAND_COLORS.length];
@@ -46,16 +55,21 @@ const CHANNELS = [
     { key: 'youtube_sentiment', label: 'YouTube', type: 'Youtube', color: '#FF4E4C' },
     { key: 'twitter_sentiment', label: 'Twitter/X', type: 'Twitter', color: '#1DA1F2' },
     { key: 'news_sentiment', label: 'News', type: 'News', color: '#F48A1F' },
+    { key: 'linkedin_sentiment', label: 'LinkedIn', type: 'Linkedin', color: '#0A66C2' },
 ];
 
-// Channel order on the Feeds "All" tab: News, then Twitter/X, then YouTube.
-const typeOrder = { News: 0, Twitter: 1, Youtube: 2 };
+// Channel order on the Feeds "All" tab: News, then Twitter/X, then YouTube, then LinkedIn.
+const typeOrder = { News: 0, Twitter: 1, Youtube: 2, Linkedin: 3 };
 
 const CHANNEL_TYPES = [
     { key: 'news', type: 'News' },
     { key: 'twitter', type: 'Twitter' },
     { key: 'youtube', type: 'Youtube' },
+    { key: 'linkedin', type: 'Linkedin' },
 ];
+
+// Every source the API accepts, sent when the filter is on "All sources".
+const ALL_SOURCES = ['youtube', 'news', 'twitter', 'linkedin'];
 
 const Compare = ({ search, setSearchList, initialRange }) => {
     const [compareBrands, setCompareBrands] = useState([])
@@ -70,7 +84,7 @@ const Compare = ({ search, setSearchList, initialRange }) => {
     const [loading, setLoading] = useState(false)
     const [selectedMetric, setSelectedMetric] = useState('mentions');
     const [activeBrandIndex, setActiveBrandIndex] = useState(0);
-    const [selectedSources, setSelectedSources] = useState(["youtube", "news", "twitter"]);
+    const [selectedSources, setSelectedSources] = useState(ALL_SOURCES);
     const [activeTab, setActiveTab] = useState('Feeds');
     const [mentionTab, setMentionTab] = useState('All')
     const [showReportMenu, setShowReportMenu] = useState(false)
@@ -297,6 +311,7 @@ const Compare = ({ search, setSearchList, initialRange }) => {
         { value: 'news', label: 'News Mentions' },
         { value: 'youtube', label: 'YouTube Mentions' },
         { value: 'twitter', label: 'Twitter Mentions' },
+        { value: 'linkedin', label: 'LinkedIn Mentions' },
     ];
 
     // Every source the API returned, per brand, in one normalised shape.
@@ -330,7 +345,7 @@ const Compare = ({ search, setSearchList, initialRange }) => {
             if (selectedMetric === 'engagement') return mention.engagement;
             if (selectedMetric === 'mentions') return 1;
             // Per-channel metrics: count only that channel's mentions.
-            const channel = { youtube: 'Youtube', twitter: 'Twitter', news: 'News' }[selectedMetric];
+            const channel = { youtube: 'Youtube', twitter: 'Twitter', news: 'News', linkedin: 'Linkedin' }[selectedMetric];
             return mention.type === channel ? 1 : 0;
         };
 
@@ -354,6 +369,7 @@ const Compare = ({ search, setSearchList, initialRange }) => {
             youtube: 'YouTube Mentions',
             twitter: 'Twitter Mentions',
             news: 'News Mentions',
+            linkedin: 'LinkedIn Mentions',
             reach: 'Potential Reach',
             engagement: 'Engagement'
         };
@@ -465,7 +481,7 @@ const Compare = ({ search, setSearchList, initialRange }) => {
 
         const compact = (value) => new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(value);
         // Its own palette, kept clear of the red/green used for sentiment elsewhere.
-        const channelColors = { 'News': '#2563EB', 'Twitter/X': '#14B8A6', 'YouTube': '#8B5CF6' };
+        const channelColors = { 'News': '#2563EB', 'Twitter/X': '#14B8A6', 'YouTube': '#8B5CF6', 'LinkedIn': '#F59E0B' };
 
         return {
             series,
@@ -671,13 +687,15 @@ const Compare = ({ search, setSearchList, initialRange }) => {
         const youtubeNeg = data?.top_words?.youtube?.negative || [];
         const newsPos = data?.top_words?.news?.positive || [];
         const newsNeg = data?.top_words?.news?.negative || [];
+        const linkedinPos = data?.top_words?.linkedin?.positive || [];
+        const linkedinNeg = data?.top_words?.linkedin?.negative || [];
 
         // De-duplicate: the same word often tops more than one channel.
         const unique = (words) => [...new Set(words)];
 
         return {
-            positive: unique([...twitterPos, ...youtubePos, ...newsPos]),
-            negative: unique([...twitterNeg, ...youtubeNeg, ...newsNeg])
+            positive: unique([...twitterPos, ...youtubePos, ...newsPos, ...linkedinPos]),
+            negative: unique([...twitterNeg, ...youtubeNeg, ...newsNeg, ...linkedinNeg])
         };
     }, [summaryAt]);
 
@@ -689,6 +707,7 @@ const Compare = ({ search, setSearchList, initialRange }) => {
             { key: 'twitter', label: 'Twitter/X' },
             { key: 'youtube', label: 'YouTube' },
             { key: 'news', label: 'News' },
+            { key: 'linkedin', label: 'LinkedIn' },
         ]
             .map(channel => ({
                 label: channel.label,
@@ -796,7 +815,7 @@ const Compare = ({ search, setSearchList, initialRange }) => {
             ?.filter(m => mentionTab === 'All' || m.type === mentionTab)
             ?.slice()
             ?.sort((a, b) => {
-                // Group by channel first so All reads News -> Twitter/X -> YouTube,
+                // Group by channel first so All reads News -> Twitter/X -> YouTube -> LinkedIn,
                 // then scored mentions ahead of unscored ones, then newest first.
                 const byChannel = (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
                 if (byChannel !== 0) return byChannel;
@@ -817,9 +836,10 @@ const Compare = ({ search, setSearchList, initialRange }) => {
     // can stand on its own.
     // ----------------------------------------------------------------------
 
-    // `kind` is 'analysis' for Export Analysis or 'reputation' for a generated report.
+    // `kind` is 'analysis' for Export Analysis, or 'reputation' / 'comparative' for a
+    // generated report (see GENERATED_EDITIONS).
     const [exportState, setExportState] = useState(IDLE_EXPORT);
-    const [reputationModel, setReputationModel] = useState(null);
+    const [generatedModel, setGeneratedModel] = useState(null);
     // The report type whose API request is in flight, if any.
     const [reportRequest, setReportRequest] = useState(null);
     const reportBusy = Boolean(reportRequest) || exportState.active;
@@ -844,8 +864,9 @@ const Compare = ({ search, setSearchList, initialRange }) => {
         setExportState({ active: true, kind: 'analysis', page: 0, total: 0 });
     };
 
-    // Reputation Intelligence covers the main brand only. The report service writes
-    // the narrative from the brand's sentiment payload; the PDF is then laid out and
+    // Reputation Intelligence covers the main brand only; Comparative Intelligence sends
+    // every brand on the board with the main brand as the lead. The report service
+    // writes the narrative from the sentiment payloads; the PDF is then laid out and
     // captured here, the same way as Export Analysis.
     const handleGenerateReport = async (reportType) => {
         if (!reportType.available || reportBusy || loading) return;
@@ -856,26 +877,50 @@ const Compare = ({ search, setSearchList, initialRange }) => {
             return;
         }
 
+        // Each brand under the key the sentiment API returned it under. A competitor
+        // whose request failed has nothing to compare, so it is left out of the report.
+        const keyOf = (brand) => responseKeys.current.get(brand.toLowerCase()) || brand.toLowerCase();
+        const compared = brands
+            .map((brand, index) => ({ brand, key: keyOf(brand), summary: summaryAt(index) }))
+            .filter((entry) => Object.keys(entry.summary).length > 0);
+
+        const comparative = reportType.value === COMPARATIVE_REPORT_TYPE;
+        if (comparative && compared.length < 2) {
+            toast.error('Add at least one comparison brand with results before generating a Comparative Intelligence report.');
+            return;
+        }
+
         setShowReportMenu(false);
         setReportRequest(reportType.value);
 
         // Captured now so a filter change mid-request cannot relabel the period.
         const period = { startDate, endDate };
-        const brandKey = responseKeys.current.get(search.toLowerCase()) || search.toLowerCase();
+        const leadKey = compared[0].key;
 
         try {
-            const res = await api.post(appUrls?.REPORTS_URL, buildReputationPayload(brandKey, summary));
-            const model = buildReputationModel({ brand: search, summary, response: res?.data, ...period });
+            const payload = comparative
+                ? buildComparativePayload(leadKey, compared)
+                : buildReputationPayload(leadKey, summary);
+            const res = await api.post(appUrls?.REPORTS_URL, payload);
+            const model = comparative
+                ? buildComparativeModel({
+                    brands: compared.map((entry) => entry.brand),
+                    brandKeys: compared.map((entry) => entry.key),
+                    summaries: compared.map((entry) => entry.summary),
+                    response: res?.data,
+                    ...period,
+                })
+                : buildReputationModel({ brand: search, summary, response: res?.data, ...period });
 
             if (!model.hasReport) {
                 toast.error(res?.data?.message || 'The report service returned no report content. Please try again.');
                 return;
             }
 
-            setReputationModel(model);
-            setExportState({ active: true, kind: 'reputation', page: 0, total: 0 });
+            setGeneratedModel(model);
+            setExportState({ active: true, kind: comparative ? 'comparative' : 'reputation', page: 0, total: 0 });
         } catch (error) {
-            console.error('Reputation report request failed', error);
+            console.error(`${reportType.label} report request failed`, error);
             toast.error(error?.data?.message || 'Could not generate the report. Please try again.');
         } finally {
             setReportRequest(null);
@@ -890,21 +935,22 @@ const Compare = ({ search, setSearchList, initialRange }) => {
         exportRunning.current = true;
         let mounted = true;
 
-        const isReputation = exportState.kind === 'reputation';
+        const edition = GENERATED_EDITIONS[exportState.kind];
+        const subject = exportState.kind === 'comparative' ? generatedModel?.title : search;
 
         const run = async () => {
             try {
                 await exportReportPdf(reportDocRef.current, {
-                    fileName: isReputation
-                        ? `${slugify(search)}-reputation-intelligence-report.pdf`
+                    fileName: edition
+                        ? `${slugify(subject)}-${edition.slug}.pdf`
                         : `${slugify(brands.join(' vs '))}-sentiment-report.pdf`,
                     onProgress: ({ page, total }) => {
                         if (mounted) setExportState((prev) => ({ ...prev, page, total }));
                     }
                 });
             } catch (error) {
-                console.error(`${isReputation ? 'Reputation' : 'Sentiment'} report export failed`, error);
-                if (isReputation) toast.error('The report was generated but the PDF could not be built. Please try again.');
+                console.error(`${edition ? edition.label : 'Sentiment'} report export failed`, error);
+                if (edition) toast.error('The report was generated but the PDF could not be built. Please try again.');
             } finally {
                 exportRunning.current = false;
                 if (mounted) setExportState(IDLE_EXPORT);
@@ -955,7 +1001,7 @@ const Compare = ({ search, setSearchList, initialRange }) => {
                             <p className='text-[#fff] text-base font-lato whitespace-nowrap'>
                                 {reportRequest
                                     ? 'Generating…'
-                                    : exportState.kind === 'reputation'
+                                    : GENERATED_EDITIONS[exportState.kind]
                                         ? `Building PDF${exportState.total ? ` ${exportState.page}/${exportState.total}` : '…'}`
                                         : 'Generate Report'}
                             </p>
@@ -1070,7 +1116,7 @@ const Compare = ({ search, setSearchList, initialRange }) => {
                             onChange={(e) => {
                                 const value = e.target.value;
                                 if (value === "") {
-                                    setSelectedSources(["youtube", "news", "twitter"]);
+                                    setSelectedSources(ALL_SOURCES);
                                 } else {
                                     setSelectedSources([value]);
                                 }
@@ -1080,6 +1126,7 @@ const Compare = ({ search, setSearchList, initialRange }) => {
                             <option value="youtube">YouTube only</option>
                             <option value="news">News only</option>
                             <option value="twitter">Twitter only</option>
+                            <option value="linkedin">LinkedIn only</option>
                         </select>
                     </div>
 
@@ -1208,7 +1255,9 @@ const Compare = ({ search, setSearchList, initialRange }) => {
                     style={{ position: 'absolute', left: '-20000px', top: 0, width: 794, pointerEvents: 'none' }}
                 >
                     {exportState.kind === 'reputation' ? (
-                        <ReputationReportDocument ref={reportDocRef} model={reputationModel} logo={Logo} />
+                        <ReputationReportDocument ref={reportDocRef} model={generatedModel} logo={Logo} />
+                    ) : exportState.kind === 'comparative' ? (
+                        <ComparativeReportDocument ref={reportDocRef} model={generatedModel} logo={Logo} />
                     ) : (
                         <SentimentReportDocument ref={reportDocRef} model={reportModel} logo={Logo} />
                     )}

@@ -15,6 +15,7 @@ export const CHANNEL_META = {
     twitter: { key: 'twitter_sentiment', label: 'X', color: C.green, text: C.green, soft: C.greenSoft, line: C.greenLine, rate: 0.042 },
     news: { key: 'news_sentiment', label: 'News', color: C.blue, text: C.blue, soft: C.blueSoft, line: C.blueLine, rate: 0.0035 },
     youtube: { key: 'youtube_sentiment', label: 'YouTube', color: C.yellow, text: C.gold, soft: C.yellowSoft, line: C.yellowLine, rate: 0.055 },
+    linkedin: { key: 'linkedin_sentiment', label: 'LinkedIn', color: C.linkedin, text: C.linkedin, soft: C.linkedinSoft, line: C.linkedinLine, rate: 0.03 },
 };
 
 export const channelIdOf = (name) => {
@@ -22,6 +23,7 @@ export const channelIdOf = (name) => {
     if (value === 'x' || value.includes('twit')) return 'twitter';
     if (value.includes('news')) return 'news';
     if (value.includes('you')) return 'youtube';
+    if (value.includes('linked')) return 'linkedin';
     return null;
 };
 

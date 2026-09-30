@@ -460,8 +460,8 @@ const SentimentBrand = ({
                                     No engagement recorded for {activeBrand}
                                 </p>
                                 <p className='font-jost text-sm text-[#9CA3AF]'>
-                                    News articles carry no likes or comments, so this fills in once YouTube
-                                    or social mentions are returned.
+                                    News articles carry no likes or comments, so this fills in once YouTube,
+                                    LinkedIn or other social mentions are returned.
                                 </p>
                             </div>
                         )}

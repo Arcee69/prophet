@@ -15,7 +15,11 @@ const CHANNELS = [
     { key: 'news_sentiment', type: 'News', label: 'News' },
     { key: 'twitter_sentiment', type: 'Twitter', label: 'Twitter/X' },
     { key: 'youtube_sentiment', type: 'Youtube', label: 'YouTube' },
+    { key: 'linkedin_sentiment', type: 'Linkedin', label: 'LinkedIn' },
 ];
+
+// Mention types as the dashboard stores them, mapped to the labels the PDF prints.
+const CHANNEL_LABELS = CHANNELS.reduce((acc, channel) => ({ ...acc, [channel.type]: channel.label }), {});
 
 // Words that top the keyword lists but carry no narrative meaning.
 const STOP_WORDS = new Set([
@@ -276,8 +280,8 @@ const buildTopContent = (brands, mentionsByBrand) => {
         .slice(0, 7)
         .map((mention, index) => ({
             rank: index + 1,
-            channel: mention.type === 'Twitter' ? 'Twitter/X' : mention.type,
-            channelColor: channelColor(mention.type === 'Twitter' ? 'Twitter/X' : mention.type),
+            channel: CHANNEL_LABELS[mention.type] || mention.type,
+            channelColor: channelColor(CHANNEL_LABELS[mention.type] || mention.type),
             title: mention.title,
             brand: mention.brand,
             brandColor: mention.brandColor,

@@ -101,7 +101,7 @@ const SentimentTable = ({
             <div className='flex flex-col  overflow-x-hidden gap-[11px]'>
                 <div className='flex items-center justify-between gap-5'>
 
-                    {/* Toggle for all, youtube and news */}
+                    {/* Toggle for all, news, twitter, youtube and linkedin */}
                     <div className='flex gap-2'>
                         <button
                             className={`px-4 py-2 border border-[#E2E8F0]  rounded-[10px] ${mentionTab === 'All' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
@@ -120,6 +120,12 @@ const SentimentTable = ({
                             onClick={() => setMentionTab('Twitter')}
                         >
                             Twitter
+                        </button>
+                        <button
+                            className={`px-4 py-2 border border-[#E2E8F0] rounded-[10px] ${mentionTab === 'Linkedin' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
+                            onClick={() => setMentionTab('Linkedin')}
+                        >
+                            LinkedIn
                         </button>
                         <button
                             className={`px-4 py-2 border border-[#E2E8F0] rounded-[10px] ${mentionTab === 'Youtube' ? 'bg-[#F48A1F] text-white' : 'bg-gray-200 text-gray-700'}`}
