@@ -99,7 +99,7 @@ const MyReports = () => {
             model,
             Document: comparative ? ComparativeReportDocument : ReputationReportDocument,
             fileName: comparative
-                ? `${slugify(model.title || 'report')}-comparative-intelligence-report.pdf`
+                ? `${slugify(model.title || 'report')}-competitive-intelligence-report.pdf`
                 : `${slugify(model.brand || 'report')}-reputation-intelligence-report.pdf`
         })
     }

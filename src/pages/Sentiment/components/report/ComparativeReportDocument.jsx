@@ -30,7 +30,7 @@ import { grid, pad2, readable, signed3 } from './intelligenceHelpers';
 // competitors. It shares the reputation edition's template and capture rules - see
 // IntelligencePrimitives - and, like it, drops any page the response left empty.
 
-const EDITION = 'Comparative Intelligence';
+const EDITION = 'Competitive Intelligence';
 
 const compact = (value) => (value === null || value === undefined ? '—' : formatCompact(value));
 const full = (value) => (value === null || value === undefined ? '—' : formatFull(value));
@@ -181,7 +181,7 @@ const CoverPage = ({ model, logo }) => {
                             </React.Fragment>
                         ))}
                     </p>
-                    <Headline size={21} style={{ marginTop: 16 }}>Comparative Intelligence Report</Headline>
+                    <Headline size={21} style={{ marginTop: 16 }}>Competitive Intelligence Report</Headline>
                     <div style={{ width: 104, height: 6, backgroundColor: C.yellow, marginTop: 20 }} />
                 </div>
                 {lead.share !== null && <ShareRing brands={brands} lead={lead} />}
@@ -999,7 +999,7 @@ const ComparativeReportDocument = React.forwardRef(({ model, logo }, ref) => {
                 <Sheet
                     key={page.key}
                     header={<InteriorHeader logo={logo} brand={model.title} edition={EDITION} pageNumber={index + 1} />}
-                    footerLeft="ArabyProphet comparative intelligence - a product of Chain Reactions Africa"
+                    footerLeft="ArabyProphet competitive intelligence - a product of Chain Reactions Africa"
                     footerRight={model.period.label}
                 >
                     {page.node}

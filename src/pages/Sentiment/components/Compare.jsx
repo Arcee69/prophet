@@ -27,24 +27,30 @@ import buildComparativeModel from './report/buildComparativeModel'
 import buildComparativePayload, { COMPARATIVE_REPORT_TYPE } from './report/comparativePayload'
 import { slugify } from './report/reportTheme'
 import exportReportPdf from '../../../utils/exportReportPdf'
+import exportPagePdf from '../../../utils/exportPagePdf'
 
 
 
 // The board holds the searched brand plus this many competitors.
 const MAX_COMPARE_BRANDS = 3;
 
+// Built here from the board's own data; the other report types go through the report service.
+const SENTIMENT_REPORT_TYPE = 'sentiment_intelligence';
+
 // The reports offered by the Generate Report dropdown.
 const REPORT_TYPES = [
+    { label: 'Sentiment Report', value: SENTIMENT_REPORT_TYPE, available: true },
     { label: 'Reputation Intelligence', value: REPUTATION_REPORT_TYPE, available: true },
-    { label: 'Comparative Intelligence', value: COMPARATIVE_REPORT_TYPE, available: true },
+    { label: 'Competitive Intelligence', value: COMPARATIVE_REPORT_TYPE, available: true },
 ];
 
 const IDLE_EXPORT = { active: false, kind: null, page: 0, total: 0 };
 
-// The export kinds that come from the report service, keyed by `exportState.kind`.
+// The report editions in the Generate Report dropdown, keyed by `exportState.kind`.
 const GENERATED_EDITIONS = {
+    sentiment: { label: 'Sentiment', slug: 'sentiment-intelligence-report' },
     reputation: { label: 'Reputation', slug: 'reputation-intelligence-report' },
-    comparative: { label: 'Comparative', slug: 'comparative-intelligence-report' },
+    comparative: { label: 'Competitive', slug: 'competitive-intelligence-report' },
 };
 
 const BRAND_COLORS = ['#1E5631', '#FF4E4C', '#F48A1F', '#3B82F6'];
@@ -829,21 +835,22 @@ const Compare = ({ search, setSearchList, initialRange }) => {
     // ----------------------------------------------------------------------
     // PDF export
     //
-    // The document is a purpose-built, print-laid-out deck rather than a capture of
-    // this screen: the dashboard is interactive, its charts are sized for a browser
-    // viewport, and its single-brand toggles hide half the board from anyone reading
-    // the file. buildReportModel recomputes every figure for every brand so the deck
-    // can stand on its own.
+    // Export Analysis captures this screen as it is: every chart and card in its
+    // current state. The Generate Report editions are purpose-built, print-laid-out
+    // decks instead; for Sentiment Intelligence, buildReportModel recomputes every
+    // figure for every brand so the deck can stand on its own.
     // ----------------------------------------------------------------------
 
-    // `kind` is 'analysis' for Export Analysis, or 'reputation' / 'comparative' for a
-    // generated report (see GENERATED_EDITIONS).
+    // `kind` is one of GENERATED_EDITIONS: 'sentiment', 'reputation' or 'comparative'.
     const [exportState, setExportState] = useState(IDLE_EXPORT);
     const [generatedModel, setGeneratedModel] = useState(null);
     // The report type whose API request is in flight, if any.
     const [reportRequest, setReportRequest] = useState(null);
-    const reportBusy = Boolean(reportRequest) || exportState.active;
+    // Progress of an Export Analysis capture, or null when none is running.
+    const [pageExport, setPageExport] = useState(null);
+    const reportBusy = Boolean(reportRequest) || exportState.active || Boolean(pageExport);
     const reportDocRef = useRef(null);
+    const pageRef = useRef(null);
     // Guards the capture against the progress updates below re-entering the effect.
     const exportRunning = useRef(false);
 
@@ -857,23 +864,46 @@ const Compare = ({ search, setSearchList, initialRange }) => {
         getLocationName,
     }), [brands, summaries, mentionsByBrand, startDate, endDate]);
 
-    const handleDownloadPDF = () => {
+    // Export Analysis: the page exactly as it is on screen, charts and all.
+    const handleDownloadPDF = async () => {
         if (reportBusy || loading || brands.length === 0) return;
-        // Mounting the off-screen document and capturing it are two separate commits:
-        // the node has to exist and be laid out before html2canvas can read it.
-        setExportState({ active: true, kind: 'analysis', page: 0, total: 0 });
+        setPageExport({ page: 0, total: 0 });
+        try {
+            await exportPagePdf(pageRef.current, {
+                fileName: `${slugify(brands.join(' vs '))}-sentiment-analysis.pdf`,
+                title: 'Sentiment Analysis',
+                subtitle: brands.join(' vs '),
+                period: { startDate, endDate },
+                logo: Logo,
+                onProgress: ({ page = 0, total = 0 }) => setPageExport({ page, total }),
+            });
+        } catch (error) {
+            console.error('Analysis export failed', error);
+            toast.error('Could not export the analysis. Please try again.');
+        } finally {
+            setPageExport(null);
+        }
     };
 
+    // Sentiment Intelligence is built from the board's own data, covering every brand.
     // Reputation Intelligence covers the main brand only; Comparative Intelligence sends
-    // every brand on the board with the main brand as the lead. The report service
-    // writes the narrative from the sentiment payloads; the PDF is then laid out and
-    // captured here, the same way as Export Analysis.
+    // every brand on the board with the main brand as the lead. For those two the report
+    // service writes the narrative from the sentiment payloads. Every edition is then laid
+    // out off-screen and captured page by page.
     const handleGenerateReport = async (reportType) => {
         if (!reportType.available || reportBusy || loading) return;
 
         const summary = summaryAt(0);
         if (Object.keys(summary).length === 0) {
             toast.error(`No sentiment data for ${search} yet. Run the analysis before generating a report.`);
+            return;
+        }
+
+        if (reportType.value === SENTIMENT_REPORT_TYPE) {
+            setShowReportMenu(false);
+            // Mounting the off-screen document and capturing it are two separate commits:
+            // the node has to exist and be laid out before html2canvas can read it.
+            setExportState({ active: true, kind: 'sentiment', page: 0, total: 0 });
             return;
         }
 
@@ -886,7 +916,7 @@ const Compare = ({ search, setSearchList, initialRange }) => {
 
         const comparative = reportType.value === COMPARATIVE_REPORT_TYPE;
         if (comparative && compared.length < 2) {
-            toast.error('Add at least one comparison brand with results before generating a Comparative Intelligence report.');
+            toast.error('Add at least one comparison brand with results before generating a Competitive Intelligence report.');
             return;
         }
 
@@ -936,21 +966,22 @@ const Compare = ({ search, setSearchList, initialRange }) => {
         let mounted = true;
 
         const edition = GENERATED_EDITIONS[exportState.kind];
-        const subject = exportState.kind === 'comparative' ? generatedModel?.title : search;
+        const subject = {
+            sentiment: brands.join(' vs '),
+            comparative: generatedModel?.title,
+        }[exportState.kind] ?? search;
 
         const run = async () => {
             try {
                 await exportReportPdf(reportDocRef.current, {
-                    fileName: edition
-                        ? `${slugify(subject)}-${edition.slug}.pdf`
-                        : `${slugify(brands.join(' vs '))}-sentiment-report.pdf`,
+                    fileName: `${slugify(subject)}-${edition.slug}.pdf`,
                     onProgress: ({ page, total }) => {
                         if (mounted) setExportState((prev) => ({ ...prev, page, total }));
                     }
                 });
             } catch (error) {
-                console.error(`${edition ? edition.label : 'Sentiment'} report export failed`, error);
-                if (edition) toast.error('The report was generated but the PDF could not be built. Please try again.');
+                console.error(`${edition.label} report export failed`, error);
+                toast.error('The report could not be built as a PDF. Please try again.');
             } finally {
                 exportRunning.current = false;
                 if (mounted) setExportState(IDLE_EXPORT);
@@ -967,8 +998,8 @@ const Compare = ({ search, setSearchList, initialRange }) => {
 
 
     return (
-        <div className='w-full flex flex-col gap-[32px]'>
-            <div className='flex items-center justify-between'>
+        <div ref={pageRef} className='w-full flex flex-col gap-[32px]'>
+            <div className='flex items-center justify-between' data-export-hide>
                 <div onClick={() => setSearchList([])} className='w-[100px] flex cursor-pointer items-center justify-center p-3 rounded-lg bg-black'>
                     <p className='text-white text-lg font-jost'>Back</p>
                 </div>
@@ -976,7 +1007,7 @@ const Compare = ({ search, setSearchList, initialRange }) => {
             </div>
             <div className='bg-[#fff] h-[88px] rounded-[8px] flex justify-between p-[25px]'>
                 <p className='font-jost font-semibold text-[#1F2937] leading-[32px] text-[24px]'>{brands.join('  vs  ')}</p>
-                <div className='flex gap-2 items-center'>
+                <div className='flex gap-2 items-center' data-export-hide>
                     <button
                         type='button'
                         disabled={reportBusy || loading}
@@ -985,8 +1016,8 @@ const Compare = ({ search, setSearchList, initialRange }) => {
                     >
                         <AiOutlineDownload className='w-5 h-5 text-[#fff]' />
                         <p className='text-[#fff] text-base font-lato whitespace-nowrap'>
-                            {exportState.kind === 'analysis'
-                                ? `Building PDF${exportState.total ? ` ${exportState.page}/${exportState.total}` : '…'}`
+                            {pageExport
+                                ? `Building PDF${pageExport.total ? ` ${pageExport.page}/${pageExport.total}` : '…'}`
                                 : 'Export Analysis'}
                         </p>
                     </button>
@@ -1254,13 +1285,13 @@ const Compare = ({ search, setSearchList, initialRange }) => {
                     aria-hidden='true'
                     style={{ position: 'absolute', left: '-20000px', top: 0, width: 794, pointerEvents: 'none' }}
                 >
-                    {exportState.kind === 'reputation' ? (
+                    {exportState.kind === 'sentiment' ? (
+                        <SentimentReportDocument ref={reportDocRef} model={reportModel} logo={Logo} />
+                    ) : exportState.kind === 'reputation' ? (
                         <ReputationReportDocument ref={reportDocRef} model={generatedModel} logo={Logo} />
                     ) : exportState.kind === 'comparative' ? (
                         <ComparativeReportDocument ref={reportDocRef} model={generatedModel} logo={Logo} />
-                    ) : (
-                        <SentimentReportDocument ref={reportDocRef} model={reportModel} logo={Logo} />
-                    )}
+                    ) : null}
                 </div>
             )}
 
